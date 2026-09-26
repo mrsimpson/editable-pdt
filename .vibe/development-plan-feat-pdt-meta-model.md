@@ -50,7 +50,7 @@ site build on it in later iterations and are out of scope here.
   Design is the core. Every block type names the step that introduces it.
 - **Workspace layout by phase**: `1-exploration/`, `2-design/`, `3-growth/`, one file per step
   (e.g. `2-design/d2-portraits.pdt.md`). Any `*.pdt.md` file is read; the layout is a convention
-  that `pdt init` and `pdt guide` suggest.
+  that `pdt guide step` suggests.
 - **Guidance is data.** Phases, steps, canvases (with their areas mapped to model fields) and
   roles live in `@pdt/core` next to the schemas. `pdt guide`, `pdt explain` and `pdt next` render
   them; later the canvases and the docs site do too.
