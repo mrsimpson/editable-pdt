@@ -63,7 +63,8 @@ export const STEPS: StepInfo[] = [
     id: "E1",
     phase: "exploration",
     title: "Identify the ecosystem and its arenas",
-    question: "What does the ecosystem look like, and which arenas of systemic outcomes make it up?",
+    question:
+      "What does the ecosystem look like, and which arenas of systemic outcomes make it up?",
     canvases: ["arena-scan"],
     blocks: ["ecosystem", "arena"],
     how: [
@@ -82,14 +83,15 @@ export const STEPS: StepInfo[] = [
     title: "Scan the ecosystem",
     question: "Which experiences already happen, among which entities, on which market layer?",
     canvases: ["ecosystem-scan"],
-    blocks: ["job", "entity"],
+    blocks: ["job"],
     enriches: [{ type: "entity", fields: ["layer"] }],
     how: [
       "Enumerate the most frequent or valuable experiences (steps) as `job` blocks, each in its arena.",
       "Add the entities that take part and place each on a layer: long tail (niche producers and consumers), aggregator (brokers, trusted advisors) or infrastructure (commodities, building blocks).",
       "Validate the picture with real entities or a domain expert before trusting it.",
     ],
-    outcome: "The contexts of interaction, the entities involved and how they lay out across the market layers.",
+    outcome:
+      "The contexts of interaction, the entities involved and how they lay out across the market layers.",
     source: `${DOCS}/canvases/ecosystem-scan-canvas`,
     file: file("1-exploration", "e2-scan"),
   },
@@ -97,7 +99,8 @@ export const STEPS: StepInfo[] = [
     id: "E3",
     phase: "exploration",
     title: "Identify leverageable assets and moats",
-    question: "Where can you build on your strengths, and who holds positions that are hard to displace?",
+    question:
+      "Where can you build on your strengths, and who holds positions that are hard to displace?",
     canvases: ["vrio", "ecosystem-scan"],
     blocks: ["asset", "moat"],
     how: [
@@ -105,7 +108,8 @@ export const STEPS: StepInfo[] = [
       "Record the moats: established demand or supply aggregators and regulated or permissioned players.",
       "Position both next to the entities or experiences they relate to.",
     ],
-    outcome: "Awareness of your strengths and of the incumbents — the evidence for choosing an arena.",
+    outcome:
+      "Awareness of your strengths and of the incumbents — the evidence for choosing an arena.",
     source: `${DOCS}/canvases/vrio-analysis-canvas`,
     file: file("1-exploration", "e3-assets-moats"),
   },
@@ -203,7 +207,17 @@ export const STEPS: StepInfo[] = [
     enriches: [
       {
         type: "entity",
-        fields: ["context", "assets", "capabilities", "potential", "goals", "pressures", "convenience-gains", "reach-gains", "value-gains"],
+        fields: [
+          "context",
+          "assets",
+          "capabilities",
+          "potential",
+          "goals",
+          "pressures",
+          "convenience-gains",
+          "reach-gains",
+          "value-gains",
+        ],
       },
     ],
     how: [
@@ -212,7 +226,8 @@ export const STEPS: StepInfo[] = [
       "Map what they look for in their current experience — outside-in, not your platform idea.",
       "Informal interviews with representatives beat assumptions.",
     ],
-    outcome: "You have worn their clothes — and have a raw idea of your multi-sided value propositions.",
+    outcome:
+      "You have worn their clothes — and have a raw idea of your multi-sided value propositions.",
     source: `${DOCS}/canvases/entity-portrait-canvas`,
     file: file("2-design", "d1-ecosystem"),
   },
@@ -253,7 +268,8 @@ export const STEPS: StepInfo[] = [
     id: "D5",
     phase: "design",
     title: "Identify the elementary transactions and channels",
-    question: "Which atomic transactions happen — or could — in each core relationship, through which channels?",
+    question:
+      "Which atomic transactions happen — or could — in each core relationship, through which channels?",
     canvases: ["transactions-board"],
     blocks: ["transaction", "channel"],
     how: [
@@ -270,7 +286,8 @@ export const STEPS: StepInfo[] = [
     id: "D6",
     phase: "design",
     title: "Design the learning engine",
-    question: "How does the platform help each role onboard, get better and catch new opportunities?",
+    question:
+      "How does the platform help each role onboard, get better and catch new opportunities?",
     canvases: ["learning-engine"],
     blocks: ["learning-engine", "service"],
     how: [
@@ -278,7 +295,8 @@ export const STEPS: StepInfo[] = [
       "Design one or few `service`s per challenge and link them with `stage`.",
       "Look for evolution paths between roles (`evolves-to`).",
     ],
-    outcome: "The services through which entities improve continuously — the platform-to-entity bricks.",
+    outcome:
+      "The services through which entities improve continuously — the platform-to-entity bricks.",
     source: `${DOCS}/canvases/learning-engine-canvas`,
     file: file("2-design", "d6-learning-engine"),
   },
@@ -286,7 +304,8 @@ export const STEPS: StepInfo[] = [
     id: "D7",
     phase: "design",
     title: "Assemble the platform experiences",
-    question: "Which journey, from the core role's point of view, delivers the value proposition — and sustains itself?",
+    question:
+      "Which journey, from the core role's point of view, delivers the value proposition — and sustains itself?",
     canvases: ["platform-experience"],
     blocks: ["experience"],
     how: [
@@ -387,7 +406,10 @@ export const STEPS: StepInfo[] = [
     question: "Which loops sustain growth after liquidity?",
     canvases: ["growth-model"],
     blocks: ["growth-loop"],
-    how: ["Write each active loop as an equation, with its bottleneck and cycle time.", "Steer each loop by one metric."],
+    how: [
+      "Write each active loop as an equation, with its bottleneck and cycle time.",
+      "Steer each loop by one metric.",
+    ],
     outcome: "The loops a growth model can quantify.",
     source: `${DOCS}/legacy/pdt/growth`,
     file: file("3-growth", "g5-growth-loops"),
@@ -416,35 +438,40 @@ export const ROLES: RoleInfo[] = [
     code: "PO",
     label: "Platform owner / shaper",
     group: "impact",
-    summary: "Holds the vision and makes sure the strategy exists and evolves; can be a team, a firm, a cooperative or a consortium.",
+    summary:
+      "Holds the vision and makes sure the strategy exists and evolves; can be a team, a firm, a cooperative or a consortium.",
   },
   {
     id: "stakeholder",
     code: "ES",
     label: "External stakeholder",
     group: "impact",
-    summary: "Cares about the whole system — regulation, externalities, governance, distribution — rather than single interactions.",
+    summary:
+      "Cares about the whole system — regulation, externalities, governance, distribution — rather than single interactions.",
   },
   {
     id: "peer-consumer",
     code: "PC",
     label: "Peer consumer",
     group: "demand",
-    summary: "Consumes the value created on the platform; individuals or small organisations who can leave easily.",
+    summary:
+      "Consumes the value created on the platform; individuals or small organisations who can leave easily.",
   },
   {
     id: "peer-producer",
     code: "PP",
     label: "Peer producer",
     group: "supply",
-    summary: "Produces value, often occasionally, and wants to become more professional; may also consume.",
+    summary:
+      "Produces value, often occasionally, and wants to become more professional; may also consume.",
   },
   {
     id: "partner",
     code: "PA",
     label: "Partner",
     group: "supply",
-    summary: "A professional producer in a closer, more strategic relationship with the owner — often niche or premium, sometimes a broker.",
+    summary:
+      "A professional producer in a closer, more strategic relationship with the owner — often niche or premium, sometimes a broker.",
   },
 ];
 
@@ -529,7 +556,10 @@ export const CANVASES: CanvasInfo[] = [
     steps: ["E1", "E4"],
     kind: "canvas",
     areas: [
-      { title: "Arenas map (before → after, enabling → enabled)", fills: ["arena.after", "arena.enables"] },
+      {
+        title: "Arenas map (before → after, enabling → enabled)",
+        fills: ["arena.after", "arena.enables"],
+      },
       { title: "FOCUS area", fills: ["arena.focus"] },
       { title: "Steps of the focus arenas", fills: ["arena.steps"] },
     ],
@@ -555,7 +585,12 @@ export const CANVASES: CanvasInfo[] = [
     phase: "exploration",
     steps: ["E3"],
     kind: "canvas",
-    areas: [{ title: "Assets and capabilities × Value, Rarity, Imitability, Organisation", fills: ["asset.vrio"] }],
+    areas: [
+      {
+        title: "Assets and capabilities × Value, Rarity, Imitability, Organisation",
+        fills: ["asset.vrio"],
+      },
+    ],
     source: `${DOCS}/canvases/vrio-analysis-canvas`,
   },
   {
@@ -567,7 +602,10 @@ export const CANVASES: CanvasInfo[] = [
     per: "arena",
     areas: [
       { title: "Users and user value (top)", fills: ["component[visibility≥90]"] },
-      { title: "Visibility (Y) × evolution (X)", fills: ["component.visibility", "component.evolution", "component.needs"] },
+      {
+        title: "Visibility (Y) × evolution (X)",
+        fills: ["component.visibility", "component.evolution", "component.needs"],
+      },
       { title: "To-be positions after the plays", fills: ["component.target"] },
     ],
     source: `${DOCS}/canvases/wardley-map-canvas`,
@@ -597,7 +635,10 @@ export const CANVASES: CanvasInfo[] = [
     steps: ["E7"],
     kind: "canvas",
     areas: [
-      { title: "Long tail / aggregation / infrastructures layers", fills: ["entity.layer", "asset", "moat"] },
+      {
+        title: "Long tail / aggregation / infrastructures layers",
+        fills: ["entity.layer", "asset", "moat"],
+      },
       { title: "WHAT-IF scenarios", fills: ["scenario"] },
       { title: "Strategic brief synthesis", fills: ["brief"] },
     ],
@@ -628,7 +669,10 @@ export const CANVASES: CanvasInfo[] = [
     per: "entity",
     areas: [
       { title: "Role and type", fills: ["entity.role", "entity.type", "entity.clusters"] },
-      { title: "Potential: assets and capabilities", fills: ["entity.assets", "entity.capabilities", "entity.potential"] },
+      {
+        title: "Potential: assets and capabilities",
+        fills: ["entity.assets", "entity.capabilities", "entity.potential"],
+      },
       { title: "Performance pressures", fills: ["entity.pressures"] },
       { title: "Current goals", fills: ["entity.goals"] },
       { title: "Convenience gains", fills: ["entity.convenience-gains"] },
@@ -646,7 +690,10 @@ export const CANVASES: CanvasInfo[] = [
     areas: [
       { title: "Roles on rows and columns", fills: ["entity[role≠owner,stakeholder]"] },
       { title: "Gives-to cells", fills: ["motivation"] },
-      { title: "Diagonal: exchanges between peers of the same type", fills: ["motivation[from=to]"] },
+      {
+        title: "Diagonal: exchanges between peers of the same type",
+        fills: ["motivation[from=to]"],
+      },
     ],
     source: `${DOCS}/canvases/motivations-matrix-canvas`,
   },
@@ -659,7 +706,10 @@ export const CANVASES: CanvasInfo[] = [
     per: "relationship",
     areas: [
       { title: "Already happening in the ecosystem?", fills: ["transaction.happening"] },
-      { title: "Role 1 · transaction · role 2", fills: ["transaction.from", "transaction.title", "transaction.direction", "transaction.to"] },
+      {
+        title: "Role 1 · transaction · role 2",
+        fills: ["transaction.from", "transaction.title", "transaction.direction", "transaction.to"],
+      },
       { title: "Currency / value unit", fills: ["transaction.value-unit"] },
       { title: "Channel components", fills: ["channel.components"] },
       { title: "Notes on channel improvement", fills: ["channel.improvement"] },
@@ -675,9 +725,18 @@ export const CANVASES: CanvasInfo[] = [
     areas: [
       { title: "Roles (rows)", fills: ["learning-engine.entity"] },
       { title: "Entry points", fills: ["learning-engine.entry"] },
-      { title: "Onboarding: challenges / services", fills: ["learning-engine.onboarding", "service[stage=onboarding]"] },
-      { title: "Getting better: challenges / services", fills: ["learning-engine.getting-better", "service[stage=getting-better]"] },
-      { title: "Catching the new opportunity: challenges / services", fills: ["learning-engine.new-opportunity", "service[stage=new-opportunity]"] },
+      {
+        title: "Onboarding: challenges / services",
+        fills: ["learning-engine.onboarding", "service[stage=onboarding]"],
+      },
+      {
+        title: "Getting better: challenges / services",
+        fills: ["learning-engine.getting-better", "service[stage=getting-better]"],
+      },
+      {
+        title: "Catching the new opportunity: challenges / services",
+        fills: ["learning-engine.new-opportunity", "service[stage=new-opportunity]"],
+      },
     ],
     source: `${DOCS}/canvases/learning-engine-canvas`,
   },
@@ -690,11 +749,23 @@ export const CANVASES: CanvasInfo[] = [
     per: "experience",
     areas: [
       { title: "Experience name", fills: ["experience.title"] },
-      { title: "Involved roles: A core, B–E others", fills: ["experience.core-entity", "experience.roles"] },
-      { title: "Steps × channel / touchpoint lanes", fills: ["experience.steps", "transaction.channel", "service.channel"] },
+      {
+        title: "Involved roles: A core, B–E others",
+        fills: ["experience.core-entity", "experience.roles"],
+      },
+      {
+        title: "Steps × channel / touchpoint lanes",
+        fills: ["experience.steps", "transaction.channel", "service.channel"],
+      },
       { title: "Value proposition for the core role", fills: ["experience.value-proposition"] },
-      { title: "Platform activities · resources / components", fills: ["experience.activities", "experience.resources"] },
-      { title: "Value provided / cost · value captured / revenues", fills: ["experience.costs", "experience.revenues"] },
+      {
+        title: "Platform activities · resources / components",
+        fills: ["experience.activities", "experience.resources"],
+      },
+      {
+        title: "Value provided / cost · value captured / revenues",
+        fills: ["experience.costs", "experience.revenues"],
+      },
     ],
     source: `${DOCS}/canvases/platform-experience-canvas`,
   },
@@ -720,12 +791,24 @@ export const CANVASES: CanvasInfo[] = [
     steps: ["D1", "D2", "D3", "D4", "D5", "D6"],
     kind: "canvas",
     areas: [
-      { title: "Platform owners · stakeholders", fills: ["entity[role=owner]", "entity[role=stakeholder]"] },
-      { title: "Enabling · empowering · other services", fills: ["service[kind=enabling]", "service[kind=empowering]", "service[kind=other]"] },
-      { title: "Core and ancillary value propositions", fills: ["platform.core-value", "platform.ancillary-values"] },
+      {
+        title: "Platform owners · stakeholders",
+        fills: ["entity[role=owner]", "entity[role=stakeholder]"],
+      },
+      {
+        title: "Enabling · empowering · other services",
+        fills: ["service[kind=enabling]", "service[kind=empowering]", "service[kind=other]"],
+      },
+      {
+        title: "Core and ancillary value propositions",
+        fills: ["platform.core-value", "platform.ancillary-values"],
+      },
       { title: "Infrastructures and core components", fills: ["platform.infrastructure"] },
       { title: "Transactions · channels and contexts", fills: ["transaction", "channel"] },
-      { title: "Partners · peer producers · peer consumers", fills: ["entity[role=partner]", "entity[role=peer-producer]", "entity[role=peer-consumer]"] },
+      {
+        title: "Partners · peer producers · peer consumers",
+        fills: ["entity[role=partner]", "entity[role=peer-producer]", "entity[role=peer-consumer]"],
+      },
     ],
     source: `${DOCS}/canvases/platform-design-canvas`,
   },
@@ -750,7 +833,18 @@ export const CANVASES: CanvasInfo[] = [
     kind: "canvas",
     per: "relationship",
     areas: [
-      { title: "The seven properties", fills: ["network.supply", "network.symmetry", "network.location", "network.tenancy", "network.frequency", "network.value", "network.exclusivity"] },
+      {
+        title: "The seven properties",
+        fills: [
+          "network.supply",
+          "network.symmetry",
+          "network.location",
+          "network.tenancy",
+          "network.frequency",
+          "network.value",
+          "network.exclusivity",
+        ],
+      },
       { title: "Network-effects curve", fills: ["network.curve"] },
       { title: "Growth tactics", fills: ["network.tactics"] },
     ],
@@ -763,7 +857,10 @@ export const CANVASES: CanvasInfo[] = [
     steps: ["G3"],
     kind: "canvas",
     areas: [
-      { title: "Core flywheel", fills: ["flywheel[type=direct-network]", "flywheel[type=indirect-network]"] },
+      {
+        title: "Core flywheel",
+        fills: ["flywheel[type=direct-network]", "flywheel[type=indirect-network]"],
+      },
       { title: "Reinforcing flywheels", fills: ["flywheel.reinforces"] },
     ],
     source: `${DOCS}/canvases/flywheel-sketching-canvas`,
@@ -777,8 +874,14 @@ export const CANVASES: CanvasInfo[] = [
     per: "relationship",
     areas: [
       { title: "Value proposition and engagement check", fills: ["liquidity.alternatives"] },
-      { title: "Thresholds per side", fills: ["liquidity.supply-threshold", "liquidity.demand-threshold"] },
-      { title: "Constraining strategy and canonical unit", fills: ["liquidity.canonical-unit", "liquidity.constraints"] },
+      {
+        title: "Thresholds per side",
+        fills: ["liquidity.supply-threshold", "liquidity.demand-threshold"],
+      },
+      {
+        title: "Constraining strategy and canonical unit",
+        fills: ["liquidity.canonical-unit", "liquidity.constraints"],
+      },
       { title: "Side focus", fills: ["liquidity.start-with"] },
     ],
     source: `${DOCS}/canvases/liquidity-canvas`,

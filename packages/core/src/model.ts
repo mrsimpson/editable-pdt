@@ -1,6 +1,12 @@
 import type { DocumentAst, HeadingNode, ProseNode, SourceLocation } from "./ast.ts";
 import { parseMarkdown } from "./parser.ts";
-import { BLOCK_SCHEMAS, blockFields, isBlockType, type BlockData, type BlockType } from "./schemas.ts";
+import {
+  BLOCK_SCHEMAS,
+  blockFields,
+  isBlockType,
+  type BlockData,
+  type BlockType,
+} from "./schemas.ts";
 
 // Builds the element model from parsed documents. Blocks are validated against their zod schema;
 // problems become build issues with precise file:line locations. The validator adds the
@@ -70,7 +76,11 @@ export function buildWorkspace(documents: DocumentAst[]): Workspace {
           fileIgnores.add(node.code);
           break;
         case "parse-error":
-          issues.push({ code: "E004", message: node.message, loc: { file: doc.file, line: node.line } });
+          issues.push({
+            code: "E004",
+            message: node.message,
+            loc: { file: doc.file, line: node.line },
+          });
           break;
         case "block": {
           blocksUnderHeading++;
@@ -115,7 +125,9 @@ export function buildWorkspace(documents: DocumentAst[]): Workspace {
             title,
             data,
             prose: prose.map((p) => p.text).join("\n\n"),
-            heading: heading ? { text: heading.text, level: heading.level, line: heading.line } : undefined,
+            heading: heading
+              ? { text: heading.text, level: heading.level, line: heading.line }
+              : undefined,
             loc,
             endLine: node.endLine,
             attributeLines: node.attributeLines,
@@ -141,7 +153,15 @@ function collectReferences(elements: Element[]): Reference[] {
       const value = (element.data as Record<string, unknown>)[field.name];
       for (const to of ([] as unknown[]).concat(value ?? [])) {
         if (typeof to === "string" && to) {
-          out.push({ from: element, field: field.name, to, loc: { file: element.loc.file, line: element.attributeLines[field.name] ?? element.loc.line } });
+          out.push({
+            from: element,
+            field: field.name,
+            to,
+            loc: {
+              file: element.loc.file,
+              line: element.attributeLines[field.name] ?? element.loc.line,
+            },
+          });
         }
       }
     }
@@ -157,7 +177,11 @@ export function elementsOf<K extends BlockType>(ws: Workspace, kind: K): Element
   return ws.elements.filter((e): e is Element<K> => e.kind === kind);
 }
 
-export function get<K extends BlockType>(ws: Workspace, kind: K, id: string | undefined): Element<K> | undefined {
+export function get<K extends BlockType>(
+  ws: Workspace,
+  kind: K,
+  id: string | undefined,
+): Element<K> | undefined {
   const element = id ? ws.byId.get(id) : undefined;
   return element?.kind === kind ? (element as Element<K>) : undefined;
 }

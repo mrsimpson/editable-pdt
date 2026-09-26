@@ -7,6 +7,8 @@ import type { AstNode, BlockNode, DocumentAst, ProseNode } from "./ast.ts";
 //   :::type / key: value / :::   a typed block inside a pdt fence
 //   key:                         followed by indented `- item` lines: a text list
 //   :::ignore CODE reason :::    suppresses a rule for the whole file
+//   <!-- … -->                   HTML comments are skipped entirely (templates keep guidance and
+//                                examples there, so they never become part of the model)
 //
 // Everything else is prose and is kept verbatim.
 
@@ -27,6 +29,7 @@ export function parseMarkdown(file: string, content: string): DocumentAst {
   let otherFence: string | null = null;
   let block: BlockNode | null = null;
   let lastKey: string | null = null;
+  let inComment = false;
 
   const flushProse = () => {
     if (!prose) return;
@@ -54,6 +57,16 @@ export function parseMarkdown(file: string, content: string): DocumentAst {
     const line = lines[i]!;
     const lineNo = i + 1;
     const trimmed = line.trim();
+
+    if (inComment) {
+      if (line.includes("-->")) inComment = false;
+      continue;
+    }
+    if (!otherFence && !inPdtFence && trimmed.startsWith("<!--")) {
+      flushProse();
+      inComment = !line.includes("-->", line.indexOf("<!--") + 4);
+      continue;
+    }
 
     if (otherFence) {
       if (trimmed.startsWith(otherFence)) otherFence = null;
@@ -84,7 +97,11 @@ export function parseMarkdown(file: string, content: string): DocumentAst {
           continue;
         }
         if (trimmed !== "") {
-          nodes.push({ kind: "parse-error", line: lineNo, message: `Cannot read "${trimmed}" inside :::${block.blockType}` });
+          nodes.push({
+            kind: "parse-error",
+            line: lineNo,
+            message: `Cannot read "${trimmed}" inside :::${block.blockType}`,
+          });
         }
         continue;
       }
@@ -94,7 +111,12 @@ export function parseMarkdown(file: string, content: string): DocumentAst {
       }
       const ignore = IGNORE.exec(trimmed);
       if (ignore) {
-        nodes.push({ kind: "ignore", code: ignore[1]!.toUpperCase(), reason: ignore[2]!, line: lineNo });
+        nodes.push({
+          kind: "ignore",
+          code: ignore[1]!.toUpperCase(),
+          reason: ignore[2]!,
+          line: lineNo,
+        });
         continue;
       }
       const open = BLOCK_OPEN.exec(trimmed);
@@ -112,7 +134,11 @@ export function parseMarkdown(file: string, content: string): DocumentAst {
         continue;
       }
       if (trimmed !== "") {
-        nodes.push({ kind: "parse-error", line: lineNo, message: `Expected :::type, found "${trimmed}"` });
+        nodes.push({
+          kind: "parse-error",
+          line: lineNo,
+          message: `Expected :::type, found "${trimmed}"`,
+        });
       }
       continue;
     }
@@ -136,8 +162,14 @@ export function parseMarkdown(file: string, content: string): DocumentAst {
     addProse(line, lineNo);
   }
 
-  if (block) nodes.push({ kind: "parse-error", line: block.startLine, message: `:::${block.blockType} is never closed` });
-  else if (inPdtFence) nodes.push({ kind: "parse-error", line: fenceStart, message: "pdt fence is never closed" });
+  if (block)
+    nodes.push({
+      kind: "parse-error",
+      line: block.startLine,
+      message: `:::${block.blockType} is never closed`,
+    });
+  else if (inPdtFence)
+    nodes.push({ kind: "parse-error", line: fenceStart, message: "pdt fence is never closed" });
   flushProse();
 
   return { file, nodes };

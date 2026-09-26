@@ -1,0 +1,278 @@
+#!/usr/bin/env node
+import { mkdir, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import {
+  BLOCK_TYPES,
+  incoming,
+  PHASES,
+  RULES,
+  STEPS,
+  starterTemplate,
+  blockFields,
+  type Diagnostic,
+} from "@pdt/core";
+import { load } from "./discover.ts";
+import {
+  explainText,
+  formatDiagnostic,
+  guideCanvas,
+  guideOverview,
+  guideRoles,
+  guideStep,
+  nextText,
+} from "./guide.ts";
+
+const HELP = `pdt — the Platform Design Toolkit as a language
+
+Usage: pdt [--dir <workspace>] <command> [options]
+
+Commands
+  guide                    The methodology, and where this workspace stands in it
+  guide step <E1…G5>       The brief for one step: questions, how-to, blocks, open findings
+  guide roles              The five platform roles
+  guide canvas [id]        The canvases, and the model fields that fill each area
+  next                     The step to work on next, and why
+  explain [type]           The block types, or one type's attributes and an example
+  init [--phase <p>]       Create the step files with guidance (existing files are kept)
+  validate [--strict]      Check the model (exit 1 on errors, or on warnings with --strict)
+  get [id] [--type <t>]    List elements, or show one with what references it
+  rules                    Every validation rule with its rationale
+
+Options
+  --dir <path>             Workspace directory (default: $PDT_DIR or the current directory)
+  --format json            Machine-readable output (validate, get, rules, guide, next)
+
+The methodology is the Platform Design Toolkit 2.2 by Boundaryless SRL, whose canvases and
+guides are licensed CC BY-SA 4.0 — https://docs.boundaryless.io/methodology/legacy/pdt
+`;
+
+interface Args {
+  _: string[];
+  [key: string]: string | boolean | string[];
+}
+
+function parseArgs(argv: string[]): Args {
+  const args: Args = { _: [] };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i]!;
+    if (a === "--strict" || a === "--help" || a === "-h") args[a.replace(/^-+/, "")] = true;
+    else if (a.startsWith("--")) args[a.slice(2)] = argv[++i] ?? "";
+    else args._.push(a);
+  }
+  return args;
+}
+
+const color = process.stdout.isTTY && !process.env.NO_COLOR;
+const paint = (code: string, t: string) => (color ? `\x1b[${code}m${t}\x1b[0m` : t);
+const SEVERITY = { error: "31;1", warning: "33;1", hint: "36" } as const;
+
+function print(text: string) {
+  process.stdout.write(`${text}\n`);
+}
+
+async function main(): Promise<number> {
+  const args = parseArgs(process.argv.slice(2));
+  const [command, ...rest] = args._;
+  if (!command || args.help || args.h) {
+    print(HELP);
+    return 0;
+  }
+  const dir = resolve(String(args.dir || process.env.PDT_DIR || "."));
+  const json = args.format === "json";
+
+  switch (command) {
+    case "guide": {
+      const [topic, arg] = rest;
+      if (topic === "roles") return (print(guideRoles()), 0);
+      if (topic === "canvas") return (print(guideCanvas(arg)), 0);
+      const { steps } = await load(dir);
+      if (json) {
+        print(
+          JSON.stringify(
+            steps.map((s) => ({
+              step: s.step.id,
+              title: s.step.title,
+              state: s.state,
+              elements: s.count,
+              findings: s.findings,
+            })),
+            null,
+            2,
+          ),
+        );
+        return 0;
+      }
+      if (topic === "step") {
+        if (!arg) throw new UsageError("pdt guide step <id> — e.g. pdt guide step D2");
+        print(guideStep(arg, steps));
+        return 0;
+      }
+      if (topic) throw new UsageError(`Unknown guide topic "${topic}". Use step, roles or canvas.`);
+      print(guideOverview(steps));
+      return 0;
+    }
+    case "next": {
+      const { steps } = await load(dir);
+      print(nextText(steps));
+      return 0;
+    }
+    case "explain": {
+      if (json) {
+        const type = rest[0];
+        const types = type ? [type] : BLOCK_TYPES;
+        print(
+          JSON.stringify(
+            Object.fromEntries(types.map((t) => [t, blockFields(t as never)])),
+            null,
+            2,
+          ),
+        );
+        return 0;
+      }
+      print(explainText(rest[0]));
+      return 0;
+    }
+    case "init": {
+      const phase = args.phase ? String(args.phase) : undefined;
+      if (phase && !PHASES.some((p) => p.id === phase))
+        throw new UsageError(`--phase must be one of ${PHASES.map((p) => p.id).join(", ")}`);
+      const files = [
+        ...new Set(STEPS.filter((s) => !phase || s.phase === phase).map((s) => s.file)),
+      ];
+      let created = 0;
+      for (const file of files) {
+        const path = join(dir, file);
+        if (existsSync(path)) {
+          print(`  kept     ${file}`);
+          continue;
+        }
+        await mkdir(dirname(path), { recursive: true });
+        await writeFile(path, starterTemplate(file), "utf8");
+        print(`  created  ${file}`);
+        created++;
+      }
+      print(
+        `\n${created} file(s) created. Replace the examples with your own ecosystem, then run \`pdt guide\`.`,
+      );
+      return 0;
+    }
+    case "validate": {
+      const { workspace, diagnostics } = await load(dir);
+      if (json) print(JSON.stringify(diagnostics, null, 2));
+      else {
+        for (const d of diagnostics)
+          print(`${paint(SEVERITY[d.severity], d.code)} ${d.loc.file}:${d.loc.line}  ${d.message}`);
+        const n = (s: Diagnostic["severity"]) => diagnostics.filter((d) => d.severity === s).length;
+        print(
+          `\n${workspace.elements.length} elements in ${workspace.documents.length} files — ${n("error")} errors, ${n("warning")} warnings, ${n("hint")} hints`,
+        );
+      }
+      return diagnostics.some(
+        (d) => d.severity === "error" || (args.strict && d.severity === "warning"),
+      )
+        ? 1
+        : 0;
+    }
+    case "get": {
+      const { workspace, diagnostics } = await load(dir);
+      const [id] = rest;
+      if (id) {
+        const element = workspace.byId.get(id);
+        if (!element) {
+          process.stderr.write(`No element "${id}"\n`);
+          return 1;
+        }
+        const refs = incoming(workspace, id).map((r) => ({
+          id: r.from.id,
+          kind: r.from.kind,
+          field: r.field,
+        }));
+        if (json) {
+          print(
+            JSON.stringify(
+              {
+                kind: element.kind,
+                id: element.id,
+                title: element.title,
+                data: element.data,
+                prose: element.prose,
+                loc: element.loc,
+                referencedBy: refs,
+              },
+              null,
+              2,
+            ),
+          );
+          return 0;
+        }
+        print(
+          `${paint("1", element.title)}  ${paint("2", `${element.kind} · ${element.loc.file}:${element.loc.line}`)}`,
+        );
+        for (const [key, value] of Object.entries(element.data as Record<string, unknown>)) {
+          if (
+            key === "id" ||
+            key === "title" ||
+            value === undefined ||
+            (Array.isArray(value) && !value.length)
+          )
+            continue;
+          print(
+            Array.isArray(value)
+              ? `  ${key}:\n${value.map((v) => `    - ${String(v)}`).join("\n")}`
+              : `  ${key}: ${String(value as string | number | boolean)}`,
+          );
+        }
+        if (element.prose) print(`\n${element.prose.replace(/^/gm, "  ")}`);
+        if (refs.length)
+          print(`\n  referenced by: ${refs.map((r) => `${r.id} (${r.field})`).join(", ")}`);
+        const own = diagnostics.filter((d) => d.element === id);
+        if (own.length) print(`\n${own.map(formatDiagnostic).join("\n")}`);
+        return 0;
+      }
+      const type = args.type ? String(args.type) : undefined;
+      const elements = workspace.elements.filter((e) => !type || e.kind === type);
+      if (json) {
+        print(
+          JSON.stringify(
+            elements.map((e) => ({ kind: e.kind, id: e.id, title: e.title, loc: e.loc })),
+            null,
+            2,
+          ),
+        );
+        return 0;
+      }
+      for (const kind of BLOCK_TYPES) {
+        const group = elements.filter((e) => e.kind === kind);
+        if (!group.length) continue;
+        print(paint("1", `${kind} (${group.length})`));
+        for (const e of group) print(`  ${e.id.padEnd(30)} ${e.title}`);
+      }
+      return 0;
+    }
+    case "rules": {
+      const rules = RULES.map((r) => r.meta);
+      if (json) print(JSON.stringify(rules, null, 2));
+      else
+        for (const r of rules)
+          print(
+            `${paint(SEVERITY[r.severity], r.code)} ${paint("1", r.title)}${r.step ? `  (${r.step})` : ""}\n     ${r.rationale}\n`,
+          );
+      return 0;
+    }
+    default:
+      throw new UsageError(`Unknown command "${command}"\n\n${HELP}`);
+  }
+}
+
+class UsageError extends Error {}
+
+main().then(
+  (code) => {
+    process.exitCode = code;
+  },
+  (error: unknown) => {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = error instanceof UsageError ? 2 : 1;
+  },
+);

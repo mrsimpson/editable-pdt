@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "Parser, meta-model, validator and methodology for pdt-language.",
-  "license": "CC-BY-SA-4.0",
+  "files": [
+    "dist"
+  ],
   "type": "module",
-  "files": ["dist"],
   "exports": {
     ".": {
       "development": "./src/index.ts",

@@ -1,8 +1,9 @@
 import { STEPS, type StepInfo } from "./methodology.ts";
 import { blockMeta, type BlockType } from "./schemas.ts";
 
-// Starter content for a step's file: the step's guidance as an HTML comment (invisible when the
-// Markdown is rendered) and one example section per block type the step introduces.
+// Starter content for a step's file: the step's guidance and one example section per block type,
+// all inside an HTML comment. The parser skips comments, so a fresh workspace holds no model
+// elements until the author writes them — copy an example out of the comment to start.
 
 function exampleSection(type: BlockType): string {
   const meta = blockMeta(type);
@@ -28,7 +29,10 @@ export function starterTemplate(file: string): string {
   const steps = STEPS.filter((s) => s.file === file);
   if (!steps.length) throw new Error(`No step writes to ${file}`);
   const heading = steps.map((s) => s.title).join(" · ");
-  const comments = steps.map((s) => `<!--\n${guidance(s)}\n-->`).join("\n\n");
   const types = [...new Set(steps.flatMap((s) => s.blocks))];
-  return `# ${heading}\n\n${comments}\n\n${types.map(exampleSection).join("\n")}`;
+  const examples = types.length
+    ? `\nExample${types.length > 1 ? "s" : ""} — copy below the comment and adapt:\n\n${types.map(exampleSection).join("\n")}`
+    : "";
+  const comments = steps.map((s) => guidance(s)).join("\n\n");
+  return `# ${heading}\n\n<!--\n${comments}\n${examples}-->\n`;
 }

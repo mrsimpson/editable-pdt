@@ -182,13 +182,7 @@ pdt validate | get [id] | rules
 
 ### Tasks
 
-- [ ] **Decide with the user:** close the gaps in the meta-model graph (see Notes) — required vs optional links
-- [ ] Add a "no orphan elements" rule
-- [ ] `@pdt/cli`: validate, get, rules, explain, guide (overview/step/roles/canvas), next, init
-- [ ] Example workspace (Harvest Commons, all three phases) validating clean except for deliberate hints
-- [ ] Tests (parser, schemas, builder, rules, guide status, CLI smoke)
-- [ ] Agent skill `packages/skill/SKILL.md`, README, `docs/meta-model.md`
-- [ ] `vp check` + `vp test` green
+*All done.*
 
 ### Completed
 
@@ -199,17 +193,37 @@ pdt validate | get [id] | rules
 - [x] `@pdt/core`: methodology data (phases, steps E1–G5, roles, canvases with areas)
 - [x] `@pdt/core`: validator with rule registry (meta + rationale + step)
 - [x] `@pdt/core`: step status + next-step recommendation, starter templates
+- [x] Graph gaps closed as decided with the user ("like arc42: mostly optional forward edges, but a
+      set reference must be valid"): added optional `platform.ecosystem`, `platform.brief`,
+      `flywheel.relationship`, `growth-loop.acquires`, `growth-loop.feeds`, `transaction.motivation`,
+      `transaction.job`; relaxed `job.arena`, `brief.arena`, `mvp.experiences` to optional. The
+      meta-model is now one connected graph (asserted by a test).
+- [x] Rules H010 orphan element, H011 unlinked phase handoff, H204 growth element without anchor
+- [x] Parser skips HTML comments; starter templates keep guidance and examples inside comments,
+      so `pdt init` yields an empty model that starts at D1
+- [x] `@pdt/cli`: validate, get, rules, explain, guide (overview/step/roles/canvas), next, init
+- [x] Example workspace Harvest Commons: 90 elements across all 20 steps, 0 findings (one hint
+      suppressed on purpose to demonstrate `:::ignore`)
+- [x] Tests: 33 (parser, schemas incl. connectivity, validator rules, example, templates, CLI)
+- [x] Agent skill, README, `docs/meta-model.md` generated from the schemas (drift test)
+- [x] `vp check`, `vp test` and `vp pack` green; bundled CLI validates the example
 
 ## Commit
 
 ### Tasks
 
-- [ ] Commit with the conventional-commit format from `.claude/skills/commit`
-- [ ] Push to `claude/platform-meta-model-canvas-sx7u78`
+*All done.*
 
 ### Completed
 
-*None yet*
+- [x] WIP commit 3f2e154 (core foundation)
+- [x] Final commit: CLI, example, tests, docs; pushed to `claude/platform-meta-model-canvas-sx7u78`
+
+### Open for the next iteration
+
+- Canvas renderers over this model (per-canvas views, `per:` relationship/entity/experience)
+- Live editor and docs site (with the side-by-side comparison against the Boundaryless canvases)
+- Licence for the repository (the meta-model and guidance carry CC BY-SA's ShareAlike obligation)
 
 ---
 *This plan is maintained by the LLM. Update task lists as work progresses.*
