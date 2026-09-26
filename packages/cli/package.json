@@ -1,0 +1,26 @@
+{
+  "name": "@pdt/cli",
+  "version": "0.1.0",
+  "description": "pdt — the Platform Design Toolkit as a language: validate, query and get guided through a platform design.",
+  "license": "CC-BY-SA-4.0",
+  "type": "module",
+  "bin": {
+    "pdt": "./dist/cli.mjs"
+  },
+  "files": ["dist"],
+  "exports": {
+    ".": "./dist/cli.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "devDependencies": {
+    "@pdt/core": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}
