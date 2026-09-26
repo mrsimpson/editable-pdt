@@ -32,13 +32,20 @@ describe("pdt", () => {
     expect(r.out).toContain('E002 x.pdt.md:9  between: "a" does not exist');
   });
 
-  test("init creates the step files; guide and next start at D1", () => {
+  test("guide and next start a blank workspace at D1; guide step hands out the template", () => {
     const dir = mkdtempSync(join(tmpdir(), "pdt-"));
-    expect(pdt("--dir", dir, "init", "--phase", "design").out).toContain(
-      "created  2-design/d1-ecosystem.pdt.md",
-    );
     expect(pdt("--dir", dir, "next").out).toContain("Next: D1 · Map the ecosystem");
-    expect(pdt("--dir", dir, "init").out).toContain("kept     2-design/d1-ecosystem.pdt.md");
+    const overview = pdt("--dir", dir, "guide").out;
+    expect(overview).toContain("[ ] D5  Identify the elementary transactions and channels");
+    expect(overview).toContain(":::transaction, :::channel");
+    const d5 = pdt("--dir", dir, "guide", "step", "D5").out;
+    expect(d5).toContain("Write this step in `2-design/d5-transactions.pdt.md`");
+    expect(d5).toContain(
+      "- `:::entity` from D1 — required via transaction.from, transaction.to; none yet ← write these first",
+    );
+    expect(d5).toContain("- `pdt explain transaction`");
+    expect(d5).toContain("## Starter template");
+    expect(pdt("init").code).toBe(2);
   });
 
   test("guide step shows the brief and the step's findings", () => {

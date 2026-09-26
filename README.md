@@ -39,9 +39,8 @@ core: yes
 pnpm install
 pnpm pdt --dir examples/harvest-commons guide       # the method, and the example's status
 pnpm pdt --dir examples/harvest-commons validate
-pnpm pdt guide step D5                               # one step's brief
+pnpm pdt guide step D5                               # one step: file, dependencies, template
 pnpm pdt explain transaction                         # one block type
-pnpm pdt --dir my-platform init                      # start your own
 ```
 
 ## The method, in the model

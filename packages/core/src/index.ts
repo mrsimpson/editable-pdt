@@ -5,5 +5,5 @@ export * from "./model.ts";
 export * from "./methodology.ts";
 export * from "./validator.ts";
 export * from "./progress.ts";
-export { starterTemplate } from "./templates.ts";
+export { starterTemplate, stepDependencies, type StepDependency } from "./templates.ts";
 export { metaModelDoc } from "./meta-model-doc.ts";

@@ -6,6 +6,8 @@ import {
   parseWorkspace,
   progress,
   starterTemplate,
+  stepById,
+  stepDependencies,
   STEPS,
   validate,
 } from "../src/index.ts";
@@ -47,16 +49,37 @@ describe("Harvest Commons example", () => {
   });
 });
 
-describe("starter templates", () => {
-  test("hold no model elements, so a fresh workspace starts at the beginning", () => {
+describe("step guidance", () => {
+  test("starter templates hold no model elements", () => {
     const fresh = parseWorkspace(
-      [...new Set(STEPS.map((s) => s.file))].map((file) => ({
-        file,
-        content: starterTemplate(file),
-      })),
+      STEPS.map((s) => ({ file: `${s.id}.pdt.md`, content: starterTemplate(s.id) })),
     );
     expect(fresh.elements).toEqual([]);
     expect(validate(fresh)).toEqual([]);
     expect(nextStep(progress(fresh, []))?.status.step.id).toBe("D1");
+  });
+
+  test("the examples inside every template are valid blocks", () => {
+    for (const step of STEPS) {
+      const uncommented = starterTemplate(step.id).replace(/<!--|-->/g, "");
+      const ws = parseWorkspace([{ file: "t.pdt.md", content: uncommented }]);
+      expect(ws.issues, step.id).toEqual([]);
+      expect(ws.elements.length, step.id).toBeGreaterThan(0);
+    }
+  });
+
+  test("dependencies point to earlier steps for required references", () => {
+    const d5 = stepDependencies(stepById("D5")!);
+    expect(d5.find((d) => d.type === "entity")).toMatchObject({ step: "D1", required: true });
+    expect(d5.find((d) => d.type === "relationship")).toMatchObject({
+      step: "D4",
+      required: false,
+    });
+    const order = (id: string) => STEPS.findIndex((s) => s.id === id);
+    for (const step of STEPS) {
+      for (const dep of stepDependencies(step).filter((d) => d.required)) {
+        expect(order(dep.step), `${step.id} requires ${dep.type}`).toBeLessThan(order(step.id));
+      }
+    }
   });
 });

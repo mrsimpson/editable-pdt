@@ -1,17 +1,6 @@
 #!/usr/bin/env node
-import { mkdir, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import {
-  BLOCK_TYPES,
-  incoming,
-  PHASES,
-  RULES,
-  STEPS,
-  starterTemplate,
-  blockFields,
-  type Diagnostic,
-} from "@pdt/core";
+import { resolve } from "node:path";
+import { BLOCK_TYPES, incoming, RULES, blockFields, type Diagnostic } from "@pdt/core";
 import { load } from "./discover.ts";
 import {
   explainText,
@@ -29,12 +18,11 @@ Usage: pdt [--dir <workspace>] <command> [options]
 
 Commands
   guide                    The methodology, and where this workspace stands in it
-  guide step <E1…G5>       The brief for one step: questions, how-to, blocks, open findings
+  guide step <E1…G5>       One step: file, dependencies, how-to, blocks, starter template
   guide roles              The five platform roles
   guide canvas [id]        The canvases, and the model fields that fill each area
   next                     The step to work on next, and why
   explain [type]           The block types, or one type's attributes and an example
-  init [--phase <p>]       Create the step files with guidance (existing files are kept)
   validate [--strict]      Check the model (exit 1 on errors, or on warnings with --strict)
   get [id] [--type <t>]    List elements, or show one with what references it
   rules                    Every validation rule with its rationale
@@ -86,7 +74,7 @@ async function main(): Promise<number> {
       const [topic, arg] = rest;
       if (topic === "roles") return (print(guideRoles()), 0);
       if (topic === "canvas") return (print(guideCanvas(arg)), 0);
-      const { steps } = await load(dir);
+      const { steps, workspace } = await load(dir);
       if (json) {
         print(
           JSON.stringify(
@@ -105,7 +93,7 @@ async function main(): Promise<number> {
       }
       if (topic === "step") {
         if (!arg) throw new UsageError("pdt guide step <id> — e.g. pdt guide step D2");
-        print(guideStep(arg, steps));
+        print(guideStep(arg, steps, workspace));
         return 0;
       }
       if (topic) throw new UsageError(`Unknown guide topic "${topic}". Use step, roles or canvas.`);
@@ -131,30 +119,6 @@ async function main(): Promise<number> {
         return 0;
       }
       print(explainText(rest[0]));
-      return 0;
-    }
-    case "init": {
-      const phase = args.phase ? String(args.phase) : undefined;
-      if (phase && !PHASES.some((p) => p.id === phase))
-        throw new UsageError(`--phase must be one of ${PHASES.map((p) => p.id).join(", ")}`);
-      const files = [
-        ...new Set(STEPS.filter((s) => !phase || s.phase === phase).map((s) => s.file)),
-      ];
-      let created = 0;
-      for (const file of files) {
-        const path = join(dir, file);
-        if (existsSync(path)) {
-          print(`  kept     ${file}`);
-          continue;
-        }
-        await mkdir(dirname(path), { recursive: true });
-        await writeFile(path, starterTemplate(file), "utf8");
-        print(`  created  ${file}`);
-        created++;
-      }
-      print(
-        `\n${created} file(s) created. Replace the examples with your own ecosystem, then run \`pdt guide\`.`,
-      );
       return 0;
     }
     case "validate": {

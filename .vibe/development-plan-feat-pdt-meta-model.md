@@ -166,7 +166,6 @@ pdt guide roles            the five platform roles
 pdt guide canvas <id>      canvas areas and the model fields that fill them
 pdt next                   the step to work on next, and why
 pdt explain [type]         block reference derived from the zod schemas
-pdt init [dir]             scaffold the phase/step files with guidance comments
 pdt validate | get [id] | rules
 ```
 
@@ -199,12 +198,16 @@ pdt validate | get [id] | rules
       `transaction.job`; relaxed `job.arena`, `brief.arena`, `mvp.experiences` to optional. The
       meta-model is now one connected graph (asserted by a test).
 - [x] Rules H010 orphan element, H011 unlinked phase handoff, H204 growth element without anchor
-- [x] Parser skips HTML comments; starter templates keep guidance and examples inside comments,
-      so `pdt init` yields an empty model that starts at D1
-- [x] `@pdt/cli`: validate, get, rules, explain, guide (overview/step/roles/canvas), next, init
+- [x] Parser skips HTML comments; starter templates keep guidance and examples inside comments
+- [x] No `init` command (user decision): like arc42's `guide chapter`, `pdt guide step <id>` hands
+      out the file to write, dependencies derived from reference fields (with what exists in the
+      workspace), how-to, before-you-write checks, authoring rules, `explain` commands for the
+      step's types only, and the starter template. `pdt guide` lists each step's block types, so
+      the model is exposed incrementally, step by step
+- [x] `@pdt/cli`: validate, get, rules, explain, guide (overview/step/roles/canvas), next
 - [x] Example workspace Harvest Commons: 90 elements across all 20 steps, 0 findings (one hint
       suppressed on purpose to demonstrate `:::ignore`)
-- [x] Tests: 33 (parser, schemas incl. connectivity, validator rules, example, templates, CLI)
+- [x] Tests: 35 (parser, schemas incl. connectivity, validator rules, example, templates, CLI)
 - [x] Agent skill, README, `docs/meta-model.md` generated from the schemas (drift test)
 - [x] `vp check`, `vp test` and `vp pack` green; bundled CLI validates the example
 

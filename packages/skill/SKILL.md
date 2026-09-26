@@ -17,7 +17,8 @@ invent them. When something is unknown, ask.
 ## Workflow
 
 1. Run `pdt guide` to see where the design stands, and `pdt next` for the step to work on.
-2. Before authoring a step, run `pdt guide step <id>` (E1–E7, D1–D8, G1–G5) and follow its how-to.
+2. Before authoring a step, run `pdt guide step <id>` (E1–E7, D1–D8, G1–G5). It names the file
+   to write, the elements it depends on, the how-to and a starter template. Create the file yourself.
 3. Before writing a block, run `pdt explain <type>` for its attributes and an example.
 4. Give every element a heading and at least one sentence of prose above its block.
 5. References are mostly optional, but a reference that is set must resolve. Prefer linking
@@ -31,11 +32,10 @@ invent them. When something is unknown, ask.
 ```bash
 pdt guide                    # the method, and this workspace's status per step
 pdt next                     # what to work on next
-pdt guide step D2            # one step's brief and open findings
+pdt guide step D2            # one step: file, dependencies, how-to, starter template
 pdt guide roles              # the five platform roles
 pdt guide canvas <id>        # which fields fill which canvas area
 pdt explain [type]           # block reference
-pdt init [--phase design]    # create the step files with guidance
 pdt validate                 # consistency check (exit 1 on errors)
 pdt get [id]                 # list elements, or one with what references it
 pdt rules                    # every rule with its rationale
