@@ -1,5 +1,6 @@
 import { CANVASES, PHASES, STEPS } from "@pdt42/core";
 import session from "../../../demo/cli-session.json";
+import { initTheme } from "./theme.ts";
 import "./styles.css";
 
 // The static page is written in index.html; this adds the theme toggle, the copy button,
@@ -146,24 +147,10 @@ function startSession() {
   observer.observe(screen);
 }
 
-function toggleTheme() {
-  const root = document.documentElement;
-  const current =
-    root.getAttribute("data-theme") ??
-    (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  const next = current === "dark" ? "light" : "dark";
-  root.setAttribute("data-theme", next);
-  try {
-    localStorage.setItem("theme", next);
-  } catch {
-    // Storage unavailable: the theme still changes for this visit.
-  }
-}
-
 function start() {
   document.getElementById("method-map")?.append(methodMap());
   startSession();
-  document.getElementById("theme")?.addEventListener("click", toggleTheme);
+  initTheme();
 
   const copy = document.getElementById("copy");
   copy?.addEventListener("click", () => {

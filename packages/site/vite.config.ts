@@ -9,6 +9,13 @@ export default defineConfig({
   build: {
     outDir: resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
+    // The landing page, and the PDT canvases next to pdt42's.
+    rollupOptions: {
+      input: {
+        main: resolve(import.meta.dirname, "index.html"),
+        canvases: resolve(import.meta.dirname, "canvases/index.html"),
+      },
+    },
   },
   server: {
     port: 5174,
