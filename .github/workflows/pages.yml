@@ -5,10 +5,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# The site is served from the gh-pages branch (Settings → Pages → Deploy from a branch →
+# gh-pages, / (root)). main lives at the root; pr-preview.yml puts each pull request's preview
+# under pr-preview/pr-<number>/, which this deployment leaves alone.
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 # Only one deployment at a time; new pushes cancel pending runs
 concurrency:
@@ -16,8 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build site
+  deploy:
+    name: Build and deploy site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -37,27 +38,15 @@ jobs:
       - name: Build all packages
         run: pnpm run build
 
-      # The landing page (screenshots from demo/, committed) and the example beside it.
-      # Both use relative URLs, so no base path is needed.
+      # The landing page (screenshots from demo/, committed) and the example beside it, in site/.
+      # Both use relative URLs, so they work at the root and under any preview path.
       - name: Assemble site
-        run: |
-          mkdir -p site
-          cp -r packages/site/dist/. site/
-          node packages/cli/dist/cli.mjs --dir examples/harvest-commons build --out site/harvest-commons
+        run: pnpm run site:assemble
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: site
-
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          branch: gh-pages
+          folder: site
+          clean-exclude: pr-preview/
+          force: false
