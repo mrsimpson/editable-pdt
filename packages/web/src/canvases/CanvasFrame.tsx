@@ -1,5 +1,5 @@
 import { CANVASES, STEPS } from "@pdt42/core";
-import { h } from "../dom.ts";
+import { css, cx } from "../react-util.ts";
 import type { Ctx } from "../context.ts";
 import type { DrawnCanvas } from "../workspace.ts";
 import { renderCanvas } from "./index.tsx";
@@ -14,31 +14,31 @@ export function CanvasFrame({ ctx, drawn }: { ctx: Ctx; drawn: DrawnCanvas }) {
     STEPS.find((s) => info?.steps.includes(s.id));
   return (
     <figure
-      class={["canvas", `canvas--${drawn.view.canvas}`]}
+      className={cx("canvas", `canvas--${drawn.view.canvas}`)}
       id={drawn.view.id}
-      style={{ "--c": `var(--c-${info?.phase ?? "design"})` }}
+      style={css({ "--c": `var(--c-${info?.phase ?? "design"})` })}
       data-canvas={drawn.view.canvas}
     >
-      <figcaption class="canvas__caption">
-        <span class="canvas__kicker">
+      <figcaption className="canvas__caption">
+        <span className="canvas__kicker">
           {step ? `${step.id} · ` : ""}
           {info?.kind ?? "canvas"}
         </span>
-        <span class="canvas__title">
+        <span className="canvas__title">
           {info?.title ?? drawn.view.canvas}
-          {of && <span class="canvas__of"> · {of.title}</span>}
+          {of && <span className="canvas__of"> · {of.title}</span>}
         </span>
         {info && (
-          <a class="canvas__source" href={info.source} target="_blank" rel="noopener">
+          <a className="canvas__source" href={info.source} target="_blank" rel="noopener">
             PDT source ↗
           </a>
         )}
       </figcaption>
-      <div class="canvas__body">
+      <div className="canvas__body">
         {drawn.model ? (
           renderCanvas(ctx, drawn.model)
         ) : (
-          <span class="area__empty">Unknown canvas.</span>
+          <span className="area__empty">Unknown canvas.</span>
         )}
       </div>
     </figure>

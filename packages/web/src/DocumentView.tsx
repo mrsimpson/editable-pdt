@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import {
   STEPS,
   type AstNode,
@@ -5,7 +6,7 @@ import {
   type IgnoreNode,
   type PayloadDocument,
 } from "@pdt42/core";
-import { h } from "./dom.ts";
+import { css, cx } from "./react-util.ts";
 import type { Ctx } from "./context.ts";
 import { ElementCard, FindingList } from "./ElementCard.tsx";
 import { CanvasFrame } from "./canvases/CanvasFrame.tsx";
@@ -65,15 +66,15 @@ export function blockSource(node: BlockNode): string {
 
 function Source({ text, lang }: { text: string; lang?: string }) {
   return (
-    <pre class={["source", lang && `source--${lang}`]}>
-      {lang && <span class="source__lang">{lang}</span>}
+    <pre className={cx("source", lang && `source--${lang}`)}>
+      {lang && <span className="source__lang">{lang}</span>}
       <code>{text}</code>
     </pre>
   );
 }
 
 function Prose({ text }: { text: string }) {
-  return <div class="prose" html={renderMarkdown(text)} />;
+  return <div className="prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }} />;
 }
 
 function ProseRun({
@@ -103,20 +104,20 @@ function ProseRun({
   const findings = ctx.ix.findings((d) => d.element === id);
   const role = element?.kind === "entity" ? (element.data.role as string | undefined) : undefined;
   return (
-    <div class="run" id={`el-${id}`} data-element={id}>
+    <div className="run" id={`el-${id}`} data-element={id}>
       <button
-        class="run__stripe"
-        style={{ "--c": element ? colorOf(element.kind, role) : "var(--text-muted)" }}
+        className="run__stripe"
+        style={css({ "--c": element ? colorOf(element.kind, role) : "var(--text-muted)" })}
         title={`Show the model box of ${element?.title ?? id}`}
         aria-label={`Show the model box of ${element?.title ?? id}`}
         onClick={toggle}
       >
         {findings.length > 0 && (
           <span
-            class={[
+            className={cx(
               "run__mark",
               findings.some((f) => f.severity === "error") && "run__mark--error",
-            ]}
+            )}
           />
         )}
       </button>
@@ -127,7 +128,7 @@ function ProseRun({
 
 function Heading({ level, text }: { level: number; text: string }) {
   const tag = `h${Math.min(level, 6)}`;
-  return h(tag, { class: `heading heading--${level}`, id: slug(text) }, text);
+  return createElement(tag, { className: `heading heading--${level}`, id: slug(text) }, text);
 }
 
 function ChapterHeader({ ctx, doc }: { ctx: Ctx; doc: PayloadDocument }) {
@@ -139,32 +140,81 @@ function ChapterHeader({ ctx, doc }: { ctx: Ctx; doc: PayloadDocument }) {
       (CHAPTER_RULES.has(d.code) || !d.element || !ctx.ix.byId.has(d.element)),
   );
   return (
-    <header class="chapter__header">
-      <div class="chapter__steps">
+    <header className="chapter__header">
+      <div className="chapter__steps">
         {steps.map((s) => {
           const status = ctx.ix.payload.steps.find((p) => p.id === s.id);
           return (
             <span
-              class={["step-chip", `step-chip--${status?.state ?? "todo"}`]}
-              style={{ "--c": `var(--c-${s.phase})` }}
+              key={s.id}
+              className={cx("step-chip", `step-chip--${status?.state ?? "todo"}`)}
+              style={css({ "--c": `var(--c-${s.phase})` })}
               title={s.question}
             >
               <strong>{s.id}</strong> {s.title}
             </span>
           );
         })}
-        <code class="chapter__file">{doc.file}</code>
+        <code className="chapter__file">{doc.file}</code>
       </div>
       <FindingList findings={loose} />
     </header>
   );
 }
 
+function GroupView({ ctx, g, agent }: { ctx: Ctx; g: Group; agent: boolean }) {
+  if (g.kind === "run") {
+    if (!agent) return <ProseRun ctx={ctx} {...g} />;
+    return (
+      <div className="agent-run">
+        {g.prose && <Source text={g.prose} />}
+        {g.ignores.map((i, idx) => (
+          <Source key={idx} text={`:::ignore ${i.code} ${i.reason} :::`} />
+        ))}
+        {g.block && <Source text={blockSource(g.block)} lang="pdt42" />}
+      </div>
+    );
+  }
+  const node = g.node;
+  switch (node.kind) {
+    case "heading":
+      return agent ? (
+        <Source text={`${"#".repeat(node.level)} ${node.text}`} />
+      ) : (
+        <Heading level={node.level} text={node.text} />
+      );
+    case "block": {
+      if (!isCanvas(node)) return null;
+      const id = String(node.attributes.id ?? "");
+      const drawn = ctx.ix.canvases.get(id);
+      if (agent) return <Source text={blockSource(node)} lang="pdt42" />;
+      if (!drawn) {
+        return (
+          <div className="card card--missing" id={id}>
+            <span>This canvas block is invalid — see the findings of this chapter.</span>
+          </div>
+        );
+      }
+      return <CanvasFrame ctx={ctx} drawn={drawn} />;
+    }
+    case "ignore":
+      return agent ? <Source text={`:::ignore ${node.code} ${node.reason} :::`} /> : null;
+    case "parse-error":
+      return (
+        <div className="finding finding--error">
+          <code>parse</code> {node.message} (line {node.line})
+        </div>
+      );
+    default:
+      return null;
+  }
+}
+
 export function DocumentView({ ctx }: { ctx: Ctx }) {
   const doc = ctx.ix.document(ctx.state.file) ?? ctx.ix.payload.documents[0];
   if (!doc) {
     return (
-      <div class="empty">
+      <div className="empty">
         No chapters yet. Run <code>pdt42 guide</code> to start with the first step.
       </div>
     );
@@ -174,60 +224,13 @@ export function DocumentView({ ctx }: { ctx: Ctx }) {
   const groups = groupNodes(doc.nodes.filter((n) => n !== h1));
 
   return (
-    <article class={["chapter", agent && "chapter--agent"]}>
-      <h1 class="heading heading--1">{doc.title}</h1>
+    <article className={cx("chapter", agent && "chapter--agent")}>
+      <h1 className="heading heading--1">{doc.title}</h1>
       <ChapterHeader ctx={ctx} doc={doc} />
-      {groups.map((g) => {
-        if (g.kind === "run") {
-          if (!agent) return <ProseRun ctx={ctx} {...g} />;
-          return (
-            <div class="agent-run">
-              {g.prose && <Source text={g.prose} />}
-              {g.ignores.map((i) => (
-                <Source text={`:::ignore ${i.code} ${i.reason} :::`} />
-              ))}
-              {g.block && <Source text={blockSource(g.block)} lang="pdt42" />}
-            </div>
-          );
-        }
-        const node = g.node;
-        switch (node.kind) {
-          case "heading":
-            return agent ? (
-              <Source text={`${"#".repeat(node.level)} ${node.text}`} />
-            ) : (
-              <Heading level={node.level} text={node.text} />
-            );
-          case "block": {
-            if (!isCanvas(node)) return document.createDocumentFragment();
-            const id = String(node.attributes.id ?? "");
-            const drawn = ctx.ix.canvases.get(id);
-            if (agent) return <Source text={blockSource(node)} lang="pdt42" />;
-            if (!drawn) {
-              return (
-                <div class="card card--missing" id={id}>
-                  <span>This canvas block is invalid — see the findings of this chapter.</span>
-                </div>
-              );
-            }
-            return <CanvasFrame ctx={ctx} drawn={drawn} />;
-          }
-          case "ignore":
-            return agent ? (
-              <Source text={`:::ignore ${node.code} ${node.reason} :::`} />
-            ) : (
-              document.createDocumentFragment()
-            );
-          case "parse-error":
-            return (
-              <div class="finding finding--error">
-                <code>parse</code> {node.message} (line {node.line})
-              </div>
-            );
-          default:
-            return document.createDocumentFragment();
-        }
-      })}
+      {groups.map((g, i) => (
+        // Groups have no identity of their own; their position in the chapter is stable.
+        <GroupView key={i} ctx={ctx} g={g} agent={agent} />
+      ))}
     </article>
   );
 }

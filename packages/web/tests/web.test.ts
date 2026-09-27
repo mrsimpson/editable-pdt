@@ -42,7 +42,7 @@ describe("markdown", () => {
     expect(html).toContain("<em>soft</em>");
     expect(html).toContain("<code>code</code>");
     expect(html).toContain('<a href="https://example.org">link</a>');
-    expect(html).toContain("<ul><li>one</li><li>two</li></ul>");
+    expect(html).toMatch(/<ul>\s*<li>one<\/li>\s*<li>two<\/li>\s*<\/ul>/);
     expect(html).toContain("<td>2</td>");
   });
 

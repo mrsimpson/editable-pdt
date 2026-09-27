@@ -1,3 +1,4 @@
+import type { MouseEvent, ReactNode } from "react";
 import {
   blockFields,
   blockMeta,
@@ -5,7 +6,7 @@ import {
   type Diagnostic,
   type IgnoreNode,
 } from "@pdt42/core";
-import { h } from "./dom.ts";
+import { css, cx } from "./react-util.ts";
 import { inline } from "./markdown.ts";
 import type { Ctx } from "./context.ts";
 import { canvasHref, canvasTitle, colorOf, elementHref, roleLabel } from "./workspace.ts";
@@ -30,7 +31,7 @@ export function RefChip({
   const e = ctx.ix.byId.get(id);
   if (!e) {
     return (
-      <span class="ref-chip ref-chip--missing" title="Not in the model">
+      <span className="ref-chip ref-chip--missing" title="Not in the model">
         {id}
       </span>
     );
@@ -38,27 +39,30 @@ export function RefChip({
   const role = e.kind === "entity" ? (e.data.role as string | undefined) : undefined;
   return (
     <a
-      class={["ref-chip", incoming && "ref-chip--incoming"]}
+      className={cx("ref-chip", incoming && "ref-chip--incoming")}
       href={elementHref(e.file, e.id)}
       title={`${e.kind} ${e.id}`}
-      style={{ "--c": colorOf(e.kind, role) }}
+      style={css({ "--c": colorOf(e.kind, role) })}
     >
-      <span class="ref-chip__dot" />
+      <span className="ref-chip__dot" />
       {e.title}
-      {note && <span class="ref-chip__note">{note}</span>}
+      {note && <span className="ref-chip__note">{note}</span>}
     </a>
   );
 }
 
 export function FindingList({ findings }: { findings: Diagnostic[] }) {
-  if (!findings.length) return document.createDocumentFragment();
+  if (!findings.length) return null;
   return (
-    <ul class="findings">
-      {findings.map((f) => (
-        <li class={["finding", `finding--${f.severity}`]}>
+    <ul className="findings">
+      {findings.map((f, idx) => (
+        <li key={idx} className={cx("finding", `finding--${f.severity}`)}>
           <code>{f.code}</code>
-          <span class="finding__message" html={inline(f.message)} />
-          <span class="finding__loc">
+          <span
+            className="finding__message"
+            dangerouslySetInnerHTML={{ __html: inline(f.message) }}
+          />
+          <span className="finding__loc">
             {f.loc.file}:{f.loc.line}
           </span>
         </li>
@@ -67,29 +71,29 @@ export function FindingList({ findings }: { findings: Diagnostic[] }) {
   );
 }
 
-function value(ctx: Ctx, kind: string, target: unknown): Node | string {
+function value(ctx: Ctx, kind: string, target: unknown): ReactNode {
   if (target === true) return "yes";
   if (target === false) return "no";
   if (kind === "ref" && typeof target === "string") return <RefChip ctx={ctx} id={target} />;
   if (kind === "refs" && Array.isArray(target)) {
     return (
-      <span class="chips">
-        {target.map((id: string) => (
-          <RefChip ctx={ctx} id={id} />
+      <span className="chips">
+        {target.map((id: string, idx) => (
+          <RefChip key={idx} ctx={ctx} id={id} />
         ))}
       </span>
     );
   }
   if (Array.isArray(target)) {
     return (
-      <ul class="field-list">
-        {target.map((item) => (
-          <li>{String(item)}</li>
+      <ul className="field-list">
+        {target.map((item, idx) => (
+          <li key={idx}>{String(item)}</li>
         ))}
       </ul>
     );
   }
-  if (kind === "enum" || kind === "enums") return <span class="pill">{String(target)}</span>;
+  if (kind === "enum" || kind === "enums") return <span className="pill">{String(target)}</span>;
   return String(target);
 }
 
@@ -107,7 +111,7 @@ export function ElementCard({
   const e = ctx.ix.byId.get(id);
   if (!e) {
     return (
-      <div class="card card--missing" id={`el-${id}`}>
+      <div className="card card--missing" id={`el-${id}`}>
         <span>
           <code>{id}</code> is not in the model — see the findings of this chapter.
         </span>
@@ -129,30 +133,30 @@ export function ElementCard({
   const findings = ctx.ix.findings((d) => d.element === e.id);
 
   return (
-    <section class="card" id={`el-${e.id}`} style={{ "--c": color }} data-element={e.id}>
+    <section className="card" id={`el-${e.id}`} style={css({ "--c": color })} data-element={e.id}>
       {onDismiss ? (
         <button
-          class="card__stripe card__stripe--button"
+          className="card__stripe card__stripe--button"
           title="Show the prose"
           aria-label="Show the prose"
           onClick={onDismiss}
         />
       ) : (
-        <span class="card__stripe" />
+        <span className="card__stripe" />
       )}
-      <div class="card__body">
-        <header class="card__header">
-          <span class="badge" title={meta.description}>
+      <div className="card__body">
+        <header className="card__header">
+          <span className="badge" title={meta.description}>
             {e.kind}
           </span>
-          <span class="card__title">{e.title}</span>
-          <code class="card__id">{e.id}</code>
-          {role && <span class="pill pill--role">{roleLabel(role)}</span>}
+          <span className="card__title">{e.title}</span>
+          <code className="card__id">{e.id}</code>
+          {role && <span className="pill pill--role">{roleLabel(role)}</span>}
         </header>
         {fields.length > 0 && (
-          <dl class="fields">
-            {fields.map((f) => (
-              <div class="field" title={f.description}>
+          <dl className="fields">
+            {fields.map((f, idx) => (
+              <div key={idx} className="field" title={f.description}>
                 <dt>{f.name}</dt>
                 <dd>{value(ctx, f.kind, e.data[f.name])}</dd>
               </div>
@@ -160,18 +164,18 @@ export function ElementCard({
           </dl>
         )}
         {(incoming.length > 0 || canvases.length > 0) && (
-          <div class="relations">
+          <div className="relations">
             {incoming.length > 0 && (
-              <div class="relations__row">
-                <span class="relations__label">referenced by</span>
-                <span class={["chips", incoming.length > FOLD && "chips--folded"]}>
-                  {incoming.map((r) => (
-                    <RefChip ctx={ctx} id={r.from} note={r.field} incoming />
+              <div className="relations__row">
+                <span className="relations__label">referenced by</span>
+                <span className={cx("chips", incoming.length > FOLD && "chips--folded")}>
+                  {incoming.map((r, idx) => (
+                    <RefChip key={idx} ctx={ctx} id={r.from} note={r.field} incoming />
                   ))}
                   {incoming.length > FOLD && (
                     <button
-                      class="chips__more"
-                      onClick={(event: Event) => {
+                      className="chips__more"
+                      onClick={(event: MouseEvent<HTMLButtonElement>) => {
                         const chips = (event.currentTarget as HTMLElement).parentElement!;
                         chips.classList.remove("chips--folded");
                       }}
@@ -183,14 +187,14 @@ export function ElementCard({
               </div>
             )}
             {canvases.length > 0 && (
-              <div class="relations__row">
-                <span class="relations__label">on canvases</span>
-                <span class="chips">
-                  {canvases.map((v) => (
-                    <a class="ref-chip ref-chip--canvas" href={canvasHref(v)}>
+              <div className="relations__row">
+                <span className="relations__label">on canvases</span>
+                <span className="chips">
+                  {canvases.map((v, idx) => (
+                    <a key={idx} className="ref-chip ref-chip--canvas" href={canvasHref(v)}>
                       ▦ {canvasTitle(v.canvas)}
                       {v.of && ctx.ix.byId.get(v.of) && (
-                        <span class="ref-chip__note">{ctx.ix.byId.get(v.of)!.title}</span>
+                        <span className="ref-chip__note">{ctx.ix.byId.get(v.of)!.title}</span>
                       )}
                     </a>
                   ))}
@@ -200,9 +204,9 @@ export function ElementCard({
           </div>
         )}
         {ignores.length > 0 && (
-          <ul class="ignores">
-            {ignores.map((i) => (
-              <li>
+          <ul className="ignores">
+            {ignores.map((i, idx) => (
+              <li key={idx}>
                 <code>{i.code}</code> ignored — {i.reason}
               </li>
             ))}

@@ -1,5 +1,5 @@
+import type { ReactNode } from "react";
 import type { CanvasModel } from "@pdt42/core";
-import { h } from "../dom.ts";
 import type { Ctx } from "../context.ts";
 import {
   ArenaScan,
@@ -22,7 +22,7 @@ import {
 } from "./design.tsx";
 import { Flywheels, Growth, Liquidity, Network, Strategy } from "./growth.tsx";
 
-export function renderCanvas(ctx: Ctx, m: CanvasModel): Node {
+export function renderCanvas(ctx: Ctx, m: CanvasModel): ReactNode {
   switch (m.canvas) {
     case "arena-scan":
       return <ArenaScan ctx={ctx} m={m} />;

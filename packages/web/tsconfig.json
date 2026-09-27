@@ -2,9 +2,7 @@
   "compilerOptions": {
     "target": "es2022",
     "lib": ["es2023", "dom", "dom.iterable"],
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
+    "jsx": "react-jsx",
     "module": "esnext",
     "moduleResolution": "bundler",
     "customConditions": ["development"],

@@ -9,7 +9,7 @@ import type {
   PortraitModel,
   Ref,
 } from "@pdt42/core";
-import { h } from "../dom.ts";
+import { css, cx } from "../react-util.ts";
 import type { Ctx } from "../context.ts";
 import { ROLE_COLORS } from "../workspace.ts";
 import { Area, Empty, Notes, Sticky, Stickies, Text } from "./parts.tsx";
@@ -40,27 +40,28 @@ export function Ecosystem({ ctx, m }: { ctx: Ctx; m: EcosystemModel }) {
   });
   const circles = ["stakeholder", "peer-consumer", "partner", "owner"];
   return (
-    <div class="eco-wrap">
-      <div class="eco">
+    <div className="eco-wrap">
+      <div className="eco">
         {circles.map((role) => {
           const geo = RINGS[role]!;
           return (
             <div
-              class={["eco__ring", `eco__ring--${role}`]}
-              style={{ width: `${geo.size}%`, height: `${geo.size}%` }}
+              key={role}
+              className={cx("eco__ring", `eco__ring--${role}`)}
+              style={css({ width: `${geo.size}%`, height: `${geo.size}%` })}
             />
           );
         })}
         {placed.map(({ e, left, top }) => (
-          <div class="eco__item" style={{ left: `${left}%`, top: `${top}%` }}>
+          <div key={e.id} className="eco__item" style={css({ left: `${left}%`, top: `${top}%` })}>
             <Sticky ctx={ctx} item={e} />
           </div>
         ))}
       </div>
-      <ul class="legend">
-        {m.rings.map((r) => (
-          <li style={{ "--c": ROLE_COLORS[r.role]! }}>
-            <span class="legend__dot" />
+      <ul className="legend">
+        {m.rings.map((r, idx) => (
+          <li key={idx} style={css({ "--c": ROLE_COLORS[r.role]! })}>
+            <span className="legend__dot" />
             {r.code} · {r.label}
           </li>
         ))}
@@ -76,18 +77,20 @@ export function Ecosystem({ ctx, m }: { ctx: Ctx; m: EcosystemModel }) {
 
 export function Portrait({ ctx, m }: { ctx: Ctx; m: PortraitModel }) {
   return (
-    <div class="cv-stack">
-      <div class="portrait__head">
+    <div className="cv-stack">
+      <div className="portrait__head">
         {m.entity ? <Sticky ctx={ctx} item={m.entity} variant="strong" note={m.type} /> : <Empty />}
         {m.clusters.length > 0 && (
-          <span class="chips">
-            {m.clusters.map((c) => (
-              <span class="pill">{c}</span>
+          <span className="chips">
+            {m.clusters.map((c, idx) => (
+              <span key={idx} className="pill">
+                {c}
+              </span>
             ))}
           </span>
         )}
       </div>
-      <div class="cv-grid cv-grid--3">
+      <div className="cv-grid cv-grid--3">
         <Area title="Context">
           <Notes items={m.context} />
         </Area>
@@ -103,7 +106,7 @@ export function Portrait({ ctx, m }: { ctx: Ctx; m: PortraitModel }) {
         <Area title="Potential" hint="What the entity could bring to the ecosystem">
           <Notes items={m.potential} />
         </Area>
-        <Area title="Gains expected" class="area--active">
+        <Area title="Gains expected" className="area--active">
           <h5>Convenience</h5>
           <Notes items={m.convenience} />
           <h5>Reach</h5>
@@ -121,34 +124,35 @@ export function Motivations({ ctx, m }: { ctx: Ctx; m: MotivationsModel }) {
   const cell = (from: string, to: string) =>
     m.cells.find((c) => c.from === from && c.to === to)?.items ?? [];
   return (
-    <div class="matrix-wrap">
-      <table class="cv-table matrix">
+    <div className="matrix-wrap">
+      <table className="cv-table matrix">
         <thead>
           <tr>
-            <th class="matrix__corner">gives ↓ to →</th>
-            {m.roles.map((r) => (
-              <th>
-                <Sticky ctx={ctx} item={r} class="sticky--mini" />
+            <th className="matrix__corner">gives ↓ to →</th>
+            {m.roles.map((r, idx) => (
+              <th key={idx}>
+                <Sticky ctx={ctx} item={r} className="sticky--mini" />
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {m.roles.map((from) => (
-            <tr>
+          {m.roles.map((from, idx) => (
+            <tr key={idx}>
               <th>
-                <Sticky ctx={ctx} item={from} class="sticky--mini" />
+                <Sticky ctx={ctx} item={from} className="sticky--mini" />
               </th>
-              {m.roles.map((to) => (
-                <td class={from.id === to.id ? "matrix__self" : undefined}>
-                  {cell(from.id, to.id).map((item) => (
+              {m.roles.map((to, idx) => (
+                <td key={idx} className={from.id === to.id ? "matrix__self" : undefined}>
+                  {cell(from.id, to.id).map((item, idx) => (
                     <Sticky
+                      key={idx}
                       ctx={ctx}
                       item={item.ref}
                       label={item.gives || item.ref.title}
                       note={item.kind}
                       variant={item.status === "potential" ? "dashed" : undefined}
-                      class="sticky--note"
+                      className="sticky--note"
                     />
                   ))}
                 </td>
@@ -169,18 +173,18 @@ export function Board({ ctx, m }: { ctx: Ctx; m: BoardModel }) {
     (row, i) => row.channel && m.rows.findIndex((r) => r.channel?.id === row.channel!.id) === i,
   );
   return (
-    <div class="cv-stack">
-      <div class="board__head">
+    <div className="cv-stack">
+      <div className="board__head">
         {a ? <Sticky ctx={ctx} item={a} /> : <Empty />}
-        {m.relationship && <Sticky ctx={ctx} item={m.relationship} class="sticky--mini" />}
+        {m.relationship && <Sticky ctx={ctx} item={m.relationship} className="sticky--mini" />}
         {b ? <Sticky ctx={ctx} item={b} /> : <Empty />}
       </div>
       {m.rows.length ? (
-        <table class="cv-table board">
+        <table className="cv-table board">
           <thead>
             <tr>
               <th>Transaction</th>
-              <th class="board__dir">
+              <th className="board__dir">
                 {name(a)} · {name(b)}
               </th>
               <th>Value unit</th>
@@ -188,8 +192,8 @@ export function Board({ ctx, m }: { ctx: Ctx; m: BoardModel }) {
             </tr>
           </thead>
           <tbody>
-            {m.rows.map((row) => (
-              <tr class={row.happening ? undefined : "board__row--potential"}>
+            {m.rows.map((row, idx) => (
+              <tr key={idx} className={row.happening ? undefined : "board__row--potential"}>
                 <td>
                   <Sticky
                     ctx={ctx}
@@ -198,12 +202,12 @@ export function Board({ ctx, m }: { ctx: Ctx; m: BoardModel }) {
                     note={row.happening ? undefined : "not happening yet"}
                   />
                 </td>
-                <td class="board__arrow" title={row.kind}>
+                <td className="board__arrow" title={row.kind}>
                   {row.arrow}
                 </td>
                 <td>{row.valueUnit ?? ""}</td>
                 <td>
-                  {row.channel && <Sticky ctx={ctx} item={row.channel} class="sticky--mini" />}
+                  {row.channel && <Sticky ctx={ctx} item={row.channel} className="sticky--mini" />}
                 </td>
               </tr>
             ))}
@@ -213,11 +217,11 @@ export function Board({ ctx, m }: { ctx: Ctx; m: BoardModel }) {
         <Empty text="No transactions on this relationship yet" />
       )}
       {channels.length > 0 && (
-        <div class="cv-grid cv-grid--2">
-          {channels.map((row) => (
-            <Area title={`${row.channel!.title} makes it easier`}>
+        <div className="cv-grid cv-grid--2">
+          {channels.map((row, idx) => (
+            <Area key={idx} title={`${row.channel!.title} makes it easier`}>
               <Notes items={row.components} empty="" />
-              {row.improvement && <p class="area__text">{row.improvement}</p>}
+              {row.improvement && <p className="area__text">{row.improvement}</p>}
             </Area>
           ))}
         </div>
@@ -229,21 +233,21 @@ export function Board({ ctx, m }: { ctx: Ctx; m: BoardModel }) {
 export function Learning({ ctx, m }: { ctx: Ctx; m: LearningModel }) {
   if (!m.rows.length) return <Empty text="No learning engines yet" />;
   return (
-    <div class="matrix-wrap">
-      <table class="cv-table learning">
+    <div className="matrix-wrap">
+      <table className="cv-table learning">
         <thead>
           <tr>
             <th>Entity</th>
             <th>Entry</th>
-            {m.stages.map((s) => (
-              <th>{s.label}</th>
+            {m.stages.map((s, idx) => (
+              <th key={idx}>{s.label}</th>
             ))}
             <th>Evolves to</th>
           </tr>
         </thead>
         <tbody>
-          {m.rows.map((row) => (
-            <tr>
+          {m.rows.map((row, idx) => (
+            <tr key={idx}>
               <th>
                 {row.entity ? (
                   <Sticky ctx={ctx} item={row.entity} />
@@ -254,12 +258,12 @@ export function Learning({ ctx, m }: { ctx: Ctx; m: LearningModel }) {
               <td>
                 <Notes items={row.entry} empty="" />
               </td>
-              {row.stages.map((s) => (
-                <td>
+              {row.stages.map((s, idx) => (
+                <td key={idx}>
                   <Notes items={s.challenges} empty="" />
-                  <div class="stickies">
-                    {s.services.map((sv) => (
-                      <Sticky ctx={ctx} item={sv} class="sticky--mini" />
+                  <div className="stickies">
+                    {s.services.map((sv, idx) => (
+                      <Sticky key={idx} ctx={ctx} item={sv} className="sticky--mini" />
                     ))}
                   </div>
                 </td>
@@ -277,17 +281,17 @@ export function Learning({ ctx, m }: { ctx: Ctx; m: LearningModel }) {
 
 export function Experience({ ctx, m }: { ctx: Ctx; m: ExperienceModel }) {
   return (
-    <div class="cv-stack">
-      <div class="cv-grid cv-grid--xp">
-        <Area title="Value proposition" class="area--active">
+    <div className="cv-stack">
+      <div className="cv-grid cv-grid--xp">
+        <Area title="Value proposition" className="area--active">
           <Text value={m.valueProposition} />
         </Area>
         <Area title="Core relationship">
           {m.relationship ? <Sticky ctx={ctx} item={m.relationship} /> : <Empty />}
           {m.core && (
-            <div class="relations__row">
-              <span class="relations__label">core entity</span>
-              <Sticky ctx={ctx} item={m.core} class="sticky--mini" />
+            <div className="relations__row">
+              <span className="relations__label">core entity</span>
+              <Sticky ctx={ctx} item={m.core} className="sticky--mini" />
             </div>
           )}
         </Area>
@@ -296,25 +300,26 @@ export function Experience({ ctx, m }: { ctx: Ctx; m: ExperienceModel }) {
         </Area>
       </div>
       {m.steps.length ? (
-        <div class="lanes" style={{ "--steps": String(m.steps.length) }}>
+        <div className="lanes" style={css({ "--steps": String(m.steps.length) })}>
           {m.lanes.map((lane, i) => (
-            <div class="lanes__label" style={{ "grid-row": String(i + 1) }}>
+            <div key={i} className="lanes__label" style={css({ gridRow: String(i + 1) })}>
               {lane.channel ? (
-                <Sticky ctx={ctx} item={lane.channel} class="sticky--mini" />
+                <Sticky ctx={ctx} item={lane.channel} className="sticky--mini" />
               ) : (
                 lane.label
               )}
             </div>
           ))}
           {m.lanes.map((_lane, i) => (
-            <div class="lanes__lane" style={{ "grid-row": String(i + 1) }} />
+            <div key={i} className="lanes__lane" style={css({ gridRow: String(i + 1) })} />
           ))}
           {m.steps.map((s, i) => (
             <div
-              class="lanes__step"
-              style={{ "grid-row": String(Math.max(s.lane, 0) + 1), "grid-column": String(i + 2) }}
+              key={i}
+              className="lanes__step"
+              style={css({ gridRow: String(Math.max(s.lane, 0) + 1), gridColumn: String(i + 2) })}
             >
-              <span class="lanes__n">{i + 1}</span>
+              <span className="lanes__n">{i + 1}</span>
               <Sticky
                 ctx={ctx}
                 item={s.ref}
@@ -334,7 +339,7 @@ export function Experience({ ctx, m }: { ctx: Ctx; m: ExperienceModel }) {
       ) : (
         <Empty text="No steps yet" />
       )}
-      <div class="cv-grid cv-grid--4">
+      <div className="cv-grid cv-grid--4">
         <Area title="Key activities">
           <Notes items={m.activities} />
         </Area>
@@ -354,9 +359,9 @@ export function Experience({ ctx, m }: { ctx: Ctx; m: ExperienceModel }) {
 
 export function Mvp({ ctx, m }: { ctx: Ctx; m: MvpModel }) {
   return (
-    <div class="cv-stack">
-      <div class="cv-grid cv-grid--3">
-        <Area title="MVP" class="area--active">
+    <div className="cv-stack">
+      <div className="cv-grid cv-grid--3">
+        <Area title="MVP" className="area--active">
           {m.mvp ? <Sticky ctx={ctx} item={m.mvp} variant="strong" note={m.status} /> : <Empty />}
           <Text value={m.implementation} />
         </Area>
@@ -368,7 +373,7 @@ export function Mvp({ ctx, m }: { ctx: Ctx; m: MvpModel }) {
         </Area>
       </div>
       {m.assumptions.length ? (
-        <table class="cv-table">
+        <table className="cv-table">
           <thead>
             <tr>
               <th>Assumption</th>
@@ -379,8 +384,8 @@ export function Mvp({ ctx, m }: { ctx: Ctx; m: MvpModel }) {
             </tr>
           </thead>
           <tbody>
-            {m.assumptions.map((a) => (
-              <tr>
+            {m.assumptions.map((a, idx) => (
+              <tr key={idx}>
                 <td>
                   <Sticky
                     ctx={ctx}
@@ -392,7 +397,9 @@ export function Mvp({ ctx, m }: { ctx: Ctx; m: MvpModel }) {
                 <td>{a.kind ?? ""}</td>
                 <td>{a.test ?? ""}</td>
                 <td>{a.criteria ?? ""}</td>
-                <td>{a.status && <span class={["pill", `pill--${a.status}`]}>{a.status}</span>}</td>
+                <td>
+                  {a.status && <span className={cx("pill", `pill--${a.status}`)}>{a.status}</span>}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -406,39 +413,39 @@ export function Mvp({ ctx, m }: { ctx: Ctx; m: MvpModel }) {
 
 export function PlatformDesign({ ctx, m }: { ctx: Ctx; m: PlatformDesignModel }) {
   return (
-    <div class="pdc">
-      <Area title="Platform owners" class="pdc__owners">
+    <div className="pdc">
+      <Area title="Platform owners" className="pdc__owners">
         <Stickies ctx={ctx} items={m.owners} />
       </Area>
-      <Area title="Stakeholders" class="pdc__stakeholders">
+      <Area title="Stakeholders" className="pdc__stakeholders">
         <Stickies ctx={ctx} items={m.stakeholders} />
       </Area>
-      <Area title="Enabling services" class="pdc__enabling">
+      <Area title="Enabling services" className="pdc__enabling">
         <Stickies ctx={ctx} items={m.enabling} />
       </Area>
-      <Area title="Core value" class="pdc__core area--active">
+      <Area title="Core value" className="pdc__core area--active">
         <Text value={m.coreValue} />
         {m.ancillary.length > 0 && <h5>Ancillary value</h5>}
         <Notes items={m.ancillary} empty="" />
         {m.infrastructure.length > 0 && <h5>Infrastructure</h5>}
         <Notes items={m.infrastructure} empty="" />
       </Area>
-      <Area title="Empowering services" class="pdc__empowering">
+      <Area title="Empowering services" className="pdc__empowering">
         <Stickies ctx={ctx} items={[...m.empowering, ...m.other]} />
       </Area>
-      <Area title="Transactions" class="pdc__transactions">
+      <Area title="Transactions" className="pdc__transactions">
         <Stickies ctx={ctx} items={m.transactions} />
       </Area>
-      <Area title="Channels" class="pdc__channels">
+      <Area title="Channels" className="pdc__channels">
         <Stickies ctx={ctx} items={m.channels} />
       </Area>
-      <Area title="Partners" class="pdc__partners">
+      <Area title="Partners" className="pdc__partners">
         <Stickies ctx={ctx} items={m.partners} />
       </Area>
-      <Area title="Peer producers" class="pdc__producers">
+      <Area title="Peer producers" className="pdc__producers">
         <Stickies ctx={ctx} items={m.producers} />
       </Area>
-      <Area title="Peer consumers" class="pdc__consumers">
+      <Area title="Peer consumers" className="pdc__consumers">
         <Stickies ctx={ctx} items={m.consumers} />
       </Area>
     </div>
