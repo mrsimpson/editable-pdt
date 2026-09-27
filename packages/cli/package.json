@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@pdt42/core": "workspace:*",
+    "@pdt42/web": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:"

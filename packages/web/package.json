@@ -1,0 +1,21 @@
+{
+  "name": "@pdt42/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The pdt42 workspace in the browser: chapters, model boxes and canvases.",
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "tsc --noEmit && vp build && vp build --config vite.config.single.ts",
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "@pdt42/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

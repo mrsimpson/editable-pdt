@@ -36,6 +36,9 @@ importers:
       '@pdt42/core':
         specifier: workspace:*
         version: link:../core
+      '@pdt42/web':
+        specifier: workspace:*
+        version: link:../web
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.0
@@ -51,6 +54,22 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.5.4
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite-plus:
+        specifier: 'catalog:'
+        version: 0.1.24(@types/node@24.19.0)(typescript@5.9.3)(vite@8.3.1(@types/node@24.19.0))
+
+  packages/web:
+    dependencies:
+      '@pdt42/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
