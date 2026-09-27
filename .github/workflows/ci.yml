@@ -60,9 +60,12 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
+      # No persisted GITHUB_TOKEN: semantic-release authenticates on its own, and the version
+      # sync must push with the app token below, not with GITHUB_TOKEN.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v6
         with:
@@ -102,3 +105,32 @@ jobs:
         run: pnpm exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Write the released version back to main. This cannot be a separate workflow triggered by
+      # the release: GitHub starts no workflows for events created with GITHUB_TOKEN. main is
+      # protected, so the push uses the GitHub App allowed to bypass it (variable
+      # VERSION_BUMPER_APPID, secret VERSION_BUMPER_SECRET).
+      - name: Generate GitHub App token
+        id: app-token
+        if: vars.VERSION_BUMPER_APPID != ''
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ vars.VERSION_BUMPER_APPID }}
+          private_key: ${{ secrets.VERSION_BUMPER_SECRET }}
+
+      - name: Sync the released version to main
+        if: steps.app-token.outputs.token != ''
+        env:
+          TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          if git diff --quiet -- packages/cli/package.json; then
+            echo "No release, nothing to sync."
+            exit 0
+          fi
+          VERSION=$(node -p "require('./packages/cli/package.json').version")
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add packages/cli/package.json CHANGELOG.md
+          git commit -m "chore(release): $VERSION [skip ci]"
+          git pull --rebase origin main
+          git push "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" HEAD:main
