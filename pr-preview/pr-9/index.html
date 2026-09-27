@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pdt42 — Platform design with your agent</title>
+    <meta
+      name="description"
+      content="A CLI and a skill for coding agents: explore, design and grow a platform ecosystem with your agent, step by step through the Platform Design Toolkit. One model in Markdown, every canvas drawn from it."
+    />
+    <script>
+      // Apply the stored theme before the first paint.
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          if (stored === "dark" || stored === "light")
+            document.documentElement.setAttribute("data-theme", stored);
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/main-uF9TJokk.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/styles-CtwqVDK-.js">
+    <link rel="stylesheet" crossorigin href="./assets/styles-BaDefVLE.css">
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="nav__inner">
+        <a href="#" class="nav__logo">pdt<span class="accent">42</span></a>
+        <div class="nav__links">
+          <a class="nav__link" href="#session">Guidance</a>
+          <a class="nav__link" href="#story">Why</a>
+          <a class="nav__link" href="#model">How it works</a>
+          <a class="nav__link" href="#method">Method</a>
+          <a class="nav__link" href="#canvases">Canvases</a>
+          <a class="nav__link" href="#getting-started">Get started</a>
+        </div>
+        <div class="nav__actions">
+          <button class="nav__icon-btn" id="theme" aria-label="Toggle theme" title="Light / dark">
+            ◐
+          </button>
+          <a class="nav__icon-btn" href="https://github.com/mrsimpson/pdt42" aria-label="GitHub">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 .5a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 016 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.3 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 .5z"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <section class="hero" aria-label="Introduction">
+        <div class="container hero__inner">
+          <p class="hero__eyebrow">Platforms · Ecosystems · Agents</p>
+          <h1 class="hero__headline">
+            Platform designs that<br />
+            <em>stay consistent.</em>
+          </h1>
+          <p class="hero__sub hero__sub--lead">
+            Human-readable. Agent-writable. Checked against the method.
+          </p>
+          <p class="hero__sub">
+            pdt42 is a CLI and a skill for your coding agent. It walks the agent through the
+            Platform Design Toolkit one step at a time, and your agent works through it with you.
+          </p>
+          <div class="hero__install" role="group" aria-label="First command">
+            <span class="hero__install-prompt">$</span>
+            <code id="start-cmd">npx skills add mrsimpson/pdt42</code>
+            <button class="hero__install-copy" id="copy" aria-label="Copy command" title="Copy">
+              ⧉
+            </button>
+          </div>
+          <div class="hero__ctas">
+            <a href="#session" class="btn btn--primary">See the guidance →</a>
+            <a href="./harvest-commons/" class="btn btn--outline">Open the example →</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="getting-started" aria-labelledby="gs-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="gs-heading">Get started</h2>
+          </header>
+          <div class="gs__grid">
+            <div class="gs__card">
+              <div class="gs__card-label">You</div>
+              <h3 class="gs__card-title">Give your agent the skill and the CLI</h3>
+              <p class="gs__card-desc">
+                The skill teaches your agent the format and the workflow; the CLI guides it step by
+                step.
+              </p>
+              <div class="gs__snippet">
+                <code>npx skills add mrsimpson/pdt42<br />npm install -g @pdt42/cli</code>
+              </div>
+              <h3 class="gs__card-title">Talk platform design with your agent</h3>
+              <div class="gs__snippet">
+                <code>"Let's explore a platform for … — use pdt42 and guide me through it"</code>
+              </div>
+              <p class="gs__card-desc">
+                Then open <code>pdt42 serve</code> to read the design and its canvases while it
+                grows.
+              </p>
+            </div>
+            <div class="gs__card">
+              <div class="gs__card-label">AI agent</div>
+              <h3 class="gs__card-title">Use the CLI</h3>
+              <p class="gs__card-desc">
+                <code>pdt42 next</code> names the step to work on,
+                <code>pdt42 guide step</code> gives its brief and a starter template,
+                <code>pdt42 explain</code> a block's attributes, <code>pdt42 validate</code> what is
+                inconsistent. Add <code>--format json</code> for output to parse. Entities,
+                motivations and assumptions come from the people in the ecosystem, so ask your human
+                rather than invent them.
+              </p>
+              <div class="gs__snippet">
+                <code
+                  >npx @pdt42/cli next<br />npx @pdt42/cli guide step D1<br />npx @pdt42/cli
+                  validate</code
+                >
+              </div>
+              <p class="gs__card-desc">
+                <code>pdt42 build --out site</code> writes a static site;
+                <code>--single-file</code> one page to share.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="session" aria-labelledby="session-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="session-heading">Clear guidance, at every step</h2>
+            <p class="gs__sub">
+              Your agent never has to guess what comes next. pdt42 names the step, briefs it and
+              checks the result. Here, an agent starts a platform design from scratch.
+            </p>
+          </header>
+          <div class="session" aria-label="An agent guided by pdt42">
+            <div class="session__bar">
+              <span class="session__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="session__title">agent + pdt42</span>
+              <button class="session__replay" id="session-replay" type="button">↻ Replay</button>
+            </div>
+            <div class="session__screen" id="session-screen" tabindex="0"></div>
+          </div>
+          <ul class="agent__list">
+            <li>
+              <strong>What's next.</strong> <code>pdt42 next</code> names the step to work on and
+              why. It reads that from the design itself, so you can stop at any point and pick up
+              where you left off.
+            </li>
+            <li>
+              <strong>How to do it.</strong> <code>pdt42 guide step</code> briefs the step: the
+              question to answer, what to ask you, which blocks to write, which canvas to place.
+            </li>
+            <li>
+              <strong>What's missing.</strong> <code>pdt42 validate</code> names each gap and how to
+              close it: a missing canvas, a dangling reference, an incomplete portrait.
+            </li>
+            <li>
+              <strong>A sparring partner.</strong> Guided by the method, your agent asks its
+              questions: who really produces value here, what do they exchange, what would make them
+              come back?
+            </li>
+          </ul>
+          <p class="agent__human">
+            Innovation stays human. Which relationship is core, which play to make, what the
+            platform promises: the insight is yours. The agent keeps it in order.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="story" aria-labelledby="story-heading">
+        <div class="container story">
+          <h2 class="gs__title" id="story-heading">
+            Platforms are everywhere. Designing them is not.
+          </h2>
+          <p>
+            Much of how business works today runs through platforms: marketplaces, networks,
+            cooperatives, ecosystems of partners building on each other. We can model the
+            organisation that runs a platform — its teams, roles and decisions, as
+            <a href="https://github.com/mrsimpson/biz42">organisational modelling</a> does. But that
+            describes the business behind the platform, not the platform itself.
+          </p>
+          <p>
+            Platforms create value in a peculiar way. They do not make the value; they make it
+            easier for others to exchange it — and to learn and grow while they do. Who produces,
+            who consumes, which transactions matter, which services lower their cost, what makes the
+            network more valuable with every new member: that is a design of its own.
+          </p>
+          <p>
+            The <a href="https://www.boundaryless.io/pdt-toolkit/">Platform Design Toolkit</a> by
+            Boundaryless gives this design a method and a model: phases, steps and a canvas for
+            each. But on paper and whiteboards, the canvases drift apart as the design evolves — the
+            entity on one canvas is renamed on another, a transaction has no channel, the learning
+            engine forgets a role.
+          </p>
+          <p class="story__punch">
+            pdt42 lets you ideate and shape everything together with your agent — and keeps it
+            consistent. The design lives in Markdown chapters with small typed blocks; the canvases
+            are drawn from them, so they cannot disagree.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="model" aria-labelledby="model-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="model-heading">One model, every canvas</h2>
+            <p class="gs__sub">
+              Harvest Commons in <code>pdt42 serve</code>: read by a human, extended by an agent.
+            </p>
+          </header>
+          <video
+            class="demo-video"
+            src="./assets/demo-Cbyn9fmD.webm"
+            poster="./assets/01-chapter-BGGQQZv3.png"
+            controls
+            muted
+            playsinline
+            preload="metadata"
+          ></video>
+        </div>
+        <div class="container rows">
+          <div class="row">
+            <div class="row__text">
+              <h3 class="row__title">Every chapter shows its canvas</h3>
+              <p class="row__desc">
+                A chapter is one step of the method. Next to its prose sits the step's canvas — the
+                ecosystem as rings of roles, the transactions board of a relationship, the learning
+                engine of each role — drawn from the elements the chapter defines.
+              </p>
+            </div>
+            <a class="row__zoom" title="Open full size">
+              <img
+                class="row__image"
+                src="./assets/02-ecosystem-canvas-D4Su_ww0.png"
+                alt="The Ecosystem Canvas of Harvest Commons: the cooperative in the centre, partners, producers and consumers, stakeholders on the outer ring"
+                loading="lazy"
+              />
+            </a>
+          </div>
+          <div class="row row--flip">
+            <div class="row__text">
+              <h3 class="row__title">Prose and model, one click apart</h3>
+              <p class="row__desc">
+                Every element is written as prose for people and a small block for the model. Click
+                the stripe beside the prose and it turns into its model box: the attributes, who
+                refers to it, and every canvas it appears on.
+              </p>
+            </div>
+            <a class="row__zoom" title="Open full size">
+              <img
+                class="row__image"
+                src="./assets/03-model-box-DVM_KlOn.png"
+                alt="The model box of the entity Small-scale farmers: role, layer, portrait attributes, incoming references and the canvases it appears on"
+                loading="lazy"
+              />
+            </a>
+          </div>
+          <div class="row">
+            <div class="row__text">
+              <h3 class="row__title">Stickies are links</h3>
+              <p class="row__desc">
+                Every sticky on a canvas is an element of the model. Click one and you land on its
+                section, its model box open — wherever in the design it is defined.
+              </p>
+            </div>
+            <a class="row__zoom" title="Open full size">
+              <img
+                class="row__image"
+                src="./assets/04-transactions-board-CoKo_LC6.png"
+                alt="The Transactions Board for farmer and restaurant: transactions with direction, value unit and channel"
+                loading="lazy"
+              />
+            </a>
+          </div>
+          <div class="row row--flip">
+            <div class="row__text">
+              <h3 class="row__title">Consistent by construction</h3>
+              <p class="row__desc">
+                When the agent adds a relationship and its first transaction, pdt42 asks for the
+                chapter's canvas: a warning names the missing Transactions Board and the block to
+                add. Every reference must resolve; every step knows what it still lacks.
+              </p>
+            </div>
+            <a class="row__zoom" title="Open full size">
+              <img
+                class="row__image"
+                src="./assets/07-canvas-missing-CpuG0Dhs.png"
+                alt="Warning W011 at the top of the transactions chapter: no Transactions Board for Artisan and household"
+                loading="lazy"
+              />
+            </a>
+          </div>
+          <div class="row">
+            <div class="row__text">
+              <h3 class="row__title">What the agent reads</h3>
+              <p class="row__desc">
+                Switch to the agent view and the chapter shows its source: Markdown with typed
+                <code>pdt42</code> blocks. Plain files in your repository — diffable, reviewable,
+                and easy for an agent to write correctly.
+              </p>
+            </div>
+            <a class="row__zoom" title="Open full size">
+              <img
+                class="row__image"
+                src="./assets/06-agent-view-BbYPX7_A.png"
+                alt="The agent view of the transactions chapter: headings, prose and transaction blocks as source"
+                loading="lazy"
+              />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="method" aria-labelledby="method-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="method-heading">The method, step by step</h2>
+            <p class="gs__sub">
+              The three phases of the Platform Design Toolkit, each step with the canvas its chapter
+              shows. Straight from the model <code>pdt42 guide</code> teaches.
+            </p>
+          </header>
+          <div class="method" id="method-map"></div>
+        </div>
+      </section>
+
+      <section class="section" id="canvases" aria-labelledby="canvases-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="canvases-heading">The canvases of Harvest Commons</h2>
+            <p class="gs__sub">
+              A cooperative connecting small farms with the kitchens and households of their city —
+              explored, designed and grown in 18 chapters. Open any canvas in the live example.
+            </p>
+            <p class="gs__sub">
+              Know the PDT canvases already?
+              <a href="./canvases/"
+                >See each original next to pdt42's, and which field fills which area →</a
+              >
+            </p>
+          </header>
+          <div class="gallery">
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#1-exploration/e1-arenas.pdt42.md:cv-arena-scan"
+            >
+              <img src="./assets/cv-arena-scan-BWf1IJ92.png" alt="Arena Scan" loading="lazy" />
+              <span>E1 · Arena Scan</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#1-exploration/e5-value-chain.pdt42.md:cv-value-chain"
+            >
+              <img src="./assets/cv-value-chain-zU3JA9Ue.png" alt="Wardley Map" loading="lazy" />
+              <span>E5 · Wardley Map</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#1-exploration/e6-plays.pdt42.md:cv-plays"
+            >
+              <img src="./assets/cv-plays-ChfI4pZ_.png" alt="Platform Plays" loading="lazy" />
+              <span>E6 · Platform Plays</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#2-design/d1-ecosystem.pdt42.md:cv-portrait-farmers"
+            >
+              <img
+                src="./assets/cv-portrait-farmers-CpifbyuI.png"
+                alt="Entity-Role Portrait"
+                loading="lazy"
+              />
+              <span>D2 · Entity-Role Portrait</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#2-design/d3-motivations.pdt42.md:cv-matrix"
+            >
+              <img
+                src="./assets/cv-matrix-Aalw-eL2.png"
+                alt="Motivations Matrix"
+                loading="lazy"
+              />
+              <span>D3 · Motivations Matrix</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#2-design/d6-learning-engine.pdt42.md:cv-learning"
+            >
+              <img src="./assets/cv-learning-Daofyw_T.png" alt="Learning Engine" loading="lazy" />
+              <span>D6 · Learning Engine</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#2-design/d7-experiences.pdt42.md:cv-xp-chefs"
+            >
+              <img
+                src="./assets/cv-xp-chefs-DLmgzEa1.png"
+                alt="Platform Experience"
+                loading="lazy"
+              />
+              <span>D7 · Platform Experience</span>
+            </a>
+            <a class="gallery__item" href="./harvest-commons/#2-design/d8-mvp.pdt42.md:cv-mvp-box">
+              <img
+                src="./assets/cv-mvp-box-p6HIG1Ld.png"
+                alt="Minimum Viable Platform"
+                loading="lazy"
+              />
+              <span>D8 · Minimum Viable Platform</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#3-growth/g2-network.pdt42.md:cv-network-kitchen"
+            >
+              <img
+                src="./assets/cv-network-kitchen-zs9b99G_.png"
+                alt="Network Properties"
+                loading="lazy"
+              />
+              <span>G2 · Network Properties</span>
+            </a>
+            <a
+              class="gallery__item"
+              href="./harvest-commons/#3-growth/g3-flywheels.pdt42.md:cv-flywheels"
+            >
+              <img
+                src="./assets/09-dark-flywheels-foxJ6zZ7.png"
+                alt="Flywheel Sketching, dark theme"
+                loading="lazy"
+              />
+              <span>G3 · Flywheel Sketching</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="live" aria-labelledby="live-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="live-heading">See it live</h2>
+          </header>
+          <div class="live">
+            <a class="live-card" href="./harvest-commons/">
+              <h3 class="live-card__title">Harvest Commons, live</h3>
+              <p class="live-card__desc">
+                The complete example — 18 chapters, 90 elements, 28 canvases, zero findings — as
+                <code>pdt42 build</code> renders it.
+              </p>
+              <span class="live-card__arrow">Open the example →</span>
+            </a>
+            <a
+              class="live-card"
+              href="https://github.com/mrsimpson/pdt42/blob/main/docs/methodology.md"
+            >
+              <h3 class="live-card__title">The method in brief</h3>
+              <p class="live-card__desc">
+                Phases, roles, steps and canvases of the Platform Design Toolkit — summarised in our
+                own words, with links to the originals.
+              </p>
+              <span class="live-card__arrow">Read the method →</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <p class="footer__note">
+          pdt42 builds on the
+          <a href="https://www.boundaryless.io/pdt-toolkit/">Platform Design Toolkit</a> by
+          Boundaryless, licensed
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, and is shared
+          under the same licence. Its canvases are its own renderings of the method. pdt42 is not
+          affiliated with or endorsed by Boundaryless.
+        </p>
+        <div class="footer__links">
+          <a class="footer__link" href="https://github.com/mrsimpson/pdt42">GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
