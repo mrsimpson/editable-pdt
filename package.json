@@ -14,6 +14,7 @@
     "docs:meta-model": "node --experimental-strip-types --no-warnings scripts/meta-model-doc.ts",
     "demo": "pnpm --filter @pdt42/web demo && pnpm run demo:cli",
     "demo:cli": "node --conditions=development --experimental-strip-types --no-warnings scripts/cli-session.ts",
+    "site:assemble": "rm -rf site && mkdir -p site && cp -r packages/site/dist/. site/ && node packages/cli/dist/cli.mjs --dir examples/harvest-commons build --out site/harvest-commons && touch site/.nojekyll",
     "site": "pnpm --filter @pdt42/site build && pnpm pdt42 --dir examples/harvest-commons build --out packages/site/dist/harvest-commons"
   },
   "devDependencies": {

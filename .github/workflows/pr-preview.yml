@@ -1,0 +1,59 @@
+name: Site preview
+
+# A preview of the site for every pull request that changes it, at
+# https://<owner>.github.io/pdt42/pr-preview/pr-<number>/ — commented on the pull request,
+# updated on every push and removed when the pull request is closed.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+    paths:
+      - "packages/site/**"
+      - "packages/web/**"
+      - "packages/core/**"
+      - "demo/**"
+      - "examples/**"
+      - ".github/workflows/pr-preview.yml"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Deploy preview
+    runs-on: ubuntu-latest
+    # Pull requests from forks get a read-only token and cannot push to gh-pages.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        if: github.event.action != 'closed'
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v7
+        if: github.event.action != 'closed'
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Build site
+        if: github.event.action != 'closed'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+          pnpm run site:assemble
+
+      # Deploys site/ to gh-pages under pr-preview/pr-<number>/, or removes it on close.
+      - name: Deploy or remove preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto

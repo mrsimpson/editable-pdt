@@ -132,6 +132,11 @@ pnpm demo:cli        # only the recorded CLI session (demo/cli-session.json)
 pnpm site            # landing page + the example, in packages/site/dist
 ```
 
+The site is served by GitHub Pages from the `gh-pages` branch: `main` at the root, and every pull
+request that changes the site (landing page, web app, example or demo) as a preview under
+`pr-preview/pr-<number>/`. The preview's link is commented on the pull request and it is removed
+when the pull request closes.
+
 The web app mirrors arc42-language's: React, marked for prose, vite-plugin-singlefile for
 `--single-file`. `pnpm demo` is a Playwright project: it records the walkthrough (`demo/demo.webm`)
 and takes the site's screenshots.
