@@ -40,11 +40,17 @@ core: yes
 ```bash
 npm install -g @pdt42/cli       # or run any command with npx @pdt42/cli …
 pdt42 guide                     # the method, and where your design stands
+pdt42 next                      # the step to work on next, and why
 pdt42 guide step D1             # one step: file, dependencies, how-to, starter template
 pdt42 explain transaction       # one block type
 pdt42 validate                  # consistency check
 pdt42 serve                     # read it in the browser, live
 ```
+
+pdt42 keeps no state of its own. `guide` and `next` work out where the design stands from the
+Markdown files on every run: which blocks exist, and which findings are still open. Change a
+file and the next step changes with it; the files you commit are the whole design and its
+progress.
 
 From a clone, `pnpm install && pnpm build`, then `pnpm pdt42 --dir examples/harvest-commons guide`
 runs the CLI from source on the example.
@@ -102,8 +108,15 @@ of: r-farmer-restaurant
 
 ## For agents
 
+pdt42 is built to be driven by a coding agent, with a human in the conversation.
 `packages/skill/SKILL.md` (linked as `.agents/skills/pdt42`) teaches coding agents the
-format and the workflow.
+format and the workflow; the CLI hands them the method one step at a time (`next`,
+`guide step`, `explain`, `validate`, most with `--format json`).
+
+The landing page replays a recorded session: an agent starts a design in an empty folder, runs
+`next` and `guide step D1`, writes the chapter, fixes the warning `validate` reports and moves on
+to D2. `pnpm demo:cli` records it against the CLI from source into `demo/cli-session.json`, and a
+test fails when the CLI's output no longer matches the recording.
 
 ## Development
 
@@ -116,7 +129,8 @@ pnpm test            # vp test
 pnpm check           # vp check: format, lint, types
 pnpm build           # web app, CLI bundle (with the web app beside it), landing page
 pnpm docs:meta-model # regenerate docs/meta-model.md
-pnpm demo            # the demo: walkthrough video and screenshots into demo/
+pnpm demo            # the demo: walkthrough video, screenshots and CLI session into demo/
+pnpm demo:cli        # only the recorded CLI session (demo/cli-session.json)
 pnpm site            # landing page + the example, in packages/site/dist
 ```
 
@@ -130,7 +144,8 @@ packages/cli    the pdt42 command
 packages/web    the browser view: chapters, model boxes, canvases (pdt42 serve / build)
 packages/site   the landing page
 packages/skill  the agent skill
-demo/           video and screenshots of the demo (packages/web/tests/demo.spec.ts), used by the site
+demo/           video and screenshots of the demo (packages/web/tests/demo.spec.ts) and the recorded
+                CLI session (packages/cli/tests/session.ts), used by the site
 examples/       Harvest Commons, a complete design across all three phases
 ```
 

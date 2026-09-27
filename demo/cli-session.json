@@ -1,0 +1,49 @@
+[
+  {
+    "kind": "human",
+    "text": "Let's design a platform that connects small farms with the city's kitchens. Use pdt42."
+  },
+  {
+    "kind": "run",
+    "command": "pdt42 next",
+    "output": "Next: D1 · Map the ecosystem\n\nNothing is modelled yet. Start with D1 — or with E1 if you still need to find the opportunity.\n\n> Who is in the ecosystem, clustered into which roles?\n\nRun `pdt42 guide step D1` for the brief."
+  },
+  {
+    "kind": "run",
+    "command": "pdt42 guide step D1",
+    "output": "# D1 · Map the ecosystem\n\nPhase: Strategy Design · Status: todo\n\n> Who is in the ecosystem, clustered into which roles?\n\n## File\n\nWrite this step in `2-design/d1-ecosystem.pdt42.md` (any `*.pdt42.md` file works; this is the convention). Wrap blocks in ```pdt42 fences.\n\n## Dependencies\n\n- `:::ecosystem` from E1 — optional via platform.ecosystem; none yet\n- `:::brief` from E7 — optional via platform.brief; none yet\n\n## How\n\n1. Brainstorm entities alone first, then together; cluster similar ones into entity-roles (`clusters:`).\n2. Give each a `role`: owner, stakeholder, peer-consumer, peer-producer or partner — by the key value it produces or consumes.\n3. Keep at most five roles in the peer spectrum.\n4. Add the `platform` block with its owners.\n\n…"
+  },
+  {
+    "kind": "agent",
+    "text": "Asks who takes part, then writes the chapter: the platform, its owner and two entity-roles."
+  },
+  {
+    "kind": "write",
+    "file": "2-design/d1-ecosystem.pdt42.md",
+    "excerpt": "## Small-scale farmers\n\nFamily farms within sixty kilometres. They grow well; selling is what costs them.\n\n```pdt42\n:::entity\nid: e-farmers\ntitle: Small-scale farmers\nrole: peer-producer\n:::\n```"
+  },
+  {
+    "kind": "run",
+    "command": "pdt42 validate",
+    "output": "W011 2-design/d1-ecosystem.pdt42.md:8  2-design/d1-ecosystem.pdt42.md (D1 Map the ecosystem) shows no Ecosystem Canvas — add a `:::canvas` block with `canvas: ecosystem`\nH010 2-design/d1-ecosystem.pdt42.md:32  Small-scale farmers is connected to nothing else in the model\nH104 2-design/d1-ecosystem.pdt42.md:32  Small-scale farmers's portrait lacks potential, goals or pressures, gains\nH010 2-design/d1-ecosystem.pdt42.md:44  Restaurants is connected to nothing else in the model\nH104 2-design/d1-ecosystem.pdt42.md:44  Restaurants's portrait lacks potential, goals or pressures, gains\n\n4 elements in 1 files — 0 errors, 1 warnings, 4 hints"
+  },
+  {
+    "kind": "agent",
+    "text": "W011: the chapter lacks its canvas. Places it under the title."
+  },
+  {
+    "kind": "write",
+    "file": "2-design/d1-ecosystem.pdt42.md",
+    "excerpt": "# Map the ecosystem\n\n```pdt42\n:::canvas\nid: cv-ecosystem\ncanvas: ecosystem\n:::\n```"
+  },
+  {
+    "kind": "run",
+    "command": "pdt42 validate",
+    "output": "H010 2-design/d1-ecosystem.pdt42.md:39  Small-scale farmers is connected to nothing else in the model\nH104 2-design/d1-ecosystem.pdt42.md:39  Small-scale farmers's portrait lacks potential, goals or pressures, gains\nH010 2-design/d1-ecosystem.pdt42.md:51  Restaurants is connected to nothing else in the model\nH104 2-design/d1-ecosystem.pdt42.md:51  Restaurants's portrait lacks potential, goals or pressures, gains\n\n4 elements in 1 files — 0 errors, 0 warnings, 4 hints"
+  },
+  {
+    "kind": "run",
+    "command": "pdt42 next",
+    "output": "Next: D2 · Portray the entity-roles\n\nEverything up to D1 is in place.\n\n> What is each role's context, what drives it, and what gains does it seek?\n\nRun `pdt42 guide step D2` for the brief."
+  }
+]
