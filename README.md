@@ -38,13 +38,16 @@ core: yes
 ## Try it
 
 ```bash
-pnpm install
-pnpm pdt42 --dir examples/harvest-commons guide       # the method, and the example's status
-pnpm pdt42 --dir examples/harvest-commons validate
-pnpm pdt42 guide step D5                               # one step: file, dependencies, template
-pnpm pdt42 explain transaction                         # one block type
-pnpm build && pnpm pdt42 --dir examples/harvest-commons serve   # read it in the browser
+npm install -g @pdt42/cli       # or run any command with npx @pdt42/cli …
+pdt42 guide                     # the method, and where your design stands
+pdt42 guide step D1             # one step: file, dependencies, how-to, starter template
+pdt42 explain transaction       # one block type
+pdt42 validate                  # consistency check
+pdt42 serve                     # read it in the browser, live
 ```
+
+From a clone, `pnpm install && pnpm build`, then `pnpm pdt42 --dir examples/harvest-commons guide`
+runs the CLI from source on the example.
 
 ## See it
 

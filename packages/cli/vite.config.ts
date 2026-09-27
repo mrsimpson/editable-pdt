@@ -4,8 +4,9 @@ export default defineConfig({
   pack: {
     entry: "src/cli.ts",
     dts: false,
-    // Only clean the CLI bundle itself: dist/web and dist/web-single hold the web app.
-    clean: ["dist/cli.mjs"],
+    // Start from an empty bundle: the web app is copied in again below, and hashed assets of
+    // earlier builds would otherwise be published too.
+    clean: ["dist/cli.mjs", "dist/web", "dist/web-single"],
     deps: {
       onlyBundle: false,
       alwaysBundle: ["@pdt42/core"],

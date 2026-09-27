@@ -60,7 +60,7 @@
           </p>
           <div class="hero__install" role="group" aria-label="First command">
             <span class="hero__install-prompt">$</span>
-            <code id="start-cmd">pnpm pdt42 guide</code>
+            <code id="start-cmd">npx @pdt42/cli guide</code>
             <button class="hero__install-copy" id="copy" aria-label="Copy command" title="Copy">
               ⧉
             </button>
@@ -396,10 +396,7 @@ Run `pdt42 guide step D1` for the brief.</pre>
                 The skill teaches your agent the workflow; the CLI guides it step by step.
               </p>
               <div class="gs__snippet">
-                <code
-                  >git clone https://github.com/mrsimpson/pdt42<br />cd pdt42<br />pnpm install
-                  &amp;&amp; pnpm build<br />npm install -g ./packages/cli</code
-                >
+                <code>npm install -g @pdt42/cli<br />npx skills add mrsimpson/pdt42</code>
               </div>
               <h3 class="gs__card-title">Start the conversation</h3>
               <div class="gs__snippet">
