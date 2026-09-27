@@ -16,6 +16,11 @@
     "site": "pnpm --filter @pdt42/site build && pnpm pdt42 --dir examples/harvest-commons build --out packages/site/dist/harvest-commons"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "catalog:",
+    "@semantic-release/exec": "catalog:",
+    "@semantic-release/github": "catalog:",
+    "@semantic-release/npm": "catalog:",
+    "semantic-release": "catalog:",
     "vite-plus": "catalog:"
   },
   "engines": {

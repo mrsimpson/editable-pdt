@@ -36,3 +36,68 @@ jobs:
 
       - name: Validate the example
         run: pnpm run validate:example
+
+      - name: Cache build artifacts
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            packages/cli/dist
+            packages/core/dist
+          key: build-${{ hashFiles('packages/*/src/**', 'packages/*/package.json', 'pnpm-lock.yaml') }}
+
+  # Publishes @pdt42/cli to npm with trusted publishing (OIDC, no token) and creates the GitHub
+  # release. semantic-release derives the version from the conventional commits since the last
+  # release tag; nothing is published when no commit asks for a release.
+  release:
+    name: Release
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore build artifacts
+        id: cache-restore
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            packages/cli/dist
+            packages/core/dist
+          key: build-${{ hashFiles('packages/*/src/**', 'packages/*/package.json', 'pnpm-lock.yaml') }}
+
+      - name: Build (cache miss fallback)
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: pnpm run build
+
+      - name: Check (cache miss fallback)
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: pnpm run check
+
+      - name: Test (cache miss fallback)
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: pnpm test
+
+      - name: Release
+        run: pnpm exec semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
