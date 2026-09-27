@@ -1,6 +1,6 @@
 {
   "name": "@pdt42/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "pdt42 — the Platform Design Toolkit as a language: validate, query and get guided through a platform design.",
   "keywords": [
     "agent",
