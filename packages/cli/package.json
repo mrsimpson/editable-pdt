@@ -2,7 +2,22 @@
   "name": "@pdt42/cli",
   "version": "0.1.0",
   "description": "pdt42 — the Platform Design Toolkit as a language: validate, query and get guided through a platform design.",
+  "keywords": [
+    "agent",
+    "canvas",
+    "cli",
+    "ecosystem",
+    "platform-design",
+    "platform-design-toolkit"
+  ],
+  "homepage": "https://mrsimpson.github.io/pdt42/",
+  "bugs": "https://github.com/mrsimpson/pdt42/issues",
   "license": "CC-BY-SA-4.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrsimpson/pdt42.git",
+    "directory": "packages/cli"
+  },
   "bin": {
     "pdt42": "./dist/cli.mjs"
   },
@@ -13,6 +28,9 @@
   "exports": {
     ".": "./dist/cli.mjs",
     "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "vp pack",
