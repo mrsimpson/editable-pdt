@@ -60,6 +60,30 @@ Drift detection is out of scope: tracked as issue #2.
 - **Agent positioning** on the site: agents spar, research and keep method and model in order;
   innovation stays human.
 
+## Status (end of iteration 2)
+
+Delivered and pushed (commits 0817805, b6e80c3, d0082e0, a2617b6):
+
+- **Model boxes as in arc42.** The stripe beside an element's prose swaps it for its model box:
+  fields, incoming references (folded after ten), findings, and every canvas the element appears
+  on. `#<file>:el-<id>` opens the model box and scrolls to it. Sidebar by phase and step with
+  status, light/dark theme, Human/Agent toggle (agent view = source), live reload in
+  `pdt42 serve`, `pdt42 build [--single-file]`.
+- **Canvases.** All 20 canvas types drawn from the model; every sticky links to its element's
+  section. Services yellow, transactions blue, one colour per platform role. W011 (chapter
+  without its canvas) also shows in the chapter header.
+- **Landing page.** `pnpm demo` takes nine screenshots and every canvas into `demo/`. Site in
+  arc42's style with the burnt orange highlight: story, agent as sparring partner ("innovation
+  stays human"), method map generated from core, canvas gallery, getting started, CC BY-SA /
+  not-affiliated footer.
+- **Workflows.** CI on every push (first run in progress when this was written). GitHub Pages
+  deploys the landing page with the live example beside it — from `main` only, which does not
+  exist yet: nothing deploys until this branch is merged into `main`.
+
+Environment note: the owner added `registry.npmjs.org` to the network allowlist, but this
+container still gets 403 ("Host not in allowlist") — the change probably applies to new sessions
+only. The React migration below needs a session where the registry is reachable.
+
 ## Explore
 
 ### Completed
@@ -83,9 +107,14 @@ Drift detection is out of scope: tracked as issue #2.
 
 ### Tasks
 
+- [ ] Move the web app to React (+ marked, vite-plugin-singlefile) now that the owner allowed the
+      npm registry — blocked in this container until the allowlist takes effect
+- [ ] Demo as a `@playwright/test` project with video, like arc42 (needs the registry)
 - [ ] Side-by-side comparison with the official Boundaryless canvases (earlier request; needs the
       canvas images and attribution — not started)
-- [ ] Move the web app to React once the npm registry is reachable (optional)
+- [ ] After the repository rename: update the `mrsimpson/editable-pdt` links (site, README);
+      GitHub redirects in the meantime
+- [ ] Merge into `main` so the Pages workflow deploys; confirm the first CI run is green
 
 ### Completed
 
