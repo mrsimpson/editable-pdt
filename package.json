@@ -11,7 +11,7 @@
     "pdt42": "node --conditions=development --experimental-strip-types --no-warnings packages/cli/src/cli.ts",
     "validate:example": "pnpm pdt42 --dir examples/harvest-commons validate",
     "docs:meta-model": "node --experimental-strip-types --no-warnings scripts/meta-model-doc.ts",
-    "demo": "node --experimental-strip-types --no-warnings scripts/demo.ts",
+    "demo": "pnpm --filter @pdt42/web demo",
     "site": "pnpm --filter @pdt42/site build && pnpm pdt42 --dir examples/harvest-commons build --out packages/site/dist/harvest-commons"
   },
   "devDependencies": {

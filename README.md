@@ -113,13 +113,13 @@ pnpm test            # vp test
 pnpm check           # vp check: format, lint, types
 pnpm build           # web app, CLI bundle (with the web app beside it), landing page
 pnpm docs:meta-model # regenerate docs/meta-model.md
-pnpm demo            # the demo scenario: screenshots into demo/ (needs Playwright)
+pnpm demo            # the demo: walkthrough video and screenshots into demo/
 pnpm site            # landing page + the example, in packages/site/dist
 ```
 
-The web app has no UI framework: components are functions building DOM nodes through a tiny JSX
-factory (`packages/web/src/dom.ts`). `pnpm demo` imports `playwright`; set `PLAYWRIGHT_MODULE` to
-its entry point if it is installed globally.
+The web app mirrors arc42-language's: React, marked for prose, vite-plugin-singlefile for
+`--single-file`. `pnpm demo` is a Playwright project: it records the walkthrough (`demo/demo.webm`)
+and takes the site's screenshots.
 
 ```
 packages/core   parser, zod schemas, model builder, validator, methodology data, progress
@@ -127,7 +127,7 @@ packages/cli    the pdt42 command
 packages/web    the browser view: chapters, model boxes, canvases (pdt42 serve / build)
 packages/site   the landing page
 packages/skill  the agent skill
-demo/           screenshots of the demo scenario (scripts/demo.ts), used by the site
+demo/           video and screenshots of the demo (packages/web/tests/demo.spec.ts), used by the site
 examples/       Harvest Commons, a complete design across all three phases
 ```
 

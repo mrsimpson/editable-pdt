@@ -304,6 +304,15 @@ li code {
   font-weight: 500;
 }
 
+.demo-video {
+  display: block;
+  width: 100%;
+  margin-bottom: 4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+}
+
 /* ─── Screenshot rows ───────────────────────────────────────────────────────── */
 .rows {
   display: grid;

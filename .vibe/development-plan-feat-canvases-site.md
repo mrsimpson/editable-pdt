@@ -41,17 +41,20 @@ Drift detection is out of scope: tracked as issue #2.
   `/api/workspace` or injected as `window.__WORKSPACE__` by `build`. Hash routing
   `#<file>:el-<id>` auto-expands the target element's model box, exactly like arc42. Human/agent
   view toggle shows the DSL source.
-- **No React (deviation).** The environment's network policy blocks the npm registry, so React,
-  marked and the vite plugins could not be installed. The web app uses a tiny JSX factory building
-  DOM nodes (`src/dom.ts`), its own small Markdown renderer, and an inline single-file plugin —
-  only packages already in the lockfile. Components keep React's shape, so switching later is
-  mechanical. The landing page is static HTML with a small script (theme, method map from core).
+- **React, as in arc42** (after a detour). While the registry was blocked, the web app ran on a
+  tiny JSX factory and its own Markdown renderer. Once it was reachable, it moved to React 18,
+  `marked` (raw HTML escaped, only web/mail/relative links) and `vite-plugin-singlefile`. The
+  conversion kept the component structure: `cx()` joins class names, `css()` types inline styles
+  with CSS custom properties. The landing page stays static HTML with a small script — it has
+  no state worth a framework.
 - **Canvas renderers** are components, one per canvas, drawing stickies coloured by platform
   role and flow; every sticky is an anchor to `#<file>:el-<id>`. The model box lists the canvases
   an element appears on, so links go both ways.
 - **W011 shows in the chapter header** as well as on the element it is anchored to.
-- **Demo** is a plain script (`scripts/demo.ts`) using `playwright` (global install via
-  `PLAYWRIGHT_MODULE`), not a `@playwright/test` project: screenshots only, no video.
+- **Demo** is a Playwright project in `packages/web` (`pnpm demo`), as in arc42: a captioned
+  walkthrough with cursor overlay, recorded as `demo/demo.webm` (no ffmpeg here for mp4/gif),
+  and a second test taking the site's screenshots. Both serve a scratch copy of the example
+  that the "agent" edits.
 - **Colour.** Accent burnt orange `#E8590C` (bright, for accents, dark mode links) and `#C2410C`
   (text links on white, WCAG AA) — related to, but distinct from, the Boundaryless coral.
 - **Site mirrors arc42's `packages/site`** (Nav, Hero, story, features, getting started, live example,
@@ -80,9 +83,8 @@ Delivered and pushed (commits 0817805, b6e80c3, d0082e0, a2617b6):
   deploys the landing page with the live example beside it — from `main` only, which does not
   exist yet: nothing deploys until this branch is merged into `main`.
 
-Environment note: the owner added `registry.npmjs.org` to the network allowlist, but this
-container still gets 403 ("Host not in allowlist") — the change probably applies to new sessions
-only. The React migration below needs a session where the registry is reachable.
+The owner then allowed `registry.npmjs.org`; the first CI run succeeded. With the registry
+reachable, the web app moved to React and the demo to a Playwright project (see below).
 
 ## Explore
 
@@ -107,14 +109,11 @@ only. The React migration below needs a session where the registry is reachable.
 
 ### Tasks
 
-- [ ] Move the web app to React (+ marked, vite-plugin-singlefile) now that the owner allowed the
-      npm registry — blocked in this container until the allowlist takes effect
-- [ ] Demo as a `@playwright/test` project with video, like arc42 (needs the registry)
 - [ ] Side-by-side comparison with the official Boundaryless canvases (earlier request; needs the
       canvas images and attribution — not started)
 - [ ] After the repository rename: update the `mrsimpson/editable-pdt` links (site, README);
       GitHub redirects in the meantime
-- [ ] Merge into `main` so the Pages workflow deploys; confirm the first CI run is green
+- [ ] Merge into `main` so the Pages workflow deploys
 
 ### Completed
 
@@ -130,7 +129,10 @@ only. The React migration below needs a session where the registry is reachable.
 - [x] Demo: `pnpm demo` captures nine moments and every canvas into `demo/`
 - [x] Site: landing page with the story, agent positioning, method map, canvases, getting started
 - [x] Workflows: CI (build, check, test, validate the example) and GitHub Pages (site + example)
-- [x] `vp check`, `vp test` (59 tests), build green
+- [x] `vp check`, `vp test` (59 tests), build green; first CI run green
+- [x] Web app on React 18 + marked + vite-plugin-singlefile; no React warnings in any chapter
+- [x] Demo as a Playwright project: captioned walkthrough video (`demo/demo.webm`, shown on the
+      site) and the site's screenshots
 
 ## Commit
 
