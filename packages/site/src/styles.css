@@ -678,6 +678,178 @@ li code {
   color: var(--text-muted);
 }
 
+/* ─── PDT canvases page: the original next to pdt42's ──────────────────────── */
+.nav__link--active {
+  color: var(--text);
+}
+.cmp-intro {
+  border-top: none;
+  padding-bottom: 2rem;
+}
+.cmp-intro .gs__title {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+.cmp-intro .gs__sub {
+  max-width: 680px;
+  font-size: 1rem;
+}
+.cmp-toc {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.cmp-toc h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.cmp-toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.88rem;
+  line-height: 1.8;
+}
+.cmp-intro .container,
+.cmp-list {
+  max-width: 1240px;
+  padding-bottom: var(--section-gap);
+}
+.cmp-phase {
+  margin: 3rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 3px solid var(--c);
+  color: var(--c);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.cmp {
+  padding: 2rem 0 2.5rem;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-top: var(--nav-h);
+}
+.cmp__header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin-bottom: 1.25rem;
+}
+.cmp__steps {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.cmp__title {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+.cmp__link {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+.cmp__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.cmp__figure {
+  margin: 0;
+}
+.cmp__zoom {
+  display: block;
+}
+.cmp__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.cmp__none {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  padding: 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+.cmp__figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.cmp__figure figcaption strong {
+  color: var(--text);
+}
+.cmp__map {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+.cmp__table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.cmp__table th {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 2px solid var(--border);
+  text-align: left;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cmp__table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.cmp__table td:first-child {
+  width: 45%;
+}
+.cmp__table code {
+  display: inline-block;
+  margin: 0 0.15rem 0.2rem 0;
+  padding: 0.05rem 0.35rem;
+  background: var(--bg-code);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.cmp__source h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cmp__source pre {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  overflow-x: auto;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
 /* ─── Small screens ─────────────────────────────────────────────────────────── */
 @media (max-width: 760px) {
   .row,
@@ -685,7 +857,10 @@ li code {
   .method__grid,
   .gallery,
   .gs__grid,
-  .live {
+  .live,
+  .cmp-toc,
+  .cmp__pair,
+  .cmp__map {
     grid-template-columns: minmax(0, 1fr);
   }
   .row--flip .row__text {

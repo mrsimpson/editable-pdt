@@ -63,6 +63,8 @@ runs the CLI from source on the example.
 - **Chapters** follow the method: the sidebar lists the phases and steps with their status.
 - **Prose and model box.** Click the stripe beside an element's prose to swap it for its model
   box — attributes, incoming references, findings, and every canvas the element appears on.
+- **Coming from the PDT?** The site's `canvases/` page puts each original canvas next to
+  pdt42's and lists the block and field behind every area of it.
 - **Canvases** are drawn from the model, in PDT's colours (yellow services, blue transactions,
   one colour per platform role). Every sticky is a link to its element; `#<file>:el-<id>` opens
   the model box.
@@ -166,5 +168,9 @@ and the canvas renderings adapt the toolkit, so pdt42 is shared under the same l
 - **ShareAlike.** Adaptations must be shared under CC BY-SA 4.0 (or a compatible licence).
 - The guidance text is written in our own words and links to the original pages; the canvases
   are pdt42's own renderings of the method, not copies of the Boundaryless artwork.
+- The site's [PDT canvases page](packages/site/canvases/) shows each original canvas next to
+  pdt42's, for readers who know the toolkit. The originals are Boundaryless's images, resized
+  (`packages/site/canvases/originals/`), © Boundaryless SRL, CC BY-SA 4.0, credited on the page
+  and linked to their source.
 
 pdt42 is not affiliated with or endorsed by Boundaryless.
