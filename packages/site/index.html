@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pdt42 — Platform designs that stay consistent</title>
+    <title>pdt42 — Platform design with your agent</title>
     <meta
       name="description"
-      content="Explore, design and grow a platform ecosystem with your agent. pdt42 turns the Platform Design Toolkit into a language: one model in Markdown, every canvas drawn from it."
+      content="A CLI and a skill for coding agents: explore, design and grow a platform ecosystem with your agent, step by step through the Platform Design Toolkit. One model in Markdown, every canvas drawn from it."
     />
     <script>
       // Apply the stored theme before the first paint.
@@ -25,6 +25,7 @@
       <div class="nav__inner">
         <a href="#" class="nav__logo">pdt<span class="accent">42</span></a>
         <div class="nav__links">
+          <a class="nav__link" href="#session">Agents</a>
           <a class="nav__link" href="#story">Why</a>
           <a class="nav__link" href="#model">How it works</a>
           <a class="nav__link" href="#method">Method</a>
@@ -49,26 +50,128 @@
     <main>
       <section class="hero" aria-label="Introduction">
         <div class="container hero__inner">
-          <p class="hero__eyebrow">Platforms · Ecosystems · Design</p>
+          <p class="hero__eyebrow">Platforms · Ecosystems · Agents</p>
           <h1 class="hero__headline">
             Platform designs that<br />
             <em>stay consistent.</em>
           </h1>
+          <p class="hero__sub hero__sub--lead">
+            Human-readable. Agent-writable. Checked against the method.
+          </p>
           <p class="hero__sub">
-            Explore, design and grow an ecosystem together with your agent. One model in Markdown —
-            every canvas of the Platform Design Toolkit drawn from it.
+            pdt42 is a CLI and a skill for your coding agent. It walks the agent through the
+            Platform Design Toolkit one step at a time, and your agent works through it with you.
           </p>
           <div class="hero__install" role="group" aria-label="First command">
             <span class="hero__install-prompt">$</span>
-            <code id="start-cmd">npx @pdt42/cli guide</code>
+            <code id="start-cmd">npx skills add mrsimpson/pdt42</code>
             <button class="hero__install-copy" id="copy" aria-label="Copy command" title="Copy">
               ⧉
             </button>
           </div>
           <div class="hero__ctas">
-            <a href="./harvest-commons/" class="btn btn--primary">Open the example →</a>
-            <a href="#story" class="btn btn--outline">Why pdt42 →</a>
+            <a href="#session" class="btn btn--primary">Watch an agent at work →</a>
+            <a href="./harvest-commons/" class="btn btn--outline">Open the example →</a>
           </div>
+        </div>
+      </section>
+
+      <section class="section" id="getting-started" aria-labelledby="gs-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="gs-heading">Get started</h2>
+          </header>
+          <div class="gs__grid">
+            <div class="gs__card">
+              <div class="gs__card-label">You</div>
+              <h3 class="gs__card-title">Give your agent the skill and the CLI</h3>
+              <p class="gs__card-desc">
+                The skill teaches your agent the format and the workflow; the CLI guides it step by
+                step.
+              </p>
+              <div class="gs__snippet">
+                <code>npx skills add mrsimpson/pdt42<br />npm install -g @pdt42/cli</code>
+              </div>
+              <h3 class="gs__card-title">Talk platform design with your agent</h3>
+              <div class="gs__snippet">
+                <code>"Let's explore a platform for … — use pdt42 and guide me through it"</code>
+              </div>
+              <p class="gs__card-desc">
+                Then open <code>pdt42 serve</code> to read the design and its canvases while it
+                grows.
+              </p>
+            </div>
+            <div class="gs__card">
+              <div class="gs__card-label">AI agent</div>
+              <h3 class="gs__card-title">Use the CLI</h3>
+              <p class="gs__card-desc">
+                <code>pdt42 next</code> names the step to work on,
+                <code>pdt42 guide step</code> gives its brief and a starter template,
+                <code>pdt42 explain</code> a block's attributes, <code>pdt42 validate</code> what is
+                inconsistent. Add <code>--format json</code> for output to parse. Entities,
+                motivations and assumptions come from the people in the ecosystem, so ask your human
+                rather than invent them.
+              </p>
+              <div class="gs__snippet">
+                <code
+                  >npx @pdt42/cli next<br />npx @pdt42/cli guide step D1<br />npx @pdt42/cli
+                  validate</code
+                >
+              </div>
+              <p class="gs__card-desc">
+                <code>pdt42 build --out site</code> writes a static site;
+                <code>--single-file</code> one page to share.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="session" aria-labelledby="session-heading">
+        <div class="container">
+          <header class="gs__header">
+            <h2 class="gs__title" id="session-heading">An agent at work</h2>
+            <p class="gs__sub">
+              A recorded session: an agent starts a design in an empty folder. Every output is what
+              the CLI prints, recorded by <code>pnpm demo:cli</code>.
+            </p>
+          </header>
+          <div class="session" aria-label="Recorded pdt42 session">
+            <div class="session__bar">
+              <span class="session__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="session__title">agent + pdt42</span>
+              <button class="session__replay" id="session-replay" type="button">↻ Replay</button>
+            </div>
+            <div class="session__screen" id="session-screen" tabindex="0"></div>
+          </div>
+          <p class="session__note">
+            <strong>No hidden state.</strong> pdt42 keeps no session or progress file. Every run of
+            <code>pdt42 next</code> reads the Markdown and works out the step from it: which blocks
+            exist and which findings are still open. Edit a file, by hand or by agent, and the next
+            step changes with it. The design and its progress are in the files you commit.
+          </p>
+          <ul class="agent__list">
+            <li>
+              <strong>Sparring.</strong> It asks the questions the method asks: who really produces
+              value here, what do they exchange, what would make them come back?
+            </li>
+            <li>
+              <strong>Research.</strong> It scans an arena, collects entities and the alternatives
+              they use today, and drafts portraits for you to correct.
+            </li>
+            <li>
+              <strong>Oversight.</strong> <code>pdt42 validate</code> and
+              <code>pdt42 next</code> keep the model whole: nothing dangling, no canvas missing, no
+              step skipped by accident.
+            </li>
+            <li>
+              <strong>Method.</strong> <code>pdt42 guide</code> hands it each step when it is due:
+              what to find out, which blocks to write, which canvas to place.
+            </li>
+          </ul>
+          <p class="agent__human">
+            Innovation stays human. Which relationship is core, which play to make, what the
+            platform promises: the insight is yours. The agent keeps it in order.
+          </p>
         </div>
       </section>
 
@@ -217,54 +320,6 @@
         </div>
       </section>
 
-      <section class="section" id="agent" aria-labelledby="agent-heading">
-        <div class="container">
-          <header class="gs__header">
-            <h2 class="gs__title" id="agent-heading">Your agent, a sparring partner</h2>
-            <p class="gs__sub">
-              Agents are good company for platform design — as long as the thinking stays yours.
-            </p>
-          </header>
-          <div class="agent">
-            <ul class="agent__list">
-              <li>
-                <strong>Sparring.</strong> It asks the questions the method asks: who really
-                produces value here, what do they exchange, what would make them come back?
-              </li>
-              <li>
-                <strong>Research.</strong> It scans an arena, collects entities and the alternatives
-                they use today, and drafts portraits for you to correct.
-              </li>
-              <li>
-                <strong>Oversight.</strong> <code>pdt42 validate</code> and
-                <code>pdt42 next</code> keep the model whole: nothing dangling, no canvas missing,
-                no step skipped by accident.
-              </li>
-              <li>
-                <strong>Method.</strong> <code>pdt42 guide</code> hands it each step when it is due
-                — what to find out, which blocks to write, which canvas to place.
-              </li>
-            </ul>
-            <pre
-              class="terminal"
-              aria-label="pdt42 next in an empty workspace"
-            ><span class="terminal__prompt">$ pdt42 next</span>
-Next: D1 · Map the ecosystem
-
-Nothing is modelled yet. Start with D1 — or with E1 if
-you still need to find the opportunity.
-
-&gt; Who is in the ecosystem, clustered into which roles?
-
-Run `pdt42 guide step D1` for the brief.</pre>
-          </div>
-          <p class="agent__human">
-            Innovation stays human. Which relationship is core, which play to make, what the
-            platform promises — the insight is yours. The agent keeps it in order.
-          </p>
-        </div>
-      </section>
-
       <section class="section" id="method" aria-labelledby="method-heading">
         <div class="container">
           <header class="gs__header">
@@ -383,43 +438,11 @@ Run `pdt42 guide step D1` for the brief.</pre>
         </div>
       </section>
 
-      <section class="section" id="getting-started" aria-labelledby="gs-heading">
+      <section class="section" id="live" aria-labelledby="live-heading">
         <div class="container">
           <header class="gs__header">
-            <h2 class="gs__title" id="gs-heading">Get started</h2>
+            <h2 class="gs__title" id="live-heading">See it live</h2>
           </header>
-          <div class="gs__grid">
-            <div class="gs__card">
-              <div class="gs__card-label">You and your agent</div>
-              <h3 class="gs__card-title">Get the CLI and the skill</h3>
-              <p class="gs__card-desc">
-                The skill teaches your agent the workflow; the CLI guides it step by step.
-              </p>
-              <div class="gs__snippet">
-                <code>npm install -g @pdt42/cli<br />npx skills add mrsimpson/pdt42</code>
-              </div>
-              <h3 class="gs__card-title">Start the conversation</h3>
-              <div class="gs__snippet">
-                <code>"Let's explore a platform for … — use pdt42 and guide me through it"</code>
-              </div>
-            </div>
-            <div class="gs__card">
-              <div class="gs__card-label">The CLI</div>
-              <h3 class="gs__card-title">Guided, step by step</h3>
-              <p class="gs__card-desc">
-                <code>guide</code> shows the method and the brief of each step,
-                <code>next</code> what is due, <code>validate</code> what is inconsistent,
-                <code>serve</code> the design with its canvases, live.
-              </p>
-              <div class="gs__snippet">
-                <code>pdt42 guide<br />pdt42 next<br />pdt42 validate<br />pdt42 serve</code>
-              </div>
-              <p class="gs__card-desc">
-                <code>pdt42 build --out site</code> writes a static site;
-                <code>--single-file</code> one page to share.
-              </p>
-            </div>
-          </div>
           <div class="live">
             <a class="live-card" href="./harvest-commons/">
               <h3 class="live-card__title">Harvest Commons, live</h3>
