@@ -35,6 +35,12 @@ describe("pdt42", () => {
   test("guide and next start a blank workspace at D1; guide step hands out the template", () => {
     const dir = mkdtempSync(join(tmpdir(), "pdt-"));
     expect(pdt("--dir", dir, "next").out).toContain("Next: D1 · Map the ecosystem");
+    expect(JSON.parse(pdt("--dir", dir, "next", "--format", "json").out)).toMatchObject({
+      step: "D1",
+      title: "Map the ecosystem",
+      state: "todo",
+    });
+    expect(JSON.parse(pdt("--dir", EXAMPLE, "next", "--format", "json").out)).toBeNull();
     const overview = pdt("--dir", dir, "guide").out;
     expect(overview).toContain("[ ] D5  Identify the elementary transactions and channels");
     expect(overview).toContain(":::transaction, :::channel");
