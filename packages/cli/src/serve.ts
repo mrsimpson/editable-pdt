@@ -1,5 +1,5 @@
 import { watch, existsSync } from "node:fs";
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer, type Server, type ServerResponse } from "node:http";
 import { dirname, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -131,6 +131,10 @@ export async function build(dir: string, out: string, singleFile: boolean): Prom
   if (!existsSync(join(web, "index.html"))) {
     throw new Error(`The web app is not built (${web}). Run \`pnpm build\` first.`);
   }
+  // Replace what an earlier build wrote (hashed assets pile up otherwise), but nothing else:
+  // the output folder may hold other things, like the landing page around the example.
+  await rm(join(out, "assets"), { recursive: true, force: true });
+  await rm(join(out, "index.html"), { force: true });
   await mkdir(out, { recursive: true });
   if (!singleFile) await cp(web, out, { recursive: true });
   const html = await readFile(join(web, "index.html"), "utf8");
