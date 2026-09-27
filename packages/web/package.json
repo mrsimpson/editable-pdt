@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "The pdt42 workspace in the browser: chapters, model boxes and canvases.",
+  "license": "CC-BY-SA-4.0",
   "type": "module",
   "scripts": {
     "dev": "vp dev",

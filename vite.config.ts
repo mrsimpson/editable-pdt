@@ -14,6 +14,7 @@ export default defineConfig({
     cache: true,
   },
   test: {
-    exclude: ["**/node_modules/**", "**/dist/**"],
+    // *.spec.ts are Playwright files (the demo), run by `pnpm demo`, not by vitest.
+    exclude: ["**/node_modules/**", "**/dist/**", "**/*.spec.ts"],
   },
 });
