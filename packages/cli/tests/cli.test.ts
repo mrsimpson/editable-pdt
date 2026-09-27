@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, test } from "vite-plus/test";
@@ -88,6 +88,28 @@ describe("pdt42 serve and build", () => {
     } finally {
       server.close();
     }
+  });
+
+  test("build replaces an earlier build's assets and keeps everything else", async () => {
+    const web = mkdtempSync(join(tmpdir(), "pdt42-web-"));
+    mkdirSync(join(web, "assets"));
+    writeFileSync(join(web, "index.html"), '<html><head><meta charset="UTF-8" /></head></html>');
+    writeFileSync(join(web, "assets", "index-new.js"), "");
+    const out = mkdtempSync(join(tmpdir(), "pdt42-out-"));
+    mkdirSync(join(out, "assets"));
+    writeFileSync(join(out, "assets", "index-old.js"), "");
+    writeFileSync(join(out, "notes.txt"), "not ours");
+    const previous = process.env.PDT42_WEB_DIR;
+    process.env.PDT42_WEB_DIR = web;
+    try {
+      const { build } = await import("../src/serve.ts");
+      await build(EXAMPLE, out, false);
+    } finally {
+      if (previous === undefined) delete process.env.PDT42_WEB_DIR;
+      else process.env.PDT42_WEB_DIR = previous;
+    }
+    expect(readdirSync(join(out, "assets"))).toEqual(["index-new.js"]);
+    expect(existsSync(join(out, "notes.txt"))).toBe(true);
   });
 
   test("build injects the workspace after the charset declaration", async () => {
