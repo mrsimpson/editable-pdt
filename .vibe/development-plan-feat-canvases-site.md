@@ -65,6 +65,10 @@ Drift detection is out of scope: tracked as issue #2.
   shared under the same terms: `LICENSE` holds the licence text, every package declares
   `CC-BY-SA-4.0`, and README, landing page and every rendered workspace (sidebar) carry the
   attribution to Boundaryless and the not-affiliated note.
+- **Releases like arc42:** the `release` job in `ci.yml` runs semantic-release on `main`, which
+  derives the version from conventional commits since the last `v*` tag, publishes `@pdt42/cli`
+  through npm trusted publishing (OIDC, `--provenance`) and creates the GitHub release. 0.1.0 was
+  published by hand; its commit carries the `v0.1.0` tag so the pipeline continues from there.
 - **Agent positioning** on the site: agents spar, research and keep method and model in order;
   innovation stays human.
 
