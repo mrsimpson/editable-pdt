@@ -353,8 +353,9 @@ li code {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
-/* ─── Agent at work: the recorded session ───────────────────────────────────── */
+/* ─── Guidance: an agent session ───────────────────────────────────────────── */
 .session {
+  margin-bottom: 2rem;
   overflow: hidden;
   background: #1c1917;
   border: 1px solid #292524;
@@ -459,14 +460,6 @@ li code {
   padding-left: 0.75rem;
   border-left: 2px solid #166534;
   color: #bbf7d0;
-}
-.session__note {
-  margin: 1.5rem 0 2rem;
-  font-size: 0.95rem;
-  color: var(--text-muted);
-}
-.session__note strong {
-  color: var(--text);
 }
 .agent__list {
   margin: 0;

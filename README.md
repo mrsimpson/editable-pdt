@@ -113,10 +113,8 @@ pdt42 is built to be driven by a coding agent, with a human in the conversation.
 format and the workflow; the CLI hands them the method one step at a time (`next`,
 `guide step`, `explain`, `validate`, most with `--format json`).
 
-The landing page replays a recorded session: an agent starts a design in an empty folder, runs
-`next` and `guide step D1`, writes the chapter, fixes the warning `validate` reports and moves on
-to D2. `pnpm demo:cli` records it against the CLI from source into `demo/cli-session.json`, and a
-test fails when the CLI's output no longer matches the recording.
+A session looks like this: `next` names D1, `guide step D1` briefs it, the agent writes the
+chapter, `validate` reports the missing canvas, the agent adds it, and `next` moves on to D2.
 
 ## Development
 
