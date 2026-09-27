@@ -133,9 +133,17 @@ examples/       Harvest Commons, a complete design across all three phases
 
 ## Credits and licence
 
-The Platform Design Toolkit is © Boundaryless SRL. Its canvases and guides are licensed
-[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The guidance text in this
-repository is written in our own words and links to the original pages. Because the meta-model
-and the guidance adapt the toolkit's structure, they carry the ShareAlike obligation; the licence
-for this repository is not chosen yet. This project is not affiliated with or endorsed by
-Boundaryless.
+pdt42 builds on the [Platform Design Toolkit](https://www.boundaryless.io/pdt-toolkit/) (PDT) by
+Boundaryless SRL, whose canvases and guides are licensed
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The meta-model, the guidance
+and the canvas renderings adapt the toolkit, so pdt42 is shared under the same licence:
+**[CC BY-SA 4.0](LICENSE)** — code, documentation, example and site alike.
+
+- **Attribution.** When you share pdt42 or something adapted from it, credit the Platform Design
+  Toolkit by Boundaryless and pdt42, link the licence, and say what you changed. The pages that
+  `pdt42 serve` and `pdt42 build` render carry this attribution.
+- **ShareAlike.** Adaptations must be shared under CC BY-SA 4.0 (or a compatible licence).
+- The guidance text is written in our own words and links to the original pages; the canvases
+  are pdt42's own renderings of the method, not copies of the Boundaryless artwork.
+
+pdt42 is not affiliated with or endorsed by Boundaryless.

@@ -60,6 +60,11 @@ Drift detection is out of scope: tracked as issue #2.
 - **Site mirrors arc42's `packages/site`** (Nav, Hero, story, features, getting started, live example,
   footer). Screenshots come from a Playwright demo spec (`pnpm demo`) run against
   `pdt42 serve examples/harvest-commons`, stored in `demo/`.
+- **Licence: CC BY-SA 4.0**, the licence of the Platform Design Toolkit's canvases and guides.
+  pdt42 adapts the toolkit (meta-model, guidance, canvas renderings), so the whole repository is
+  shared under the same terms: `LICENSE` holds the licence text, every package declares
+  `CC-BY-SA-4.0`, and README, landing page and every rendered workspace (sidebar) carry the
+  attribution to Boundaryless and the not-affiliated note.
 - **Agent positioning** on the site: agents spar, research and keep method and model in order;
   innovation stays human.
 
@@ -97,7 +102,7 @@ reachable, the web app moved to React and the demo to a Playwright project (see 
 - [x] arc42 site: React + vite, components Nav/Hero/GettingStarted/FeatureStrip/LiveSection/Footer,
       design tokens in styles.css, light/dark theme
 - [x] arc42 demo: Playwright project `demo` (headed, video), cursor overlay, screenshots per moment
-- [x] Drift detection issue created: mrsimpson/editable-pdt#2
+- [x] Drift detection issue created: mrsimpson/pdt42#2
 
 ## Plan
 
@@ -111,9 +116,8 @@ reachable, the web app moved to React and the demo to a Playwright project (see 
 
 - [ ] Side-by-side comparison with the official Boundaryless canvases (earlier request; needs the
       canvas images and attribution — not started)
-- [ ] After the repository rename: update the `mrsimpson/editable-pdt` links (site, README);
-      GitHub redirects in the meantime
-- [ ] Merge into `main` so the Pages workflow deploys
+- [ ] GitHub Pages: enable Pages with source "GitHub Actions" in the repository settings (the
+      deploy job fails until then)
 
 ### Completed
 
@@ -130,6 +134,9 @@ reachable, the web app moved to React and the demo to a Playwright project (see 
 - [x] Site: landing page with the story, agent positioning, method map, canvases, getting started
 - [x] Workflows: CI (build, check, test, validate the example) and GitHub Pages (site + example)
 - [x] `vp check`, `vp test` (59 tests), build green; first CI run green
+- [x] Repository renamed to `mrsimpson/pdt42`, `main` created; links updated
+- [x] CI fix: vitest no longer collects the Playwright demo (`*.spec.ts` excluded at the root)
+- [x] Licence CC BY-SA 4.0 with attribution (LICENSE, manifests, README, site, rendered pages)
 - [x] Web app on React 18 + marked + vite-plugin-singlefile; no React warnings in any chapter
 - [x] Demo as a Playwright project: captioned walkthrough video (`demo/demo.webm`, shown on the
       site) and the site's screenshots

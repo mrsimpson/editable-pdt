@@ -165,6 +165,11 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
           <span className="count count--hint">{counts.hint}</span>
         </span>
       </footer>
+      <p className="sidebar__credit">
+        Drawn with <a href="https://github.com/mrsimpson/pdt42">pdt42</a> after the{" "}
+        <a href="https://www.boundaryless.io/pdt-toolkit/">Platform Design Toolkit</a> by
+        Boundaryless · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+      </p>
     </aside>
   );
 }
