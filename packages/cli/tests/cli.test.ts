@@ -72,3 +72,32 @@ describe("pdt42", () => {
     expect(pdt("guide", "step").code).toBe(2);
   });
 });
+
+describe("pdt42 serve and build", () => {
+  test("serve answers /api/workspace with the payload", async () => {
+    const { serve } = await import("../src/serve.ts");
+    const server = await serve(EXAMPLE, { port: 0, host: "127.0.0.1" });
+    try {
+      const { port } = server.address() as { port: number };
+      const payload = (await (await fetch(`http://127.0.0.1:${port}/api/workspace`)).json()) as {
+        name: string;
+        canvases: unknown[];
+      };
+      expect(payload.name).toBe("Harvest Commons");
+      expect(payload.canvases.length).toBeGreaterThan(20);
+    } finally {
+      server.close();
+    }
+  });
+
+  test("build injects the workspace after the charset declaration", async () => {
+    const { injectWorkspace, inlineJson } = await import("../src/serve.ts");
+    expect(inlineJson({ a: "</script><b>" })).toBe('{"a":"\\u003c/script>\\u003cb>"}');
+    const html = injectWorkspace(
+      '<html><head><meta charset="UTF-8" /><title>x</title></head><body></body></html>',
+      { name: "Harvest Commons" } as never,
+    );
+    expect(html).toMatch(/^<html><head><meta charset="UTF-8" \/><script>window.__WORKSPACE__=/);
+    expect(html).toContain("<title>Harvest Commons · pdt42</title>");
+  });
+});

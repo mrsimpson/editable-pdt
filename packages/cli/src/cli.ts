@@ -2,6 +2,7 @@
 import { resolve } from "node:path";
 import { BLOCK_TYPES, incoming, RULES, blockFields, type Diagnostic } from "@pdt42/core";
 import { load } from "./discover.ts";
+import { build, serve } from "./serve.ts";
 import {
   explainText,
   formatDiagnostic,
@@ -26,9 +27,11 @@ Commands
   validate [--strict]      Check the model (exit 1 on errors, or on warnings with --strict)
   get [id] [--type <t>]    List elements, or show one with what references it
   rules                    Every validation rule with its rationale
+  serve [--port <n>]       Render the workspace in the browser, reloading on every change
+  build --out <dir>        Render the workspace as a static site [--single-file: one HTML file]
 
 Options
-  --dir <path>             Workspace directory (default: $PDT_DIR or the current directory)
+  --dir <path>             Workspace directory (default: $PDT42_DIR or the current directory)
   --format json            Machine-readable output (validate, get, rules, guide, next)
 
 The methodology is the Platform Design Toolkit 2.2 by Boundaryless SRL, whose canvases and
@@ -44,7 +47,8 @@ function parseArgs(argv: string[]): Args {
   const args: Args = { _: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]!;
-    if (a === "--strict" || a === "--help" || a === "-h") args[a.replace(/^-+/, "")] = true;
+    if (a === "--strict" || a === "--single-file" || a === "--help" || a === "-h")
+      args[a.replace(/^-+/, "")] = true;
     else if (a.startsWith("--")) args[a.slice(2)] = argv[++i] ?? "";
     else args._.push(a);
   }
@@ -66,7 +70,7 @@ async function main(): Promise<number> {
     print(HELP);
     return 0;
   }
-  const dir = resolve(String(args.dir || process.env.PDT_DIR || "."));
+  const dir = resolve(String(args.dir || process.env.PDT42_DIR || "."));
   const json = args.format === "json";
 
   switch (command) {
@@ -119,6 +123,20 @@ async function main(): Promise<number> {
         return 0;
       }
       print(explainText(rest[0]));
+      return 0;
+    }
+    case "serve": {
+      const port = Number(args.port || 4242);
+      const host = String(args.host || "127.0.0.1");
+      await serve(dir, { port, host });
+      print(`pdt42 serve  →  http://${host === "0.0.0.0" ? "localhost" : host}:${port}`);
+      print(`Watching ${dir} — the browser reloads on every change. Ctrl+C to stop.`);
+      return new Promise<number>(() => {});
+    }
+    case "build": {
+      if (!args.out) throw new UsageError("pdt42 build --out <dir> [--single-file]");
+      const target = await build(dir, resolve(String(args.out)), Boolean(args["single-file"]));
+      print(`Wrote ${target}`);
       return 0;
     }
     case "validate": {

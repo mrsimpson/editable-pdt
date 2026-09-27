@@ -14,3 +14,4 @@ export {
 export { metaModelDoc } from "./meta-model-doc.ts";
 export * from "./canvases.ts";
 export * from "./payload.ts";
+export * from "./canvas-model.ts";
