@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
-import { BLOCK_TYPES, incoming, RULES, blockFields, type Diagnostic } from "@pdt42/core";
+import { BLOCK_TYPES, incoming, nextStep, RULES, blockFields, type Diagnostic } from "@pdt42/core";
 import { load } from "./discover.ts";
 import { build, serve } from "./serve.ts";
 import {
@@ -106,6 +106,26 @@ async function main(): Promise<number> {
     }
     case "next": {
       const { steps } = await load(dir);
+      if (json) {
+        const next = nextStep(steps);
+        print(
+          JSON.stringify(
+            next
+              ? {
+                  step: next.status.step.id,
+                  title: next.status.step.title,
+                  question: next.status.step.question,
+                  reason: next.reason,
+                  state: next.status.state,
+                  findings: next.status.findings,
+                }
+              : null,
+            null,
+            2,
+          ),
+        );
+        return 0;
+      }
       print(nextText(steps));
       return 0;
     }
