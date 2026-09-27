@@ -1,4 +1,4 @@
-import{i as e,n as t,r as n,t as r}from"./styles-CtwqVDK-.js";var i=`# Identify the ecosystem and its arenas · Choose the arena to focus on
+import{i as e,n as t,r as n,t as r}from"./styles-Ceas0Tdl.js";var i=`# Identify the ecosystem and its arenas · Choose the arena to focus on
 
 \`\`\`pdt42
 :::canvas

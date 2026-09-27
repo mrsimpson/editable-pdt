@@ -1,4 +1,4 @@
-import{a as e,i as t,r as n,t as r}from"./styles-CtwqVDK-.js";var i=[{kind:`human`,text:`Let's design a platform that connects small farms with the city's kitchens. Use pdt42.`},{kind:`run`,command:`pdt42 next`,output:`Next: D1 · Map the ecosystem
+import{a as e,i as t,r as n,t as r}from"./styles-Ceas0Tdl.js";var i=[{kind:`human`,text:`Let's design a platform that connects small farms with the city's kitchens. Use pdt42.`},{kind:`run`,command:`pdt42 next`,output:`Next: D1 · Map the ecosystem
 
 Nothing is modelled yet. Start with D1 — or with E1 if you still need to find the opportunity.
 
