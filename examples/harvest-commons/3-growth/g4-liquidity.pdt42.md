@@ -21,6 +21,14 @@ constraints:
 :::
 ```
 
+```pdt42
+:::canvas
+id: cv-liquidity-kitchen
+canvas: liquidity
+of: r-farmer-restaurant
+:::
+```
+
 ## Boxes in one neighbourhood
 
 The cooperative's market customers make demand easy to find; farms willing to pack boxes are the constraint.
@@ -38,5 +46,13 @@ demand-threshold: Five farms make a box varied enough to keep
 start-with: supply
 constraints:
   - One neighbourhood, three hubs
+:::
+```
+
+```pdt42
+:::canvas
+id: cv-liquidity-box
+canvas: liquidity
+of: r-farmer-household
 :::
 ```

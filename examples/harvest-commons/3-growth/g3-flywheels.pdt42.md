@@ -1,5 +1,12 @@
 # Sketch the flywheels
 
+```pdt42
+:::canvas
+id: cv-flywheels
+canvas: flywheel-sketching
+:::
+```
+
 ## More farms, better boxes
 
 The core indirect network effect: more farms make boxes more varied, more varied boxes keep more

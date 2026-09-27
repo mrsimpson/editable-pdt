@@ -43,7 +43,10 @@ export interface StepInfo {
   phase: Phase;
   title: string;
   question: string;
+  /** The canvases the step works with. */
   canvases: string[];
+  /** The canvas its chapter must show (rule W011), if the step has one. */
+  canvas?: string;
   /** Block types this step creates. */
   blocks: BlockType[];
   /** Block types this step fills in further (e.g. portraits on entities). */
@@ -66,6 +69,7 @@ export const STEPS: StepInfo[] = [
     question:
       "What does the ecosystem look like, and which arenas of systemic outcomes make it up?",
     canvases: ["arena-scan"],
+    canvas: "arena-scan",
     blocks: ["ecosystem", "arena"],
     how: [
       "Describe the ecosystem in prose: who creates and exchanges value today, in which phases or layers.",
@@ -83,6 +87,7 @@ export const STEPS: StepInfo[] = [
     title: "Scan the ecosystem",
     question: "Which experiences already happen, among which entities, on which market layer?",
     canvases: ["ecosystem-scan"],
+    canvas: "ecosystem-scan",
     blocks: ["job"],
     enriches: [{ type: "entity", fields: ["layer"] }],
     how: [
@@ -102,6 +107,7 @@ export const STEPS: StepInfo[] = [
     question:
       "Where can you build on your strengths, and who holds positions that are hard to displace?",
     canvases: ["vrio", "ecosystem-scan"],
+    canvas: "vrio",
     blocks: ["asset", "moat"],
     how: [
       "List your assets and capabilities; test each in order: valuable, rare, inimitable, organised.",
@@ -135,6 +141,7 @@ export const STEPS: StepInfo[] = [
     title: "Map the value chain",
     question: "How does value flow today, from the user need down to commodities?",
     canvases: ["wardley-map"],
+    canvas: "wardley-map",
     blocks: ["component"],
     how: [
       "Start at the top with the user need; place every component by visibility first, then by evolution.",
@@ -151,6 +158,7 @@ export const STEPS: StepInfo[] = [
     title: "Apply the six Platform Plays",
     question: "How could a platform transform this value chain?",
     canvases: ["platform-plays", "wardley-map"],
+    canvas: "platform-plays",
     blocks: ["play"],
     enriches: [{ type: "component", fields: ["target"] }],
     how: [
@@ -168,6 +176,7 @@ export const STEPS: StepInfo[] = [
     title: "Identify the platformization space and consolidate the brief",
     question: "Which focused space, around which core relationship, do you design for?",
     canvases: ["brief-consolidation", "pattern-cards"],
+    canvas: "brief-consolidation",
     blocks: ["scenario", "brief"],
     how: [
       "Play the Pattern Cards whose signals are visible and write the resulting WHAT-IF scenarios.",
@@ -185,6 +194,7 @@ export const STEPS: StepInfo[] = [
     title: "Map the ecosystem",
     question: "Who is in the ecosystem, clustered into which roles?",
     canvases: ["ecosystem"],
+    canvas: "ecosystem",
     blocks: ["platform", "entity"],
     enriches: [{ type: "entity", fields: ["role", "clusters"] }],
     how: [
@@ -203,6 +213,7 @@ export const STEPS: StepInfo[] = [
     title: "Portray the entity-roles",
     question: "What is each role's context, what drives it, and what gains does it seek?",
     canvases: ["entity-portrait"],
+    canvas: "entity-portrait",
     blocks: [],
     enriches: [
       {
@@ -237,6 +248,7 @@ export const STEPS: StepInfo[] = [
     title: "Analyse the motivations to exchange value",
     question: "What can each role give to each other role — today and potentially?",
     canvases: ["motivations-matrix"],
+    canvas: "motivations-matrix",
     blocks: ["motivation"],
     how: [
       "Put the roles in the same order on rows and columns; each cell is what the row gives to the column.",
@@ -271,6 +283,7 @@ export const STEPS: StepInfo[] = [
     question:
       "Which atomic transactions happen — or could — in each core relationship, through which channels?",
     canvases: ["transactions-board"],
+    canvas: "transactions-board",
     blocks: ["transaction", "channel"],
     how: [
       "One Transactions Board per core relationship: every transaction references it.",
@@ -289,6 +302,7 @@ export const STEPS: StepInfo[] = [
     question:
       "How does the platform help each role onboard, get better and catch new opportunities?",
     canvases: ["learning-engine"],
+    canvas: "learning-engine",
     blocks: ["learning-engine", "service"],
     how: [
       "One `learning-engine` per role: entry points, then the key challenges of each stage.",
@@ -307,6 +321,7 @@ export const STEPS: StepInfo[] = [
     question:
       "Which journey, from the core role's point of view, delivers the value proposition — and sustains itself?",
     canvases: ["platform-experience"],
+    canvas: "platform-experience",
     blocks: ["experience"],
     how: [
       "Name the experience and choose the core role in one relationship.",
@@ -324,6 +339,7 @@ export const STEPS: StepInfo[] = [
     title: "Set up the Minimum Viable Platform",
     question: "What is the leanest test of the riskiest assumptions with the real ecosystem?",
     canvases: ["mvp"],
+    canvas: "mvp",
     blocks: ["mvp", "assumption"],
     how: [
       "Choose the experiences the MVP features and list what you already have (`base`).",
@@ -341,6 +357,7 @@ export const STEPS: StepInfo[] = [
     title: "Frame the Platform Strategy Model",
     question: "Which product bundle, marketplaces and extension platform make up the strategy?",
     canvases: ["platform-strategy-model"],
+    canvas: "platform-strategy-model",
     blocks: ["value-proposition"],
     how: [
       "Articulate the product/service bundle and its core customer.",
@@ -357,6 +374,7 @@ export const STEPS: StepInfo[] = [
     title: "Characterise the network",
     question: "How will network effects behave in this relationship?",
     canvases: ["network-properties"],
+    canvas: "network-properties",
     blocks: ["network"],
     how: [
       "One `network` per core relationship: assess the seven properties first.",
@@ -373,6 +391,7 @@ export const STEPS: StepInfo[] = [
     title: "Sketch the flywheels",
     question: "How does value compound — and what makes it defensible?",
     canvases: ["flywheel-sketching"],
+    canvas: "flywheel-sketching",
     blocks: ["flywheel"],
     how: [
       "Start from one core network-effect flywheel (direct or indirect).",
@@ -389,6 +408,7 @@ export const STEPS: StepInfo[] = [
     title: "Plan liquidity",
     question: "Where and how do you solve the chicken-and-egg problem?",
     canvases: ["liquidity"],
+    canvas: "liquidity",
     blocks: ["liquidity"],
     how: [
       "Frame the alternatives customers have first.",
@@ -405,6 +425,7 @@ export const STEPS: StepInfo[] = [
     title: "Build the growth engine",
     question: "Which loops sustain growth after liquidity?",
     canvases: ["growth-model"],
+    canvas: "growth-model",
     blocks: ["growth-loop"],
     how: [
       "Write each active loop as an equation, with its bottleneck and cycle time.",

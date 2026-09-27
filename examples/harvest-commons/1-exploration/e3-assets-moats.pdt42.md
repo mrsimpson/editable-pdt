@@ -1,5 +1,12 @@
 # Identify leverageable assets and moats
 
+```pdt42
+:::canvas
+id: cv-vrio
+canvas: vrio
+:::
+```
+
 ## Saturday market customer base
 
 Eight years of market days have built a list of 2,000 households who ask for the farms by name.

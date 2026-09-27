@@ -1,5 +1,12 @@
 # Build the growth engine
 
+```pdt42
+:::canvas
+id: cv-growth
+canvas: growth-model
+:::
+```
+
 ## Recipes bring neighbours
 
 Households share how they cooked their box; every shared recipe links to the neighbourhood's hub.

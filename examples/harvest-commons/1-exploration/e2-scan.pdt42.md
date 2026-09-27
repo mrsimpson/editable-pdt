@@ -1,5 +1,12 @@
 # Scan the ecosystem
 
+```pdt42
+:::canvas
+id: cv-ecosystem-scan
+canvas: ecosystem-scan
+:::
+```
+
 ## Find buyers for the week's harvest
 
 Every Monday farmers call restaurants and the wholesaler to place what they expect to harvest.

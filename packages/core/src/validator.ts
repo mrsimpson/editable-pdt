@@ -1,7 +1,8 @@
 import type { SourceLocation } from "./ast.ts";
 import { elementsOf, get, type Element, type Workspace } from "./model.ts";
 import { blockMeta, crossReferences, PEER_ROLES, type BlockType } from "./schemas.ts";
-import { STEPS } from "./methodology.ts";
+import { canvasById, STEPS } from "./methodology.ts";
+import { canvasScope } from "./canvases.ts";
 
 // The rule registry. Each rule describes itself — `pdt42 rules` prints the registry — and names the
 // methodology step it belongs to, so `pdt42 guide` can show a step's open findings.
@@ -22,6 +23,8 @@ export interface RuleMeta {
 
 export interface Finding {
   message: string;
+  /** For rules spanning several steps: the step this finding belongs to. */
+  step?: string;
   loc: SourceLocation;
   element?: string;
 }
@@ -157,6 +160,55 @@ export const RULES: Rule[] = [
             message: `Only one :::${kind} block is allowed per workspace`,
           })),
       ),
+  ),
+
+  rule(
+    {
+      code: "E006",
+      severity: "error",
+      title: "Invalid canvas",
+      rationale:
+        "A :::canvas block names one of the PDT canvases; canvases drawn once per element (a portrait, a transactions board …) say which element with `of`, and it must exist and have the right type.",
+    },
+    (ws) => {
+      const out: Finding[] = ws.issues
+        .filter((i) => i.code === "E006")
+        .map(({ message, loc }) => ({ message, loc }));
+      const seen = new Map<string, string>();
+      for (const view of ws.canvases) {
+        const info = canvasById(view.canvas)!;
+        const at = { loc: view.loc };
+        const first = seen.get(view.id);
+        if (first || ws.byId.has(view.id)) {
+          out.push({
+            ...at,
+            message: `Id "${view.id}" is already used${first ? ` at ${first}` : " by an element"}`,
+          });
+        }
+        seen.set(view.id, `${view.loc.file}:${view.loc.line}`);
+        if (info.per && !view.of) {
+          out.push({
+            ...at,
+            message: `The ${info.title} is drawn once per ${info.per}: add \`of: <${info.per} id>\``,
+          });
+        } else if (!info.per && view.of) {
+          out.push({
+            ...at,
+            message: `The ${info.title} is drawn once per workspace: remove \`of\``,
+          });
+        } else if (info.per && view.of) {
+          const target = ws.byId.get(view.of);
+          if (!target) out.push({ ...at, message: `of: "${view.of}" does not exist` });
+          else if (target.kind !== info.per) {
+            out.push({
+              ...at,
+              message: `of: "${view.of}" is a ${target.kind}, expected ${info.per}`,
+            });
+          }
+        }
+      }
+      return out;
+    },
   ),
 
   // ── Warnings ──────────────────────────────────────────────────────────────
@@ -407,6 +459,17 @@ export const RULES: Rule[] = [
             ]
           : [];
       }),
+  ),
+
+  rule(
+    {
+      code: "W011",
+      severity: "warning",
+      title: "Chapter without its canvas",
+      rationale:
+        "The canvases are how a platform design is read and discussed. Every chapter shows the canvas of its step, drawn from the model with a :::canvas block, so the picture can never drift from the model.",
+    },
+    (ws) => chapterCanvasFindings(ws),
   ),
 
   // ── Hints: exploration ────────────────────────────────────────────────────
@@ -862,7 +925,12 @@ export function validate(ws: Workspace): Diagnostic[] {
   for (const r of RULES) {
     for (const finding of r.check(ws)) {
       if (ws.ignores.get(finding.loc.file)?.has(r.meta.code)) continue;
-      out.push({ ...finding, code: r.meta.code, severity: r.meta.severity, step: r.meta.step });
+      out.push({
+        ...finding,
+        code: r.meta.code,
+        severity: r.meta.severity,
+        step: finding.step ?? r.meta.step,
+      });
     }
   }
   const order: Record<Severity, number> = { error: 0, warning: 1, hint: 2 };
@@ -872,4 +940,56 @@ export function validate(ws: Workspace): Diagnostic[] {
       a.loc.file.localeCompare(b.loc.file) ||
       a.loc.line - b.loc.line,
   );
+}
+
+/** W011: for every started step with a canvas, the canvas is placed in the step's chapter. */
+function chapterCanvasFindings(ws: Workspace): Finding[] {
+  const out: Finding[] = [];
+  for (const step of STEPS) {
+    if (!step.canvas) continue;
+    const canvas = canvasById(step.canvas)!;
+    const own = step.blocks.length
+      ? ws.elements.filter((e) => (step.blocks as string[]).includes(e.kind))
+      : ws.elements.filter((e) =>
+          (step.enriches ?? []).some(
+            ({ type, fields }) =>
+              e.kind === type &&
+              fields.some((f) => {
+                const v = (e.data as Record<string, unknown>)[f];
+                return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== "";
+              }),
+          ),
+        );
+    if (!own.length) continue;
+    const chapterFiles = new Set(own.map((e) => e.loc.file));
+    const placed = ws.canvases.filter(
+      (v) => v.canvas === canvas.id && chapterFiles.has(v.loc.file),
+    );
+    const hint = (of?: string) =>
+      `add a \`:::canvas\` block with \`canvas: ${canvas.id}\`${of ? ` and \`of: ${of}\`` : ""}`;
+    const scope = canvasScope(ws, canvas.id);
+    if (!scope) {
+      if (!placed.length) {
+        out.push({
+          ...at(own[0]!),
+          step: step.id,
+          message: `${own[0]!.loc.file} (${step.id} ${step.title}) shows no ${canvas.title} — ${hint()}`,
+        });
+      }
+      continue;
+    }
+    for (const target of scope) {
+      if (placed.some((v) => v.of === target.id)) continue;
+      const anchor =
+        own.find((e) => ws.references.some((r) => r.from === e && r.to === target.id)) ??
+        own.find((e) => e.id === target.id) ??
+        own[0]!;
+      out.push({
+        ...at(anchor),
+        step: step.id,
+        message: `No ${canvas.title} for ${target.title} in ${[...chapterFiles].join(", ")} — ${hint(target.id)}`,
+      });
+    }
+  }
+  return out;
 }

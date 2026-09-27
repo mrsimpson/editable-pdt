@@ -1,5 +1,6 @@
 import type { DocumentAst, HeadingNode, ProseNode, SourceLocation } from "./ast.ts";
 import { parseMarkdown } from "./parser.ts";
+import { toCanvasView, type CanvasView } from "./canvases.ts";
 import {
   BLOCK_SCHEMAS,
   blockFields,
@@ -27,7 +28,7 @@ export interface Element<K extends BlockType = BlockType> {
 }
 
 export interface BuildIssue {
-  code: "E003" | "E004";
+  code: "E003" | "E004" | "E006";
   message: string;
   loc: SourceLocation;
   element?: string;
@@ -48,12 +49,15 @@ export interface Workspace {
   /** Rule codes suppressed per file. */
   ignores: Map<string, Set<string>>;
   references: Reference[];
+  /** The canvases placed in the chapters, in document order. */
+  canvases: CanvasView[];
 }
 
 export function buildWorkspace(documents: DocumentAst[]): Workspace {
   const elements: Element[] = [];
   const issues: BuildIssue[] = [];
   const ignores = new Map<string, Set<string>>();
+  const canvases: CanvasView[] = [];
 
   for (const doc of documents) {
     const fileIgnores = new Set<string>();
@@ -83,6 +87,13 @@ export function buildWorkspace(documents: DocumentAst[]): Workspace {
           });
           break;
         case "block": {
+          if (node.blockType === "canvas") {
+            // Canvases are views, placed where they appear; they do not own the prose above.
+            const { view, issues: canvasIssues } = toCanvasView(node, doc.file, heading?.text);
+            if (view) canvases.push(view);
+            for (const issue of canvasIssues) issues.push({ code: "E006", ...issue });
+            break;
+          }
           blocksUnderHeading++;
           const loc = { file: doc.file, line: node.startLine };
           if (!isBlockType(node.blockType)) {
@@ -142,7 +153,15 @@ export function buildWorkspace(documents: DocumentAst[]): Workspace {
   const byId = new Map<string, Element>();
   for (const element of elements) if (!byId.has(element.id)) byId.set(element.id, element);
 
-  return { documents, elements, byId, issues, ignores, references: collectReferences(elements) };
+  return {
+    documents,
+    elements,
+    byId,
+    issues,
+    ignores,
+    references: collectReferences(elements),
+    canvases,
+  };
 }
 
 function collectReferences(elements: Element[]): Reference[] {

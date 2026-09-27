@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vite-plus/test";
-import { RULES } from "../src/index.ts";
+import { parseWorkspace, RULES, validate } from "../src/index.ts";
 import { doc, farmers, kitchens, run } from "./helpers.ts";
 
 describe("errors", () => {
@@ -101,5 +101,69 @@ describe("method rules", () => {
       expect(r.meta.rationale.length, r.meta.code).toBeGreaterThan(20);
       if (r.meta.step) expect(r.meta.step).toMatch(/^[EDG]\d$/);
     }
+  });
+});
+
+describe("canvases", () => {
+  const board = (of?: string) =>
+    `:::canvas\nid: cv-board\ncanvas: transactions-board\n${of ? `of: ${of}\n` : ""}:::`;
+  const relationship = ":::relationship\nid: r\ntitle: R\nbetween: e-farmers, e-kitchens\n:::";
+  const transaction =
+    ":::transaction\nid: t\ntitle: T\nrelationship: r\nfrom: e-kitchens\nto: e-farmers\n:::";
+
+  test("are views, not elements", () => {
+    const { ws } = run(doc(farmers, kitchens, relationship, transaction, board("r")));
+    expect(ws.canvases.map((c) => c.id)).toEqual(["cv-board"]);
+    expect(ws.byId.has("cv-board")).toBe(false);
+  });
+
+  test("E006 unknown canvas, missing or wrong `of`, `of` on a workspace canvas", () => {
+    const messages = (content: string) =>
+      run(content)
+        .diagnostics.filter((d) => d.code === "E006")
+        .map((d) => d.message);
+    expect(messages(doc(":::canvas\nid: c\ncanvas: poster\n:::"))[0]).toMatch(/^:::canvas canvas:/);
+    expect(messages(doc(board()))[0]).toContain("add `of: <relationship id>`");
+    expect(messages(doc(farmers, board("e-farmers")))[0]).toBe(
+      'of: "e-farmers" is a entity, expected relationship',
+    );
+    expect(messages(doc(":::canvas\nid: c\ncanvas: ecosystem\nof: x\n:::"))[0]).toContain(
+      "remove `of`",
+    );
+  });
+
+  test("W011 a started step's chapter shows its canvas, per element where the canvas says so", () => {
+    const missing = run(doc(farmers, kitchens, relationship, transaction)).diagnostics.filter(
+      (d) => d.code === "W011",
+    );
+    expect(missing.map((d) => [d.step, d.message])).toEqual([
+      [
+        "D1",
+        "model.pdt42.md (D1 Map the ecosystem) shows no Ecosystem Canvas — add a `:::canvas` block with `canvas: ecosystem`",
+      ],
+      [
+        "D5",
+        "No Transactions Board for R in model.pdt42.md — add a `:::canvas` block with `canvas: transactions-board` and `of: r`",
+      ],
+    ]);
+    const placed = run(
+      doc(
+        farmers,
+        kitchens,
+        relationship,
+        transaction,
+        board("r"),
+        ":::canvas\nid: cv-eco\ncanvas: ecosystem\n:::",
+      ),
+    ).codes;
+    expect(placed).not.toContain("W011");
+  });
+
+  test("W011 wants the canvas in the step's own chapter file", () => {
+    const ws = parseWorkspace([
+      { file: "d1.pdt42.md", content: doc(farmers) },
+      { file: "elsewhere.pdt42.md", content: doc(":::canvas\nid: cv-eco\ncanvas: ecosystem\n:::") },
+    ]);
+    expect(validate(ws).some((d) => d.code === "W011" && d.step === "D1")).toBe(true);
   });
 });

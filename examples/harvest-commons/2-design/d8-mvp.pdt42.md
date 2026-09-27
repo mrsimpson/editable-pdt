@@ -50,6 +50,14 @@ status: open
 :::
 ```
 
+```pdt42
+:::canvas
+id: cv-mvp-box
+canvas: mvp
+of: mvp-box-pilot
+:::
+```
+
 ## Winter planning circle
 
 One round of crop planning with three chefs and three farms before the next season.
@@ -91,5 +99,13 @@ mvp: mvp-chefs-circle
 kind: business-model
 test: Quote prices including the commission
 criteria: All three chefs sign the pre-order
+:::
+```
+
+```pdt42
+:::canvas
+id: cv-mvp-chefs
+canvas: mvp
+of: mvp-chefs-circle
 :::
 ```

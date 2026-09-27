@@ -1,5 +1,12 @@
 # Identify the platformization space and consolidate the brief
 
+```pdt42
+:::canvas
+id: cv-brief
+canvas: brief-consolidation
+:::
+```
+
 ## Hub hosts become a profession
 
 If pick-up points in cafés and bakeries spread, hosting a hub could become a small income for

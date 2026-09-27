@@ -1,4 +1,4 @@
-import { STEPS, stepById, type StepInfo } from "./methodology.ts";
+import { canvasById, STEPS, stepById, type StepInfo } from "./methodology.ts";
 import { blockFields, blockMeta, type BlockType } from "./schemas.ts";
 
 // What `pdt42 guide step <id>` hands to an author: the step's dependencies, derived from the
@@ -50,6 +50,17 @@ function exampleSection(type: BlockType): string {
   return `## ${title}\n\nOne or two sentences on why this element matters.\n\n\`\`\`pdt42\n:::${type}\n${meta.example}\n:::\n\`\`\`\n`;
 }
 
+/** The `:::canvas` block a step's chapter shows, as template text. */
+export function canvasSnippet(step: StepInfo): string {
+  const canvas = step.canvas ? canvasById(step.canvas) : undefined;
+  if (!canvas) return "";
+  const of = canvas.per ? `of: <${canvas.per} id>\n` : "";
+  const where = canvas.per
+    ? `Place one ${canvas.title} per ${canvas.per === "entity" ? "peer role" : canvas.per}, next to it:`
+    : `Place the ${canvas.title} under the chapter title:`;
+  return `${where}\n\n\`\`\`pdt42\n:::canvas\nid: cv-${canvas.id}\ncanvas: ${canvas.id}\n${of}:::\n\`\`\`\n\nThe canvas is drawn from the model; every element on it links to its section.\n`;
+}
+
 /** Starter content for one step. */
 export function starterTemplate(stepId: string): string {
   const step = stepById(stepId);
@@ -68,10 +79,12 @@ export function starterTemplate(stepId: string): string {
       ({ type, fields }) => `Add to the existing :::${type} blocks: ${fields.join(", ")}.`,
     );
     const examples = (step.enriches ?? []).map(({ type }) => exampleSection(type)).join("\n");
-    return `<!--\n${[...guidance, "", ...lines].join("\n")}\n\nExample:\n\n${examples}-->\n`;
+    const canvas = canvasSnippet(step);
+    return `<!--\n${[...guidance, "", ...lines].join("\n")}\n\nExample:\n\n${examples}${canvas ? `\n${canvas}` : ""}-->\n`;
   }
 
   const heading = firstInFile ? `# ${step.title}\n\n` : "";
   const examples = step.blocks.map(exampleSection).join("\n");
-  return `${heading}<!--\n${guidance.join("\n")}\n\nOne section per element: a heading, prose, then the block. Examples:\n\n${examples}-->\n`;
+  const canvas = canvasSnippet(step);
+  return `${heading}<!--\n${guidance.join("\n")}\n\n${canvas ? `${canvas}\n` : ""}One section per element: a heading, prose, then the block. Examples:\n\n${examples}-->\n`;
 }

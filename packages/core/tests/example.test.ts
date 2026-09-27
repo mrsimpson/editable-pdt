@@ -83,3 +83,25 @@ describe("step guidance", () => {
     }
   });
 });
+
+describe("payload", () => {
+  test("serialises the example for the web renderer", async () => {
+    const { toPayload } = await import("../src/index.ts");
+    const ws = parseWorkspace(
+      files(ROOT).map((path) => ({
+        file: relative(ROOT, path),
+        content: readFileSync(path, "utf8"),
+      })),
+    );
+    const diagnostics = validate(ws);
+    const payload = toPayload(ws, diagnostics, progress(ws, diagnostics));
+    expect(payload.name).toBe("Harvest Commons");
+    expect(payload.documents[0]!.file).toBe("1-exploration/e1-arenas.pdt42.md");
+    expect(payload.documents.find((d) => d.file.endsWith("d1-ecosystem.pdt42.md"))!.steps).toEqual([
+      "D1",
+      "D2",
+    ]);
+    expect(payload.canvases.length).toBe(28);
+    expect(JSON.parse(JSON.stringify(payload))).toEqual(payload);
+  });
+});

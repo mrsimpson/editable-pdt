@@ -1,5 +1,12 @@
 # Map the ecosystem · Portray the entity-roles
 
+```pdt42
+:::canvas
+id: cv-ecosystem
+canvas: ecosystem
+:::
+```
+
 ## Harvest Commons
 
 Harvest Commons turns guesses into commitments: kitchens commit to what they will cook, farms sow
@@ -78,6 +85,14 @@ value-gains:
 :::
 ```
 
+```pdt42
+:::canvas
+id: cv-portrait-farmers
+canvas: entity-portrait
+of: e-farmers
+:::
+```
+
 ## Food artisans
 
 Bakers, cheesemakers and preservers who add variety to every order and buy surplus that would
@@ -102,6 +117,14 @@ convenience-gains:
   - A shelf in every order without a shop of their own
 value-gains:
   - Surplus produce at fair prices
+:::
+```
+
+```pdt42
+:::canvas
+id: cv-portrait-artisans
+canvas: entity-portrait
+of: e-artisans
 :::
 ```
 
@@ -139,6 +162,14 @@ value-gains:
 :::
 ```
 
+```pdt42
+:::canvas
+id: cv-portrait-restaurants
+canvas: entity-portrait
+of: e-restaurants
+:::
+```
+
 ## Neighbourhood households
 
 Families and flat shares who care where food comes from but shop at the supermarket because it is
@@ -170,6 +201,14 @@ value-gains:
 :::
 ```
 
+```pdt42
+:::canvas
+id: cv-portrait-households
+canvas: entity-portrait
+of: e-households
+:::
+```
+
 ## Cargo-bike couriers
 
 A worker-owned courier collective that already delivers parcels within the city ring and wants
@@ -194,6 +233,14 @@ convenience-gains:
   - Planned volumes instead of last-minute calls
 value-gains:
   - Steady income
+:::
+```
+
+```pdt42
+:::canvas
+id: cv-portrait-couriers
+canvas: entity-portrait
+of: e-couriers
 :::
 ```
 

@@ -73,9 +73,6 @@ Drift detection is out of scope: tracked as issue #2.
 
 ### Tasks
 
-- [ ] Rename to pdt42 (packages, bin, fence, extension, skill, docs, example files, tests)
-- [ ] Core: parse `:::canvas` views; `StepInfo.canvas`; rules E006 + W011; `toPayload()`
-- [ ] Example: place canvases in every Harvest Commons chapter
 - [ ] Web: app shell (sidebar by phase/step with status, document view, findings), prose ↔ model box,
       agent view, hash routing, theme
 - [ ] Web: canvas renderers for all phases, stickies linked to element anchors
@@ -87,7 +84,11 @@ Drift detection is out of scope: tracked as issue #2.
 
 ### Completed
 
-*None yet*
+- [x] Rename to pdt42 (packages, bin, fence, extension, skill, docs, example files, tests)
+- [x] Core: `:::canvas` views (CanvasBlockSchema, `canvasScope`), `StepInfo.canvas`, rules E006 invalid
+      canvas and W011 chapter without its canvas (per element for per-element canvases, in the
+      step's own chapter file), canvas snippet in starter templates, `toPayload()`
+- [x] Example: 28 canvases placed across the 18 chapters; all Wardley components in the focus arena
 
 ## Commit
 

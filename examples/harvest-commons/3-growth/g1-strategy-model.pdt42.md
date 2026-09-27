@@ -3,6 +3,13 @@
 Two of the three elements are present. There is no extension platform: nobody extends the
 farm back-office yet, and inventing one would dilute the focus.
 
+```pdt42
+:::canvas
+id: cv-psm
+canvas: platform-strategy-model
+:::
+```
+
 ## Farm back-office
 
 The product side, targeted at the core role: everything a small farm needs to sell without a

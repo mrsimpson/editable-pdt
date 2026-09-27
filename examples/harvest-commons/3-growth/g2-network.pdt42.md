@@ -22,6 +22,14 @@ tactics: single-user-value, marquee, trust
 :::
 ```
 
+```pdt42
+:::canvas
+id: cv-network-kitchen
+canvas: network-properties
+of: r-farmer-restaurant
+:::
+```
+
 ## Farm ↔ household network
 
 Local, low value per order, polygamous: likely to plateau once a neighbourhood has enough farms.
@@ -40,5 +48,13 @@ value: low
 exclusivity: polygamous
 curve: Plateaus per neighbourhood after roughly ten farms
 tactics: community-content, nesting
+:::
+```
+
+```pdt42
+:::canvas
+id: cv-network-box
+canvas: network-properties
+of: r-farmer-household
 :::
 ```

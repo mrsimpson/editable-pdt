@@ -1,5 +1,12 @@
 # Identify the ecosystem and its arenas · Choose the arena to focus on
 
+```pdt42
+:::canvas
+id: cv-arena-scan
+canvas: arena-scan
+:::
+```
+
 ## Regional food system
 
 Around the city, about sixty small farms grow vegetables, fruit and herbs. They sell at weekly

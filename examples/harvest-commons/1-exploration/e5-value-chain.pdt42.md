@@ -3,6 +3,14 @@
 The value chain of selling the harvest, from the kitchens' needs down to the vans. Today it is
 C-shaped: the wholesaler sits between farms and kitchens, and farms are perceived as a commodity.
 
+```pdt42
+:::canvas
+id: cv-value-chain
+canvas: wardley-map
+of: ar-selling
+:::
+```
+
 ## Seasonal menu
 
 Restaurants need produce that makes a menu worth coming back for.
@@ -92,7 +100,7 @@ Every farm with its own van today; shared routes after the plays.
 :::component
 id: c-delivery
 title: Last-mile delivery
-arena: ar-delivery
+arena: ar-selling
 visibility: 25
 evolution: custom
 target: product
@@ -108,7 +116,7 @@ A commodity.
 :::component
 id: c-vans
 title: Vans and fuel
-arena: ar-delivery
+arena: ar-selling
 visibility: 10
 evolution: commodity
 :::

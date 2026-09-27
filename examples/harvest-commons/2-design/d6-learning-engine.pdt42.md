@@ -1,5 +1,12 @@
 # Design the learning engine
 
+```pdt42
+:::canvas
+id: cv-learning
+canvas: learning-engine
+:::
+```
+
 ## Farmers: from market stall to planned harvest
 
 Most farms start with a stall and a guess. The engine takes them to a harvest sold before it is

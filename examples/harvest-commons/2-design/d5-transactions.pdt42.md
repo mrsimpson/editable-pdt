@@ -39,6 +39,14 @@ improvement: Households collect on their way home; couriers deliver ten boxes to
 
 ## Farmer ↔ restaurant
 
+```pdt42
+:::canvas
+id: cv-board-restaurant
+canvas: transactions-board
+of: r-farmer-restaurant
+:::
+```
+
 ### Share menu plans
 
 Chefs share the dishes they plan for next season; farms answer with what will be at its best.
@@ -119,6 +127,14 @@ motivation: m-restaurants-farmers-rep
 
 ## Farmer ↔ household
 
+```pdt42
+:::canvas
+id: cv-board-household
+canvas: transactions-board
+of: r-farmer-household
+:::
+```
+
 ### Publish the harvest forecast
 
 Every Monday each farm posts what it expects to harvest that week.
@@ -196,6 +212,14 @@ motivation: m-households-feedback
 ```
 
 ## Farmer ↔ courier
+
+```pdt42
+:::canvas
+id: cv-board-courier
+canvas: transactions-board
+of: r-farmer-courier
+:::
+```
 
 ### Book a shared route
 

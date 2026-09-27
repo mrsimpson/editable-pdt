@@ -3,6 +3,13 @@
 What each role gives, or could give, to each other. Money, reputation and feedback are mapped on
 purpose: they are what drives quality up.
 
+```pdt42
+:::canvas
+id: cv-matrix
+canvas: motivations-matrix
+:::
+```
+
 ## Between farms and kitchens
 
 ```pdt42

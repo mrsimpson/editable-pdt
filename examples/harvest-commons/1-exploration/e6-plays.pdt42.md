@@ -1,5 +1,12 @@
 # Apply the six Platform Plays
 
+```pdt42
+:::canvas
+id: cv-plays
+canvas: platform-plays
+:::
+```
+
 ## Farms on top of the chain
 
 Farmers are hidden behind the wholesaler and perceived as a commodity. Bringing them to the top

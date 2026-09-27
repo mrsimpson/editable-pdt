@@ -28,6 +28,14 @@ revenues:
 :::
 ```
 
+```pdt42
+:::canvas
+id: cv-xp-chefs
+canvas: platform-experience
+of: x-chefs-table
+:::
+```
+
 ## The weekly harvest box
 
 From the household's point of view: what grew this week, from farms you can visit, waiting at the
@@ -53,5 +61,13 @@ costs:
   - Courier routes
 revenues:
   - Monthly subscriptions, 8 % retained
+:::
+```
+
+```pdt42
+:::canvas
+id: cv-xp-box
+canvas: platform-experience
+of: x-weekly-box
 :::
 ```
