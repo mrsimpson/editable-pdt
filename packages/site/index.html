@@ -25,7 +25,7 @@
       <div class="nav__inner">
         <a href="#" class="nav__logo">pdt<span class="accent">42</span></a>
         <div class="nav__links">
-          <a class="nav__link" href="#session">Agents</a>
+          <a class="nav__link" href="#session">Guidance</a>
           <a class="nav__link" href="#story">Why</a>
           <a class="nav__link" href="#model">How it works</a>
           <a class="nav__link" href="#method">Method</a>
@@ -70,7 +70,7 @@
             </button>
           </div>
           <div class="hero__ctas">
-            <a href="#session" class="btn btn--primary">Watch an agent at work →</a>
+            <a href="#session" class="btn btn--primary">See the guidance →</a>
             <a href="./harvest-commons/" class="btn btn--outline">Open the example →</a>
           </div>
         </div>
@@ -129,13 +129,13 @@
       <section class="section" id="session" aria-labelledby="session-heading">
         <div class="container">
           <header class="gs__header">
-            <h2 class="gs__title" id="session-heading">An agent at work</h2>
+            <h2 class="gs__title" id="session-heading">Clear guidance, at every step</h2>
             <p class="gs__sub">
-              A recorded session: an agent starts a design in an empty folder. Every output is what
-              the CLI prints, recorded by <code>pnpm demo:cli</code>.
+              Your agent never has to guess what comes next. pdt42 names the step, briefs it and
+              checks the result. Here, an agent starts a platform design from scratch.
             </p>
           </header>
-          <div class="session" aria-label="Recorded pdt42 session">
+          <div class="session" aria-label="An agent guided by pdt42">
             <div class="session__bar">
               <span class="session__dots" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="session__title">agent + pdt42</span>
@@ -143,29 +143,24 @@
             </div>
             <div class="session__screen" id="session-screen" tabindex="0"></div>
           </div>
-          <p class="session__note">
-            <strong>No hidden state.</strong> pdt42 keeps no session or progress file. Every run of
-            <code>pdt42 next</code> reads the Markdown and works out the step from it: which blocks
-            exist and which findings are still open. Edit a file, by hand or by agent, and the next
-            step changes with it. The design and its progress are in the files you commit.
-          </p>
           <ul class="agent__list">
             <li>
-              <strong>Sparring.</strong> It asks the questions the method asks: who really produces
-              value here, what do they exchange, what would make them come back?
+              <strong>What's next.</strong> <code>pdt42 next</code> names the step to work on and
+              why. It reads that from the design itself, so you can stop at any point and pick up
+              where you left off.
             </li>
             <li>
-              <strong>Research.</strong> It scans an arena, collects entities and the alternatives
-              they use today, and drafts portraits for you to correct.
+              <strong>How to do it.</strong> <code>pdt42 guide step</code> briefs the step: the
+              question to answer, what to ask you, which blocks to write, which canvas to place.
             </li>
             <li>
-              <strong>Oversight.</strong> <code>pdt42 validate</code> and
-              <code>pdt42 next</code> keep the model whole: nothing dangling, no canvas missing, no
-              step skipped by accident.
+              <strong>What's missing.</strong> <code>pdt42 validate</code> names each gap and how to
+              close it: a missing canvas, a dangling reference, an incomplete portrait.
             </li>
             <li>
-              <strong>Method.</strong> <code>pdt42 guide</code> hands it each step when it is due:
-              what to find out, which blocks to write, which canvas to place.
+              <strong>A sparring partner.</strong> Guided by the method, your agent asks its
+              questions: who really produces value here, what do they exchange, what would make them
+              come back?
             </li>
           </ul>
           <p class="agent__human">
@@ -213,8 +208,7 @@
           <header class="gs__header">
             <h2 class="gs__title" id="model-heading">One model, every canvas</h2>
             <p class="gs__sub">
-              Harvest Commons in <code>pdt42 serve</code>: read by a human, extended by an agent —
-              recorded by the demo scenario in this repository.
+              Harvest Commons in <code>pdt42 serve</code>: read by a human, extended by an agent.
             </p>
           </header>
           <video
