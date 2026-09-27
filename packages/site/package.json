@@ -1,0 +1,20 @@
+{
+  "name": "@pdt42/site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The pdt42 landing page.",
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "tsc --noEmit && vp build",
+    "preview": "vp preview"
+  },
+  "dependencies": {
+    "@pdt42/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

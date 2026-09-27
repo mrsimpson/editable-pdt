@@ -36,12 +36,22 @@ Drift detection is out of scope: tracked as issue #2.
 - **Rules.** E006 invalid canvas (unknown canvas, `of` missing/unresolved/wrong type);
   W011 chapter without its canvas (step has elements but its canvas is not placed, or a scoped
   element has no canvas of its own).
-- **Web stack mirrors arc42's `packages/web`**: React 18 + vite (via vite-plus) + CSS modules,
-  `marked` for prose, a payload built by `@pdt42/core` (`toPayload`) and served at `/api/workspace`
-  or injected as `window.__WORKSPACE__` by `build`. Hash routing `#<file>:el-<id>` auto-expands the
-  target element's model box, exactly like arc42. Human/agent view toggle shows the DSL source.
-- **Canvas renderers are React components**, one per canvas, drawing stickies coloured by platform
-  role and flow; every sticky is an anchor to `#<file>:el-<id>`.
+- **Web structure mirrors arc42's `packages/web`** (Sidebar, DocumentView with prose runs,
+  ElementCard, hash router), with a payload built by `@pdt42/core` (`toPayload`) and served at
+  `/api/workspace` or injected as `window.__WORKSPACE__` by `build`. Hash routing
+  `#<file>:el-<id>` auto-expands the target element's model box, exactly like arc42. Human/agent
+  view toggle shows the DSL source.
+- **No React (deviation).** The environment's network policy blocks the npm registry, so React,
+  marked and the vite plugins could not be installed. The web app uses a tiny JSX factory building
+  DOM nodes (`src/dom.ts`), its own small Markdown renderer, and an inline single-file plugin —
+  only packages already in the lockfile. Components keep React's shape, so switching later is
+  mechanical. The landing page is static HTML with a small script (theme, method map from core).
+- **Canvas renderers** are components, one per canvas, drawing stickies coloured by platform
+  role and flow; every sticky is an anchor to `#<file>:el-<id>`. The model box lists the canvases
+  an element appears on, so links go both ways.
+- **W011 shows in the chapter header** as well as on the element it is anchored to.
+- **Demo** is a plain script (`scripts/demo.ts`) using `playwright` (global install via
+  `PLAYWRIGHT_MODULE`), not a `@playwright/test` project: screenshots only, no video.
 - **Colour.** Accent burnt orange `#E8590C` (bright, for accents, dark mode links) and `#C2410C`
   (text links on white, WCAG AA) — related to, but distinct from, the Boundaryless coral.
 - **Site mirrors arc42's `packages/site`** (Nav, Hero, story, features, getting started, live example,
@@ -73,14 +83,9 @@ Drift detection is out of scope: tracked as issue #2.
 
 ### Tasks
 
-- [ ] Web: app shell (sidebar by phase/step with status, document view, findings), prose ↔ model box,
-      agent view, hash routing, theme
-- [ ] Web: canvas renderers for all phases, stickies linked to element anchors
-- [ ] CLI: `pdt42 serve` (live reload) and `pdt42 build [--single-file]`
-- [ ] Demo: Playwright spec capturing screenshots of the key moments
-- [ ] Site: landing page with the story, agent positioning, method map, canvases, getting started
-- [ ] Workflows: CI (check, test, build) and GitHub Pages (site + example)
-- [ ] `vp check`, `vp test`, build green
+- [ ] Side-by-side comparison with the official Boundaryless canvases (earlier request; needs the
+      canvas images and attribution — not started)
+- [ ] Move the web app to React once the npm registry is reachable (optional)
 
 ### Completed
 
@@ -89,13 +94,19 @@ Drift detection is out of scope: tracked as issue #2.
       canvas and W011 chapter without its canvas (per element for per-element canvases, in the
       step's own chapter file), canvas snippet in starter templates, `toPayload()`
 - [x] Example: 28 canvases placed across the 18 chapters; all Wardley components in the focus arena
+- [x] Web: app shell (sidebar by phase/step with status, chapter view, findings), prose ↔ model box,
+      agent view, hash routing, theme, live reload; canvas renderers for all 20 canvases
+- [x] CLI: `pdt42 serve` (live reload) and `pdt42 build [--single-file]`; web app copied into the
+      CLI bundle
+- [x] Demo: `pnpm demo` captures nine moments and every canvas into `demo/`
+- [x] Site: landing page with the story, agent positioning, method map, canvases, getting started
+- [x] Workflows: CI (build, check, test, validate the example) and GitHub Pages (site + example)
+- [x] `vp check`, `vp test` (59 tests), build green
 
 ## Commit
 
 ### Tasks
 
-- [ ] Commit per milestone (rename · canvases in core · web · CLI · demo + site), push
-
 ### Completed
 
-*None yet*
+- [x] Commit per milestone (rename · canvases in core · CLI serve/build · web · demo + site), pushed

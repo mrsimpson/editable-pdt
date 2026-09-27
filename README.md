@@ -17,6 +17,8 @@ keeps an architecture:
   references. The canvases are views over this model, not separate documents.
 - **Guided by the method.** `pdt42 guide` walks you through PDT's three phases and twenty steps and
   shows where your design stands.
+- **Canvases drawn from the model.** Every chapter places its step's canvas with a `:::canvas`
+  block; `pdt42 serve` draws it from the model, and every sticky links to its element.
 
 ````markdown
 ## Farmer ↔ restaurant
@@ -41,7 +43,33 @@ pnpm pdt42 --dir examples/harvest-commons guide       # the method, and the exam
 pnpm pdt42 --dir examples/harvest-commons validate
 pnpm pdt42 guide step D5                               # one step: file, dependencies, template
 pnpm pdt42 explain transaction                         # one block type
+pnpm build && pnpm pdt42 --dir examples/harvest-commons serve   # read it in the browser
 ```
+
+## See it
+
+`pdt42 serve` renders the workspace in the browser and reloads on every change;
+`pdt42 build --out site` writes the same as a static site (`--single-file`: one HTML page).
+
+- **Chapters** follow the method: the sidebar lists the phases and steps with their status.
+- **Prose and model box.** Click the stripe beside an element's prose to swap it for its model
+  box — attributes, incoming references, findings, and every canvas the element appears on.
+- **Canvases** are drawn from the model, in PDT's colours (yellow services, blue transactions,
+  one colour per platform role). Every sticky is a link to its element; `#<file>:el-<id>` opens
+  the model box.
+- **Agent view** shows the chapter as the source the agent reads and writes.
+
+A chapter without its canvas gets a warning (W011) naming the `:::canvas` block to add:
+
+````markdown
+```pdt42
+:::canvas
+id: cv-board-restaurant
+canvas: transactions-board
+of: r-farmer-restaurant
+:::
+```
+````
 
 ## The method, in the model
 
@@ -64,7 +92,7 @@ pnpm pdt42 explain transaction                         # one block type
   type), schema violations, unknown blocks, more than one platform.
 - **Warnings: the model contradicts the method.** A transaction outside its relationship, an
   experience whose steps involve roles it doesn't list, a learning engine for a stakeholder, an MVP
-  without assumptions.
+  without assumptions, a chapter without its canvas.
 - **Hints: the design has a gap the method would fill.** Incomplete portraits, peers missing from
   the motivations matrix, core relationships without transactions, experiences without a business
   model, MVPs that don't test business model, trust and attraction, orphan elements.
@@ -83,14 +111,23 @@ in `.vibe/` following the EPCC workflow (explore, plan, code, commit).
 ```bash
 pnpm test            # vp test
 pnpm check           # vp check: format, lint, types
-pnpm build           # bundles packages/cli/dist/cli.mjs
+pnpm build           # web app, CLI bundle (with the web app beside it), landing page
 pnpm docs:meta-model # regenerate docs/meta-model.md
+pnpm demo            # the demo scenario: screenshots into demo/ (needs Playwright)
+pnpm site            # landing page + the example, in packages/site/dist
 ```
+
+The web app has no UI framework: components are functions building DOM nodes through a tiny JSX
+factory (`packages/web/src/dom.ts`). `pnpm demo` imports `playwright`; set `PLAYWRIGHT_MODULE` to
+its entry point if it is installed globally.
 
 ```
 packages/core   parser, zod schemas, model builder, validator, methodology data, progress
 packages/cli    the pdt42 command
+packages/web    the browser view: chapters, model boxes, canvases (pdt42 serve / build)
+packages/site   the landing page
 packages/skill  the agent skill
+demo/           screenshots of the demo scenario (scripts/demo.ts), used by the site
 examples/       Harvest Commons, a complete design across all three phases
 ```
 
@@ -102,7 +139,3 @@ repository is written in our own words and links to the original pages. Because 
 and the guidance adapt the toolkit's structure, they carry the ShareAlike obligation; the licence
 for this repository is not chosen yet. This project is not affiliated with or endorsed by
 Boundaryless.
-
-```
-
-```
