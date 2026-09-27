@@ -69,6 +69,8 @@ Drift detection is out of scope: tracked as issue #2.
   derives the version from conventional commits since the last `v*` tag, publishes `@pdt42/cli`
   through npm trusted publishing (OIDC, `--provenance`) and creates the GitHub release. 0.1.0 was
   published by hand; its commit carries the `v0.1.0` tag so the pipeline continues from there.
+  `version-sync.yml` writes each released version back into `packages/cli/package.json` on
+  `main`, pushing with the owner's GitHub App (id 1493907), which may bypass main's protection.
 - **Agent positioning** on the site: agents spar, research and keep method and model in order;
   innovation stays human.
 
