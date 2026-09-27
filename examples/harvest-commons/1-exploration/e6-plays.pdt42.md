@@ -5,7 +5,7 @@
 Farmers are hidden behind the wholesaler and perceived as a commodity. Bringing them to the top
 of the chain — visible, with their varieties and their story — is the central move.
 
-```pdt
+```pdt42
 :::play
 id: pl-producers-up
 play: pp2
@@ -20,7 +20,7 @@ insight: Treat farmers as users with their own storefront; kitchens choose farms
 Every deal is negotiated by phone. A standard pre-order — variety, kilos, week, price band — lets
 any kitchen commit to any farm in minutes.
 
-```pdt
+```pdt42
 :::play
 id: pl-standard-order
 play: pp3
@@ -35,7 +35,7 @@ insight: Standardise the pre-order and the weekly availability list; that is the
 Individually, restaurants and households are too small to plan for. Aggregated per week and per
 variety, they become a demand farms can sow against.
 
-```pdt
+```pdt42
 :::play
 id: pl-aggregate
 play: pp6

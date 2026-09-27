@@ -49,7 +49,7 @@ function table(type: BlockType): string {
 
 export function metaModelDoc(): string {
   return [
-    "# The pdt meta-model",
+    "# The pdt42 meta-model",
     "",
     "<!-- Generated from packages/core/src/schemas.ts by `pnpm docs:meta-model`. Do not edit by hand. -->",
     "",

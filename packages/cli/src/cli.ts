@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
-import { BLOCK_TYPES, incoming, RULES, blockFields, type Diagnostic } from "@pdt/core";
+import { BLOCK_TYPES, incoming, RULES, blockFields, type Diagnostic } from "@pdt42/core";
 import { load } from "./discover.ts";
 import {
   explainText,
@@ -12,9 +12,9 @@ import {
   nextText,
 } from "./guide.ts";
 
-const HELP = `pdt — the Platform Design Toolkit as a language
+const HELP = `pdt42 — the Platform Design Toolkit as a language
 
-Usage: pdt [--dir <workspace>] <command> [options]
+Usage: pdt42 [--dir <workspace>] <command> [options]
 
 Commands
   guide                    The methodology, and where this workspace stands in it
@@ -92,7 +92,7 @@ async function main(): Promise<number> {
         return 0;
       }
       if (topic === "step") {
-        if (!arg) throw new UsageError("pdt guide step <id> — e.g. pdt guide step D2");
+        if (!arg) throw new UsageError("pdt42 guide step <id> — e.g. pdt42 guide step D2");
         print(guideStep(arg, steps, workspace));
         return 0;
       }

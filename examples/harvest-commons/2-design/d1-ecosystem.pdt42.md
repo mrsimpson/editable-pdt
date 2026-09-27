@@ -6,7 +6,7 @@ Harvest Commons turns guesses into commitments: kitchens commit to what they wil
 against it, and the cooperative bundles delivery so no farm drives alone. Its promise to every
 member is simple — selling gets easier, and you learn faster inside than outside.
 
-```pdt
+```pdt42
 :::platform
 id: platform-harvest
 title: Harvest Commons
@@ -31,7 +31,7 @@ infrastructure:
 The cooperative runs the platform on behalf of its member farms: two staff, a monthly members'
 assembly, and a thin commission to live on.
 
-```pdt
+```pdt42
 :::entity
 id: e-coop
 title: Harvest Commons Cooperative
@@ -45,7 +45,7 @@ type: cooperative owned by its farms
 Family farms of two to twenty hectares within sixty kilometres. They grow well; selling is what
 costs them — time on the phone, trips into town, and the fifth of the harvest nobody buys.
 
-```pdt
+```pdt42
 :::entity
 id: e-farmers
 title: Small-scale farmers
@@ -83,7 +83,7 @@ value-gains:
 Bakers, cheesemakers and preservers who add variety to every order and buy surplus that would
 otherwise spoil.
 
-```pdt
+```pdt42
 :::entity
 id: e-artisans
 title: Food artisans
@@ -110,7 +110,7 @@ value-gains:
 Chef-owned restaurants that write their menu around the season and can commit to volumes months
 ahead — if the supply is reliable.
 
-```pdt
+```pdt42
 :::entity
 id: e-restaurants
 title: Independent restaurants
@@ -144,7 +144,7 @@ value-gains:
 Families and flat shares who care where food comes from but shop at the supermarket because it is
 convenient.
 
-```pdt
+```pdt42
 :::entity
 id: e-households
 title: Neighbourhood households
@@ -175,7 +175,7 @@ value-gains:
 A worker-owned courier collective that already delivers parcels within the city ring and wants
 regular routes.
 
-```pdt
+```pdt42
 :::entity
 id: e-couriers
 title: Cargo-bike couriers
@@ -202,7 +202,7 @@ value-gains:
 The established buyer of last resort. In the platform it stays a stakeholder: the outlet for
 surplus.
 
-```pdt
+```pdt42
 :::entity
 id: e-wholesaler
 title: Regional wholesale market
@@ -216,7 +216,7 @@ layer: aggregator
 Advises the city on its target of 30 % regional food in public canteens by 2030 — and wants
 evidence that local sourcing works.
 
-```pdt
+```pdt42
 :::entity
 id: e-city
 title: City Food Council

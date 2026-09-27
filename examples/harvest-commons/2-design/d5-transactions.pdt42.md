@@ -7,7 +7,7 @@
 The web app where farms publish availability, kitchens pre-order and couriers see their routes.
 Its real job is to replace phone calls and haggling with three standard forms.
 
-```pdt
+```pdt42
 :::channel
 id: ch-app
 title: Harvest app
@@ -25,7 +25,7 @@ improvement: A pre-order takes two minutes instead of a round of phone calls, an
 
 Pick-up shelves in cafés and bakeries, refrigerated where needed.
 
-```pdt
+```pdt42
 :::channel
 id: ch-hubs
 title: Neighbourhood hubs
@@ -43,7 +43,7 @@ improvement: Households collect on their way home; couriers deliver ten boxes to
 
 Chefs share the dishes they plan for next season; farms answer with what will be at its best.
 
-```pdt
+```pdt42
 :::transaction
 id: t-share-menus
 title: Share menu plans
@@ -63,7 +63,7 @@ motivation: m-farmers-restaurants
 
 Restaurants commit to kilos per variety and week, within a price band.
 
-```pdt
+```pdt42
 :::transaction
 id: t-preorder
 title: Pre-order the season
@@ -83,7 +83,7 @@ job: j-find-buyers
 
 Already happening for a few chefs — by van, by phone, on the farm's own schedule.
 
-```pdt
+```pdt42
 :::transaction
 id: t-deliver-restaurant
 title: Deliver the weekly order
@@ -102,7 +102,7 @@ job: j-drive
 
 The farm's name on the menu, and a rating after every delivery.
 
-```pdt
+```pdt42
 :::transaction
 id: t-credit-farm
 title: Credit the farm on the menu
@@ -123,7 +123,7 @@ motivation: m-restaurants-farmers-rep
 
 Every Monday each farm posts what it expects to harvest that week.
 
-```pdt
+```pdt42
 :::transaction
 id: t-publish-harvest
 title: Publish the harvest forecast
@@ -141,7 +141,7 @@ kind: data
 
 Households pay monthly for a box of a chosen size.
 
-```pdt
+```pdt42
 :::transaction
 id: t-subscribe
 title: Subscribe to a weekly box
@@ -160,7 +160,7 @@ motivation: m-households-farmers
 
 Households collect on their way home from a shelf in a café or bakery.
 
-```pdt
+```pdt42
 :::transaction
 id: t-pickup
 title: Pick up the box at a hub
@@ -180,7 +180,7 @@ job: j-market
 
 Households rate each box and share how they cooked it — the farms' most valuable feedback.
 
-```pdt
+```pdt42
 :::transaction
 id: t-rate-box
 title: Rate the box and share a recipe
@@ -201,7 +201,7 @@ motivation: m-households-feedback
 
 Farms book a slot on the day's route instead of driving themselves.
 
-```pdt
+```pdt42
 :::transaction
 id: t-book-route
 title: Book a slot on the shared route

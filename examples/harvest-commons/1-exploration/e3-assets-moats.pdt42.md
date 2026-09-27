@@ -5,7 +5,7 @@
 Eight years of market days have built a list of 2,000 households who ask for the farms by name.
 Valuable, rare, hard to copy — and the cooperative is organised to use it.
 
-```pdt
+```pdt42
 :::asset
 id: as-customers
 title: Saturday market customer base
@@ -20,7 +20,7 @@ relates-to: e-households, j-market
 The cooperative is run by farmers. No outside player would get fourteen farms to share their
 harvest plans.
 
-```pdt
+```pdt42
 :::asset
 id: as-trust
 title: Trust of the farming community
@@ -34,7 +34,7 @@ relates-to: e-farmers
 
 A shared cold room at the edge of town. Useful, but others could rent one tomorrow.
 
-```pdt
+```pdt42
 :::ignore H002 The depot is a supporting asset by design, not the advantage we build on :::
 
 :::asset
@@ -51,7 +51,7 @@ relates-to: j-drive
 The established buyer of last resort. We do not try to replace it: surplus still goes there, but
 no longer by default.
 
-```pdt
+```pdt42
 :::moat
 id: mo-wholesale
 title: Regional wholesale market

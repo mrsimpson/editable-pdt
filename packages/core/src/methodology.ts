@@ -55,7 +55,7 @@ export interface StepInfo {
   file: string;
 }
 
-const file = (phase: string, name: string) => `${phase}/${name}.pdt.md`;
+const file = (phase: string, name: string) => `${phase}/${name}.pdt42.md`;
 
 export const STEPS: StepInfo[] = [
   // ── Exploration ──────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import { STEPS, stepById, type StepInfo } from "./methodology.ts";
 import { blockFields, blockMeta, type BlockType } from "./schemas.ts";
 
-// What `pdt guide step <id>` hands to an author: the step's dependencies, derived from the
+// What `pdt42 guide step <id>` hands to an author: the step's dependencies, derived from the
 // reference fields of its block types, and a starter template. Like arc42's chapter templates,
 // guidance and examples sit inside an HTML comment — the parser skips comments, so copying the
 // template never adds model elements by accident.
@@ -47,7 +47,7 @@ export function stepDependencies(step: StepInfo): StepDependency[] {
 function exampleSection(type: BlockType): string {
   const meta = blockMeta(type);
   const title = /(?:^|\n)title: (.*)/.exec(meta.example)?.[1] ?? type;
-  return `## ${title}\n\nOne or two sentences on why this element matters.\n\n\`\`\`pdt\n:::${type}\n${meta.example}\n:::\n\`\`\`\n`;
+  return `## ${title}\n\nOne or two sentences on why this element matters.\n\n\`\`\`pdt42\n:::${type}\n${meta.example}\n:::\n\`\`\`\n`;
 }
 
 /** Starter content for one step. */

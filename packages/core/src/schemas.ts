@@ -1,4 +1,4 @@
-// Zod schemas for every pdt block type: the single source of truth for fields, required/optional,
+// Zod schemas for every pdt42 block type: the single source of truth for fields, required/optional,
 // enum values, cross-references and authoring guidance. Nothing is duplicated elsewhere —
 // `explain`, the validator, `guide` and the canvases all read these schemas and their metadata.
 //

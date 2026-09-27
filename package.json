@@ -1,5 +1,5 @@
 {
-  "name": "editable-pdt",
+  "name": "pdt42",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -8,8 +8,8 @@
     "test": "vp test",
     "check": "vp check",
     "ready": "pnpm run check && pnpm run test && pnpm run build",
-    "pdt": "node --conditions=development --experimental-strip-types --no-warnings packages/cli/src/cli.ts",
-    "validate:example": "pnpm pdt --dir examples/harvest-commons validate",
+    "pdt42": "node --conditions=development --experimental-strip-types --no-warnings packages/cli/src/cli.ts",
+    "validate:example": "pnpm pdt42 --dir examples/harvest-commons validate",
     "docs:meta-model": "node --experimental-strip-types --no-warnings scripts/meta-model-doc.ts"
   },
   "devDependencies": {

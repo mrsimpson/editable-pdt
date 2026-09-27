@@ -4,7 +4,7 @@
 
 Households share how they cooked their box; every shared recipe links to the neighbourhood's hub.
 
-```pdt
+```pdt42
 :::growth-loop
 id: gl-recipes
 title: Recipes bring neighbours
@@ -22,7 +22,7 @@ metric: Recipes shared per 100 boxes
 
 A chef who credits a farm on the menu is asked by peers where the produce comes from.
 
-```pdt
+```pdt42
 :::growth-loop
 id: gl-chef-referrals
 title: Chefs recommend farms to chefs

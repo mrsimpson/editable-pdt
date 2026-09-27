@@ -33,7 +33,7 @@ importers:
 
   packages/cli:
     devDependencies:
-      '@pdt/core':
+      '@pdt42/core':
         specifier: workspace:*
         version: link:../core
       '@types/node':

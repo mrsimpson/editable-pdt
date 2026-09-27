@@ -1,4 +1,4 @@
-# pdt-language
+# pdt42
 
 **Platform design as a language — readable by humans, checkable by machines, guided step by step.**
 
@@ -8,14 +8,14 @@ transactions and learning services a platform should enable, and how to test and
 wall, its canvases drift apart within a week. The same entity is spelled three ways, a
 transaction appears on one canvas and not on another, and nobody notices.
 
-pdt-language keeps a platform design the way [arc42-language](https://github.com/docToolchain/arc42-language)
+pdt42 keeps a platform design the way [arc42-language](https://github.com/docToolchain/arc42-language)
 keeps an architecture:
 
-- **Human-readable first.** Markdown files (`*.pdt.md`) with prose explaining _why_, and typed
+- **Human-readable first.** Markdown files (`*.pdt42.md`) with prose explaining _why_, and typed
   `:::blocks` for the structure.
 - **One consistent model.** Twenty-five block types, from arenas to growth loops, connected by
   references. The canvases are views over this model, not separate documents.
-- **Guided by the method.** `pdt guide` walks you through PDT's three phases and twenty steps and
+- **Guided by the method.** `pdt42 guide` walks you through PDT's three phases and twenty steps and
   shows where your design stands.
 
 ````markdown
@@ -23,7 +23,7 @@ keeps an architecture:
 
 High volume, planned months ahead: the relationship that lets farms sow against demand.
 
-```pdt
+```pdt42
 :::relationship
 id: r-farmer-restaurant
 title: Farmer ↔ restaurant
@@ -37,10 +37,10 @@ core: yes
 
 ```bash
 pnpm install
-pnpm pdt --dir examples/harvest-commons guide       # the method, and the example's status
-pnpm pdt --dir examples/harvest-commons validate
-pnpm pdt guide step D5                               # one step: file, dependencies, template
-pnpm pdt explain transaction                         # one block type
+pnpm pdt42 --dir examples/harvest-commons guide       # the method, and the example's status
+pnpm pdt42 --dir examples/harvest-commons validate
+pnpm pdt42 guide step D5                               # one step: file, dependencies, template
+pnpm pdt42 explain transaction                         # one block type
 ```
 
 ## The method, in the model
@@ -57,7 +57,7 @@ pnpm pdt explain transaction                         # one block type
 
 ## Validation
 
-`pdt validate` reports three levels, each rule with its rationale (`pdt rules`):
+`pdt42 validate` reports three levels, each rule with its rationale (`pdt42 rules`):
 
 - **Errors: the model is broken.** Duplicate ids, references that don't resolve (references are
   mostly optional, but a reference that is set must point to an existing element of the right
@@ -71,7 +71,7 @@ pnpm pdt explain transaction                         # one block type
 
 ## For agents
 
-`packages/skill/SKILL.md` (linked as `.agents/skills/pdt-language`) teaches coding agents the
+`packages/skill/SKILL.md` (linked as `.agents/skills/pdt42`) teaches coding agents the
 format and the workflow.
 
 ## Development
@@ -89,7 +89,7 @@ pnpm docs:meta-model # regenerate docs/meta-model.md
 
 ```
 packages/core   parser, zod schemas, model builder, validator, methodology data, progress
-packages/cli    the pdt command
+packages/cli    the pdt42 command
 packages/skill  the agent skill
 examples/       Harvest Commons, a complete design across all three phases
 ```

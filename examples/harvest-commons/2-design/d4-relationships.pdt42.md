@@ -7,7 +7,7 @@ farmers first — they are the core entity — in two core relationships; courie
 
 High volume, planned months ahead: the relationship that lets farms sow against demand.
 
-```pdt
+```pdt42
 :::relationship
 id: r-farmer-restaurant
 title: Farmer ↔ restaurant
@@ -20,7 +20,7 @@ core: yes
 
 Weekly boxes: smaller volumes but many more people, and the cooperative's existing customers.
 
-```pdt
+```pdt42
 :::relationship
 id: r-farmer-household
 title: Farmer ↔ household
@@ -33,7 +33,7 @@ core: yes
 
 Not a core relationship, but the one that removes the van from every farm.
 
-```pdt
+```pdt42
 :::relationship
 id: r-farmer-courier
 title: Farmer ↔ courier

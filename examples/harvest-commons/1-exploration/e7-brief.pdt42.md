@@ -5,7 +5,7 @@
 If pick-up points in cafés and bakeries spread, hosting a hub could become a small income for
 engaged households — a new role in the ecosystem.
 
-```pdt
+```pdt42
 :::scenario
 id: sc-hub-hosts
 title: Hub hosts become a profession
@@ -21,7 +21,7 @@ The platformization space is the selling arena, around two core relationships: f
 restaurants (planned, high volume) and farms with households (weekly boxes). Couriers are an
 ancillary but necessary role.
 
-```pdt
+```pdt42
 :::brief
 id: br-main
 title: Planned harvests for local kitchens

@@ -5,7 +5,7 @@
 The core indirect network effect: more farms make boxes more varied, more varied boxes keep more
 households, more subscriptions attract more farms.
 
-```pdt
+```pdt42
 :::flywheel
 id: fw-core
 title: More farms, better boxes
@@ -25,7 +25,7 @@ metric: Active farms per neighbourhood
 
 Every season of pre-orders makes the harvest forecast better, which makes pre-ordering safer.
 
-```pdt
+```pdt42
 :::flywheel
 id: fw-data
 title: Planning data
@@ -45,7 +45,7 @@ metric: Forecast error per variety
 
 Farms that run invoicing and planning in the back-office rarely leave.
 
-```pdt
+```pdt42
 :::flywheel
 id: fw-lockin
 title: Back-office lock-in

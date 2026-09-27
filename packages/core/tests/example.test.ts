@@ -17,7 +17,7 @@ const ROOT = new URL("../../../examples/harvest-commons/", import.meta.url).path
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    return statSync(path).isDirectory() ? files(path) : name.endsWith(".pdt.md") ? [path] : [];
+    return statSync(path).isDirectory() ? files(path) : name.endsWith(".pdt42.md") ? [path] : [];
   });
 }
 
@@ -52,7 +52,7 @@ describe("Harvest Commons example", () => {
 describe("step guidance", () => {
   test("starter templates hold no model elements", () => {
     const fresh = parseWorkspace(
-      STEPS.map((s) => ({ file: `${s.id}.pdt.md`, content: starterTemplate(s.id) })),
+      STEPS.map((s) => ({ file: `${s.id}.pdt42.md`, content: starterTemplate(s.id) })),
     );
     expect(fresh.elements).toEqual([]);
     expect(validate(fresh)).toEqual([]);
@@ -62,7 +62,7 @@ describe("step guidance", () => {
   test("the examples inside every template are valid blocks", () => {
     for (const step of STEPS) {
       const uncommented = starterTemplate(step.id).replace(/<!--|-->/g, "");
-      const ws = parseWorkspace([{ file: "t.pdt.md", content: uncommented }]);
+      const ws = parseWorkspace([{ file: "t.pdt42.md", content: uncommented }]);
       expect(ws.issues, step.id).toEqual([]);
       expect(ws.elements.length, step.id).toBeGreaterThan(0);
     }

@@ -7,11 +7,11 @@ import {
   type Diagnostic,
   type StepStatus,
   type Workspace,
-} from "@pdt/core";
+} from "@pdt42/core";
 
 const SKIP = new Set(["node_modules", "dist", ".git"]);
 
-/** Every `*.pdt.md` file below `dir`, workspace-relative with forward slashes, sorted. */
+/** Every `*.pdt42.md` file below `dir`, workspace-relative with forward slashes, sorted. */
 export async function discover(dir: string, base = dir): Promise<string[]> {
   let entries;
   try {
@@ -24,7 +24,7 @@ export async function discover(dir: string, base = dir): Promise<string[]> {
     if (SKIP.has(entry.name) || entry.name.startsWith(".")) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...(await discover(path, base)));
-    else if (entry.name.endsWith(".pdt.md")) out.push(relative(base, path).split(sep).join("/"));
+    else if (entry.name.endsWith(".pdt42.md")) out.push(relative(base, path).split(sep).join("/"));
   }
   return out.sort();
 }

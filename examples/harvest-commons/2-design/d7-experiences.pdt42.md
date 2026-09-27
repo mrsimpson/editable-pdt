@@ -5,7 +5,7 @@
 From the farmer's point of view: sell the season before sowing it, to kitchens that put your name
 on the menu.
 
-```pdt
+```pdt42
 :::experience
 id: x-chefs-table
 title: Chef's table
@@ -33,7 +33,7 @@ revenues:
 From the household's point of view: what grew this week, from farms you can visit, waiting at the
 café around the corner.
 
-```pdt
+```pdt42
 :::experience
 id: x-weekly-box
 title: The weekly harvest box

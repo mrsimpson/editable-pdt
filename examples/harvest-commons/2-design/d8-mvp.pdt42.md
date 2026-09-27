@@ -5,7 +5,7 @@
 Four farms, one courier and three hubs in one neighbourhood for one summer. Orders run through a
 shared spreadsheet and a group chat before a line of the app is written.
 
-```pdt
+```pdt42
 :::mvp
 id: mvp-box-pilot
 title: Twelve-week box pilot
@@ -54,7 +54,7 @@ status: open
 
 One round of crop planning with three chefs and three farms before the next season.
 
-```pdt
+```pdt42
 :::mvp
 id: mvp-chefs-circle
 title: Winter planning circle

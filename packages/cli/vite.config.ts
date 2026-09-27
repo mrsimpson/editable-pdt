@@ -6,7 +6,7 @@ export default defineConfig({
     dts: false,
     deps: {
       onlyBundle: false,
-      alwaysBundle: ["@pdt/core"],
+      alwaysBundle: ["@pdt42/core"],
     },
     inputOptions: {
       // An import the bundler cannot resolve stays external and breaks the published CLI.

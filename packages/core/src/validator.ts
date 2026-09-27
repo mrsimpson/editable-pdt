@@ -3,8 +3,8 @@ import { elementsOf, get, type Element, type Workspace } from "./model.ts";
 import { blockMeta, crossReferences, PEER_ROLES, type BlockType } from "./schemas.ts";
 import { STEPS } from "./methodology.ts";
 
-// The rule registry. Each rule describes itself — `pdt rules` prints the registry — and names the
-// methodology step it belongs to, so `pdt guide` can show a step's open findings.
+// The rule registry. Each rule describes itself — `pdt42 rules` prints the registry — and names the
+// methodology step it belongs to, so `pdt42 guide` can show a step's open findings.
 //
 //   error    the model is broken
 //   warning  the model contradicts itself or the method

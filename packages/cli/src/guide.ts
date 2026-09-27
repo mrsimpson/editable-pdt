@@ -19,9 +19,9 @@ import {
   type Workspace,
   type Diagnostic,
   type StepStatus,
-} from "@pdt/core";
+} from "@pdt42/core";
 
-// Text renderers for `pdt guide`, `pdt next` and `pdt explain`. Output is plain Markdown so it
+// Text renderers for `pdt42 guide`, `pdt42 next` and `pdt42 explain`. Output is plain Markdown so it
 // reads well in a terminal and in an agent's context alike.
 
 const STATE_MARK = { todo: "[ ]", open: "[~]", done: "[x]" } as const;
@@ -71,9 +71,9 @@ export function guideOverview(steps: StepStatus[]): string {
   if (next)
     lines.push(
       `Next: ${next.status.step.id} ${next.status.step.title} — ${next.reason}`,
-      `Run \`pdt guide step ${next.status.step.id}\` for its brief and starter template.`,
+      `Run \`pdt42 guide step ${next.status.step.id}\` for its brief and starter template.`,
     );
-  else lines.push("Every step is in place. Run `pdt validate` for anything left.");
+  else lines.push("Every step is in place. Run `pdt42 validate` for anything left.");
   return lines.join("\n");
 }
 
@@ -94,7 +94,7 @@ export function guideStep(id: string, steps: StepStatus[], workspace: Workspace)
     "## File",
     "",
     step.blocks.length
-      ? `Write this step in \`${step.file}\` (any \`*.pdt.md\` file works; this is the convention). Wrap blocks in \`\`\`pdt fences.`
+      ? `Write this step in \`${step.file}\` (any \`*.pdt42.md\` file works; this is the convention). Wrap blocks in \`\`\`pdt42 fences.`
       : `This step adds fields to blocks you already wrote, usually in \`${step.file}\`.`,
     "",
     "## Dependencies",
@@ -119,16 +119,18 @@ export function guideStep(id: string, steps: StepStatus[], workspace: Workspace)
     "## Before you write",
     "",
     "1. Read the starter template below.",
-    "2. Run `pdt get` to see existing elements and their ids — reference them, don't duplicate them.",
-    `3. Run the \`pdt explain\` commands below for the attributes of ${types.map((t) => `\`${t}\``).join(", ")}.`,
+    "2. Run `pdt42 get` to see existing elements and their ids — reference them, don't duplicate them.",
+    `3. Run the \`pdt42 explain\` commands below for the attributes of ${types.map((t) => `\`${t}\``).join(", ")}.`,
     "4. Confirm with the human what you don't know: entities, motivations and assumptions come from the ecosystem.",
     "",
     "## Authoring rules",
     "",
-    "- One `##` section per element: a heading, prose explaining why, then one fenced `pdt` block.",
-    "- References are optional unless marked `*` in `pdt explain`, but a reference you set must resolve.",
+    "- One `##` section per element: a heading, prose explaining why, then one fenced `pdt42` block.",
+    "- References are optional unless marked `*` in `pdt42 explain`, but a reference you set must resolve.",
     "- Do not invent ids or values; leave an attribute out rather than guessing.",
-    "- Finish with `pdt validate` and `pdt guide step " + step.id + "` to see what is still open.",
+    "- Finish with `pdt42 validate` and `pdt42 guide step " +
+      step.id +
+      "` to see what is still open.",
     "",
     "## Blocks",
     "",
@@ -148,16 +150,16 @@ export function guideStep(id: string, steps: StepStatus[], workspace: Workspace)
     lines.push(
       "## Canvases",
       "",
-      ...step.canvases.map((c) => `- ${canvasById(c)?.title ?? c} — \`pdt guide canvas ${c}\``),
+      ...step.canvases.map((c) => `- ${canvasById(c)?.title ?? c} — \`pdt42 guide canvas ${c}\``),
       "",
     );
   }
   lines.push(
     "## Relevant commands",
     "",
-    ...types.map((t) => `- \`pdt explain ${t}\``),
-    "- `pdt get`",
-    "- `pdt validate`",
+    ...types.map((t) => `- \`pdt42 explain ${t}\``),
+    "- `pdt42 get`",
+    "- `pdt42 validate`",
     "",
     `Source (© Boundaryless SRL, CC BY-SA 4.0): ${step.source}`,
   );
@@ -203,7 +205,7 @@ export function guideCanvas(id: string | undefined): string {
       }
       lines.push("");
     }
-    lines.push("Run `pdt guide canvas <id>` to see which model fields fill each area.");
+    lines.push("Run `pdt42 guide canvas <id>` to see which model fields fill each area.");
     return lines.join("\n");
   }
   const canvas = canvasById(id);
@@ -224,7 +226,7 @@ export function guideCanvas(id: string | undefined): string {
 
 export function nextText(steps: StepStatus[]): string {
   const next = nextStep(steps);
-  if (!next) return "Every step is in place. Run `pdt validate` for anything left.";
+  if (!next) return "Every step is in place. Run `pdt42 validate` for anything left.";
   const { step } = next.status;
   return [
     `Next: ${step.id} · ${step.title}`,
@@ -233,7 +235,7 @@ export function nextText(steps: StepStatus[]): string {
     "",
     `> ${step.question}`,
     "",
-    `Run \`pdt guide step ${step.id}\` for the brief.`,
+    `Run \`pdt42 guide step ${step.id}\` for the brief.`,
   ].join("\n");
 }
 
@@ -248,7 +250,7 @@ export function explainText(type: string | undefined): string {
       }
       lines.push("");
     }
-    lines.push("Run `pdt explain <type>` for its attributes and an example.");
+    lines.push("Run `pdt42 explain <type>` for its attributes and an example.");
     return lines.join("\n");
   }
   const kind = type as BlockType;
@@ -256,7 +258,7 @@ export function explainText(type: string | undefined): string {
   try {
     meta = blockMeta(kind);
   } catch {
-    throw new Error(`Unknown block type "${type}". Run \`pdt explain\` for the list.`);
+    throw new Error(`Unknown block type "${type}". Run \`pdt42 explain\` for the list.`);
   }
   const rows = blockFields(kind).map((f) => {
     const values = f.values
@@ -279,7 +281,7 @@ export function explainText(type: string | undefined): string {
     "",
     meta.description,
     "",
-    `Introduced in step ${meta.step} (\`pdt guide step ${meta.step}\`).${meta.singleton ? " At most one per workspace." : ""}`,
+    `Introduced in step ${meta.step} (\`pdt42 guide step ${meta.step}\`).${meta.singleton ? " At most one per workspace." : ""}`,
     "",
     "| Attribute | Kind | Meaning |",
     "| --------- | ---- | ------- |",
@@ -293,7 +295,7 @@ export function explainText(type: string | undefined): string {
     "",
     "## Example",
     "",
-    "```pdt",
+    "```pdt42",
     `:::${kind}`,
     meta.example,
     ":::",

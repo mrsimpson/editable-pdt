@@ -6,6 +6,6 @@ Design Toolkit: exploration (`1-exploration/`), strategy design (`2-design/`) an
 (`3-growth/`).
 
 ```bash
-pnpm pdt --dir examples/harvest-commons guide      # where the design stands
-pnpm pdt --dir examples/harvest-commons validate   # consistency check
+pnpm pdt42 --dir examples/harvest-commons guide      # where the design stands
+pnpm pdt42 --dir examples/harvest-commons validate   # consistency check
 ```

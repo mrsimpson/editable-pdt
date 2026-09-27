@@ -8,7 +8,7 @@ farm back-office yet, and inventing one would dilute the focus.
 The product side, targeted at the core role: everything a small farm needs to sell without a
 phone — come for the tool, stay for the kitchens.
 
-```pdt
+```pdt42
 :::value-proposition
 id: vp-farm-backoffice
 title: Farm back-office
@@ -26,7 +26,7 @@ bundle:
 
 Restaurants meet farms and pre-order the season.
 
-```pdt
+```pdt42
 :::value-proposition
 id: vp-kitchen-market
 title: Kitchen marketplace
@@ -39,7 +39,7 @@ relationship: r-farmer-restaurant
 
 Households subscribe to boxes composed from many farms.
 
-```pdt
+```pdt42
 :::value-proposition
 id: vp-box-market
 title: Box marketplace

@@ -5,7 +5,7 @@ purpose: they are what drives quality up.
 
 ## Between farms and kitchens
 
-```pdt
+```pdt42
 :::motivation
 id: m-farmers-restaurants
 from: e-farmers
@@ -63,7 +63,7 @@ kind: feedback
 
 ## Around the harvest
 
-```pdt
+```pdt42
 :::motivation
 id: m-couriers-farmers
 from: e-couriers
@@ -105,7 +105,7 @@ kind: goods
 
 The cooperative can give the City Food Council what it lacks: evidence that regional sourcing works.
 
-```pdt
+```pdt42
 :::motivation
 id: m-coop-city
 from: e-coop

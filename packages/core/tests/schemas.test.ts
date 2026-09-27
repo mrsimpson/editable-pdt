@@ -48,7 +48,7 @@ describe("schemas", () => {
       expect(meta.tips.length, type).toBeGreaterThan(0);
       const block = parseMarkdown(
         "example",
-        `\`\`\`pdt\n:::${type}\n${meta.example}\n:::\n\`\`\``,
+        `\`\`\`pdt42\n:::${type}\n${meta.example}\n:::\n\`\`\``,
       ).nodes.find((n) => n.kind === "block");
       const attributes = block?.kind === "block" ? block.attributes : {};
       expect(BLOCK_SCHEMAS[type].safeParse(attributes).success, `${type} example`).toBe(true);

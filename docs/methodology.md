@@ -1,7 +1,7 @@
 # The Platform Design Toolkit, as this project reads it
 
 This is our working summary of the Platform Design Toolkit (PDT) 2.2 by Boundaryless. The meta-model
-in [`meta-model.md`](meta-model.md) and the `pdt guide` command are built on it. It is written in our own
+in [`meta-model.md`](meta-model.md) and the `pdt42 guide` command are built on it. It is written in our own
 words and points to the originals, which remain the authoritative source:
 
 - [PDT overview](https://docs.boundaryless.io/methodology/legacy/pdt) and its three guides:

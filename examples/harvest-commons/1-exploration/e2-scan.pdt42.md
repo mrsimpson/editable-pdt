@@ -5,7 +5,7 @@
 Every Monday farmers call restaurants and the wholesaler to place what they expect to harvest.
 Whatever is left goes to the wholesaler at its price.
 
-```pdt
+```pdt42
 :::job
 id: j-find-buyers
 title: Find buyers for the week's harvest
@@ -19,7 +19,7 @@ job-step: locate
 
 Farmers and households meet in person. Households love it but cannot plan around it.
 
-```pdt
+```pdt42
 :::job
 id: j-market
 title: Sell at the Saturday market
@@ -33,7 +33,7 @@ job-step: execute
 
 Each farm loads its own van for a handful of deliveries.
 
-```pdt
+```pdt42
 :::job
 id: j-drive
 title: Drive produce into town

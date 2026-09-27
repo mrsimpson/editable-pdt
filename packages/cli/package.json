@@ -1,9 +1,9 @@
 {
-  "name": "@pdt/cli",
+  "name": "@pdt42/cli",
   "version": "0.1.0",
-  "description": "pdt — the Platform Design Toolkit as a language: validate, query and get guided through a platform design.",
+  "description": "pdt42 — the Platform Design Toolkit as a language: validate, query and get guided through a platform design.",
   "bin": {
-    "pdt": "./dist/cli.mjs"
+    "pdt42": "./dist/cli.mjs"
   },
   "files": [
     "dist"
@@ -19,7 +19,7 @@
     "check": "vp check"
   },
   "devDependencies": {
-    "@pdt/core": "workspace:*",
+    "@pdt42/core": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:"

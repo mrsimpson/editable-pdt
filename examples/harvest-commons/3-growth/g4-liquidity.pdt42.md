@@ -4,7 +4,7 @@
 
 Start with supply: farms are scarce, chefs are many. One category, one district.
 
-```pdt
+```pdt42
 :::liquidity
 id: lq-kitchen
 relationship: r-farmer-restaurant
@@ -25,7 +25,7 @@ constraints:
 
 The cooperative's market customers make demand easy to find; farms willing to pack boxes are the constraint.
 
-```pdt
+```pdt42
 :::liquidity
 id: lq-box
 relationship: r-farmer-household

@@ -7,7 +7,7 @@ C-shaped: the wholesaler sits between farms and kitchens, and farms are perceive
 
 Restaurants need produce that makes a menu worth coming back for.
 
-```pdt
+```pdt42
 :::component
 id: c-menu
 title: Seasonal menu
@@ -23,7 +23,7 @@ entity: e-restaurants
 
 Households want to cook what is in season without planning their week around a market.
 
-```pdt
+```pdt42
 :::component
 id: c-fresh-food
 title: Fresh food at home
@@ -40,7 +40,7 @@ entity: e-households
 Today bought as anonymous boxes of vegetables. After the plays, each farm's produce is visible and
 chosen for its varieties.
 
-```pdt
+```pdt42
 :::component
 id: c-produce
 title: Farm produce
@@ -57,7 +57,7 @@ entity: e-farmers
 
 Phone calls and haggling today; a standard pre-order after the plays.
 
-```pdt
+```pdt42
 :::component
 id: c-ordering
 title: Ordering and pricing
@@ -73,7 +73,7 @@ needs: c-wholesale
 
 The wholesaler's price list, which sets the floor for everyone.
 
-```pdt
+```pdt42
 :::component
 id: c-wholesale
 title: Wholesale trading
@@ -88,7 +88,7 @@ entity: e-wholesaler
 
 Every farm with its own van today; shared routes after the plays.
 
-```pdt
+```pdt42
 :::component
 id: c-delivery
 title: Last-mile delivery
@@ -104,7 +104,7 @@ needs: c-vans
 
 A commodity.
 
-```pdt
+```pdt42
 :::component
 id: c-vans
 title: Vans and fuel

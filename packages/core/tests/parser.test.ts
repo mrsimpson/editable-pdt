@@ -5,8 +5,8 @@ import type { BlockNode } from "../src/ast.ts";
 describe("parseMarkdown", () => {
   test("reads blocks, scalar attributes and `- item` lists", () => {
     const ast = parseMarkdown(
-      "x.pdt.md",
-      "# T\n\n```pdt\n:::entity\nid: e-a\npressures:\n  - One, with comma\n  - Two\n:::\n```\n",
+      "x.pdt42.md",
+      "# T\n\n```pdt42\n:::entity\nid: e-a\npressures:\n  - One, with comma\n  - Two\n:::\n```\n",
     );
     const block = ast.nodes.find((n): n is BlockNode => n.kind === "block")!;
     expect(block.blockType).toBe("entity");
@@ -17,7 +17,7 @@ describe("parseMarkdown", () => {
   test("keeps several blocks in one fence and records ignore directives", () => {
     const ast = parseMarkdown(
       "x",
-      "```pdt\n:::ignore h104 later :::\n:::entity\nid: a\n:::\n:::entity\nid: b\n:::\n```\n",
+      "```pdt42\n:::ignore h104 later :::\n:::entity\nid: a\n:::\n:::entity\nid: b\n:::\n```\n",
     );
     expect(ast.nodes.filter((n) => n.kind === "block")).toHaveLength(2);
     expect(ast.nodes.find((n) => n.kind === "ignore")).toMatchObject({
@@ -26,10 +26,10 @@ describe("parseMarkdown", () => {
     });
   });
 
-  test("skips HTML comments, even when they contain pdt fences", () => {
+  test("skips HTML comments, even when they contain pdt42 fences", () => {
     const ast = parseMarkdown(
       "x",
-      "Before\n\n<!--\n```pdt\n:::entity\nid: hidden\n:::\n```\n-->\n\nAfter\n",
+      "Before\n\n<!--\n```pdt42\n:::entity\nid: hidden\n:::\n```\n-->\n\nAfter\n",
     );
     expect(ast.nodes.some((n) => n.kind === "block")).toBe(false);
     expect(
@@ -43,9 +43,10 @@ describe("parseMarkdown", () => {
   });
 
   test("reports unclosed blocks and unreadable lines", () => {
-    const errors = parseMarkdown("x", "```pdt\n:::entity\nid: a\nnot an attribute\n").nodes.filter(
-      (n) => n.kind === "parse-error",
-    );
+    const errors = parseMarkdown(
+      "x",
+      "```pdt42\n:::entity\nid: a\nnot an attribute\n",
+    ).nodes.filter((n) => n.kind === "parse-error");
     expect(errors.map((e) => e.line)).toEqual([4, 2]);
   });
 });

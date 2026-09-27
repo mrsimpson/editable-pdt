@@ -1,10 +1,10 @@
 import type { AstNode, BlockNode, DocumentAst, ProseNode } from "./ast.ts";
 
-// Line-oriented parser for `.pdt.md` files.
+// Line-oriented parser for `.pdt42.md` files.
 //
 //   # Heading                    headings of any level
-//   ```pdt … ```                 a fence holding one or more typed blocks
-//   :::type / key: value / :::   a typed block inside a pdt fence
+//   ```pdt42 … ```                 a fence holding one or more typed blocks
+//   :::type / key: value / :::   a typed block inside a pdt42 fence
 //   key:                         followed by indented `- item` lines: a text list
 //   :::ignore CODE reason :::    suppresses a rule for the whole file
 //   <!-- … -->                   HTML comments are skipped entirely (templates keep guidance and
@@ -12,7 +12,7 @@ import type { AstNode, BlockNode, DocumentAst, ProseNode } from "./ast.ts";
 //
 // Everything else is prose and is kept verbatim.
 
-const PDT_FENCE = /^```\s*pdt\s*$/;
+const PDT_FENCE = /^```\s*pdt42\s*$/;
 const OTHER_FENCE = /^(```|~~~)/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
 const BLOCK_OPEN = /^:::([a-z][a-z0-9-]*)\s*$/;
@@ -169,7 +169,7 @@ export function parseMarkdown(file: string, content: string): DocumentAst {
       message: `:::${block.blockType} is never closed`,
     });
   else if (inPdtFence)
-    nodes.push({ kind: "parse-error", line: fenceStart, message: "pdt fence is never closed" });
+    nodes.push({ kind: "parse-error", line: fenceStart, message: "pdt42 fence is never closed" });
   flushProse();
 
   return { file, nodes };

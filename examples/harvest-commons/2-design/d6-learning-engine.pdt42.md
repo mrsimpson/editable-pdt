@@ -5,7 +5,7 @@
 Most farms start with a stall and a guess. The engine takes them to a harvest sold before it is
 sown — and, after a season, to co-owning the platform.
 
-```pdt
+```pdt42
 :::learning-engine
 id: le-farmers
 entity: e-farmers
@@ -26,7 +26,7 @@ evolves-to: e-coop
 
 Chefs start by ordering what is available and end up shaping what gets grown.
 
-```pdt
+```pdt42
 :::learning-engine
 id: le-restaurants
 entity: e-restaurants
@@ -43,7 +43,7 @@ getting-better:
 
 Households start as customers; some become the people who bring their street along.
 
-```pdt
+```pdt42
 :::learning-engine
 id: le-households
 entity: e-households
@@ -62,7 +62,7 @@ getting-better:
 
 A volunteer helps each new farm set up its profile, photos and first availability list, on site.
 
-```pdt
+```pdt42
 :::service
 id: s-storefront
 title: Storefront in a day
@@ -77,7 +77,7 @@ channel: ch-app
 
 In winter, farmers and chefs plan the next season together, with the pre-orders on the table.
 
-```pdt
+```pdt42
 :::service
 id: s-planning-circles
 title: Crop-planning circles
@@ -92,7 +92,7 @@ supports: t-share-menus, t-preorder
 
 After one season, a farm can buy a share and vote in the members' assembly.
 
-```pdt
+```pdt42
 :::service
 id: s-membership
 title: Become a co-owner
@@ -106,7 +106,7 @@ kind: empowering
 
 A one-page view of what each member farm grows, week by week.
 
-```pdt
+```pdt42
 :::service
 id: s-season-guide
 title: Season guide for chefs
@@ -121,7 +121,7 @@ channel: ch-app
 
 Three recipes with every box; households add their own.
 
-```pdt
+```pdt42
 :::service
 id: s-recipes
 title: Recipes for the box
@@ -136,7 +136,7 @@ channel: ch-app
 
 Twice a season, member farms open their gates for harvest days with families.
 
-```pdt
+```pdt42
 :::service
 id: s-farm-days
 title: Farm days
@@ -150,7 +150,7 @@ kind: other
 
 Bundles the pick-ups of all farms into one route per day for the couriers.
 
-```pdt
+```pdt42
 :::service
 id: s-route-planner
 title: Shared route planner
