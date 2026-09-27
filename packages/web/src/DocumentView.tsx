@@ -15,6 +15,9 @@ import { colorOf } from "./workspace.ts";
 // A chapter, rendered like arc42 renders one: prose, with every element's prose swappable for
 // its model box (click the stripe), canvases in place, and the agent view showing the source.
 
+/** Rules about a chapter rather than one element (W011: the chapter lacks its canvas). */
+const CHAPTER_RULES = new Set(["W011"]);
+
 type Group =
   | { kind: "run"; prose: string; block: BlockNode | null; ignores: IgnoreNode[] }
   | { kind: "node"; node: AstNode };
@@ -129,8 +132,11 @@ function Heading({ level, text }: { level: number; text: string }) {
 
 function ChapterHeader({ ctx, doc }: { ctx: Ctx; doc: PayloadDocument }) {
   const steps = STEPS.filter((s) => doc.steps.includes(s.id));
+  // Findings about the chapter as a whole, and findings no element here can show.
   const loose = ctx.ix.findings(
-    (d) => d.loc.file === doc.file && (!d.element || !ctx.ix.byId.has(d.element)),
+    (d) =>
+      d.loc.file === doc.file &&
+      (CHAPTER_RULES.has(d.code) || !d.element || !ctx.ix.byId.has(d.element)),
   );
   return (
     <header class="chapter__header">

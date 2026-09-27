@@ -623,9 +623,9 @@ button {
   gap: 0.3rem;
 }
 .finding {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.25rem 0.6rem;
   align-items: baseline;
   padding: 0.35rem 0.6rem;
   border-left: 3px solid var(--sev);
@@ -645,8 +645,14 @@ button {
 .finding--hint {
   --sev: var(--c-hint);
 }
+.finding__message code {
+  font-weight: 400;
+  color: var(--text);
+  background: var(--bg-code);
+  padding: 0 0.25em;
+  border-radius: 3px;
+}
 .finding__loc {
-  margin-left: auto;
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -1431,4 +1437,28 @@ button {
   .chapter__file {
     margin-left: 0;
   }
+  .finding {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .finding__loc {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Long lists of incoming references fold after ten (see ElementCard). */
+.chips--folded > .ref-chip:nth-child(n + 11) {
+  display: none;
+}
+.chips__more {
+  display: none;
+  padding: 0.08em 0.6em;
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.chips--folded > .chips__more {
+  display: inline-block;
 }

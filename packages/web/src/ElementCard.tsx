@@ -6,8 +6,12 @@ import {
   type IgnoreNode,
 } from "@pdt42/core";
 import { h } from "./dom.ts";
+import { inline } from "./markdown.ts";
 import type { Ctx } from "./context.ts";
 import { canvasHref, canvasTitle, colorOf, elementHref, roleLabel } from "./workspace.ts";
+
+/** Incoming references shown before the rest fold away. */
+const FOLD = 10;
 
 // The model box: an element as the model sees it — its fields, what it points to, what points
 // to it, the canvases it appears on and the findings about it.
@@ -53,7 +57,7 @@ export function FindingList({ findings }: { findings: Diagnostic[] }) {
       {findings.map((f) => (
         <li class={["finding", `finding--${f.severity}`]}>
           <code>{f.code}</code>
-          <span>{f.message}</span>
+          <span class="finding__message" html={inline(f.message)} />
           <span class="finding__loc">
             {f.loc.file}:{f.loc.line}
           </span>
@@ -114,7 +118,11 @@ export function ElementCard({
   const color = colorOf(e.kind, role);
   const meta = blockMeta(e.kind as BlockType);
   const fields = blockFields(e.kind as BlockType).filter(
-    (f) => f.name !== "id" && f.name !== "title" && e.data[f.name] !== undefined,
+    (f) =>
+      f.name !== "id" &&
+      f.name !== "title" &&
+      e.data[f.name] !== undefined &&
+      !(Array.isArray(e.data[f.name]) && (e.data[f.name] as unknown[]).length === 0),
   );
   const incoming = ctx.ix.incoming.get(e.id) ?? [];
   const canvases = ctx.ix.canvasesOf.get(e.id) ?? [];
@@ -156,10 +164,21 @@ export function ElementCard({
             {incoming.length > 0 && (
               <div class="relations__row">
                 <span class="relations__label">referenced by</span>
-                <span class="chips">
+                <span class={["chips", incoming.length > FOLD && "chips--folded"]}>
                   {incoming.map((r) => (
                     <RefChip ctx={ctx} id={r.from} note={r.field} incoming />
                   ))}
+                  {incoming.length > FOLD && (
+                    <button
+                      class="chips__more"
+                      onClick={(event: Event) => {
+                        const chips = (event.currentTarget as HTMLElement).parentElement!;
+                        chips.classList.remove("chips--folded");
+                      }}
+                    >
+                      +{incoming.length - FOLD} more
+                    </button>
+                  )}
                 </span>
               </div>
             )}
