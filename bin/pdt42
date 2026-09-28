@@ -1,0 +1,2 @@
+#!/bin/sh
+exec node --conditions=development --experimental-strip-types --no-warnings "$(dirname "$0")/../packages/cli/src/cli.ts" "$@"
