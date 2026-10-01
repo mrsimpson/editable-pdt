@@ -21,7 +21,6 @@ catalog:
   vite-plugin-singlefile: 2.3.3
   vite-plus: 0.1.24
   vitest: npm:@voidzero-dev/vite-plus-test@latest
-  zod: 4.5.4
 
 catalogMode: prefer
 overrides:

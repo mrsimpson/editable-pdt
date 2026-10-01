@@ -57,9 +57,6 @@ catalogs:
     vite-plus:
       specifier: 0.1.24
       version: 0.1.24
-    zod:
-      specifier: 4.5.4
-      version: 4.5.4
 
 overrides:
   vite: npm:@voidzero-dev/vite-plus-core@latest
@@ -89,6 +86,10 @@ importers:
         version: 0.1.24(@types/node@24.19.0)(typescript@5.9.3)(vite@8.3.1(@types/node@24.19.0))
 
   packages/cli:
+    dependencies:
+      '@cli42/lib':
+        specifier: 'catalog:'
+        version: 0.7.0(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@pdt42/core':
         specifier: workspace:*
@@ -108,9 +109,9 @@ importers:
 
   packages/core:
     dependencies:
-      zod:
+      '@cli42/lib':
         specifier: 'catalog:'
-        version: 4.5.4
+        version: 0.7.0(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
