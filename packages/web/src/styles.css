@@ -296,6 +296,35 @@ button {
 .sidebar__credit a {
   color: inherit;
 }
+.sidebar__meta-model {
+  border-top: 1px solid var(--border);
+  padding: 0.25rem 0;
+}
+.sidebar__meta-model-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.3rem 0.75rem 0.3rem 1rem;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+.sidebar__meta-model-btn:hover {
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+  color: var(--text);
+}
+.sidebar__meta-model-btn--active {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
 .sidebar__findings {
   display: inline-flex;
   gap: 0.3rem;

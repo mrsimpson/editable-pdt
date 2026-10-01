@@ -31,7 +31,7 @@ import type { BlockType } from "@pdt42/core";
 // ── SVG layout constants ──────────────────────────────────────────────────────
 
 const SVG_W = 1220;
-const SVG_H = 640;
+const SVG_H = 680;
 
 // Node box dimensions (must match NODE_W/NODE_H from @cli42/lib/web-react = 128×28)
 // Reproduced here for layout calculation comments only.
@@ -119,7 +119,7 @@ const NODE_POS: Record<BlockType, [number, number]> = {
   service:           [740, 290],
   experience:        [740, 410],
   mvp:               [740, 520],
-  assumption:        [880, 520],
+  assumption:        [740, 600],
 
   // ── Col G: Growth ─────────────────────────────────────────────────────────
   "value-proposition": [980, 90],
@@ -205,27 +205,28 @@ const EDGE_OVERRIDES: Record<string, EdgeOverride> = {
   // experience has two step targets (transaction + service) — nudge to separate
   "experience:steps:transaction": { cp: [0, -20] },
   "experience:steps:service":     { cp: [0,  20] },
-  // platform → entity: long left arc, spread to avoid overlap
-  "platform:owners:entity":      { fromFace: "left", toFace: "top",    cp: [0, -50] },
-  "platform:core-entity:entity": { fromFace: "left", toFace: "bottom", cp: [0,  40] },
-  // job:arena goes from E col back to E col — short upward arc
+  // platform → entity: two arcs, widely separated — owners enters via top arc, core-entity via bottom arc
+  "platform:owners:entity":      { fromFace: "left", toFace: "top",    cp: [-80, -100] },
+  "platform:core-entity:entity": { fromFace: "left", toFace: "bottom", cp: [-40,   80] },
+  // job:arena — short upward arc in same column
   "job:arena:arena": { fromFace: "top", toFace: "bottom", cp: [-20, 0] },
-  // job:entities goes to entity below it — straight down
+  // job:entities — entity is below job in same column, straight down
   "job:entities:entity": { fromFace: "bottom", toFace: "top" },
-  // brief → entity: downward in same column
-  "brief:entities:entity": { fromFace: "bottom", toFace: "top", cp: [-20, 0] },
-  // network → relationship: goes left
+  // brief [280,490] → entity [80,380]: Brief is right of Entity — exit left, enter right
+  "brief:entities:entity": { fromFace: "left", toFace: "right" },
+  // network → relationship: goes left, same row
   "network:relationship:relationship": { fromFace: "left", toFace: "right" },
-  // transaction → relationship: goes left, nudge to separate from network
-  "transaction:relationship:relationship": { fromFace: "left", toFace: "right", cp: [0, -20] },
+  // transaction [510,520] → relationship [510,290]: same column, straight up
+  // nudge slightly right so the label clears the Channel box [510,460]
+  "transaction:relationship:relationship": { fromFace: "top", toFace: "bottom", cp: [30, 0] },
   // value-proposition → relationship: long left arc from top of growth col
   "value-proposition:relationship:relationship": { fromFace: "left", toFace: "right", cp: [0, -30] },
   // flywheel + liquidity → relationship: spread arcs
   "flywheel:relationship:relationship":  { fromFace: "left", toFace: "right", cp: [0,  20] },
   "liquidity:relationship:relationship": { fromFace: "left", toFace: "right", cp: [0,  60] },
-  // growth-loop → flywheel: same row now, straight left
+  // growth-loop → flywheel: same row, straight left
   "growth-loop:feeds:flywheel": { fromFace: "left", toFace: "right" },
-  // flywheel self-reference: exit top, enter right — growth-loop is to the right
+  // flywheel self-reference: exit bottom, enter right
   "flywheel:reinforces:flywheel": { fromFace: "bottom", toFace: "right", cp: [28, 25] },
   // platform → brief: goes via bottom-left
   "platform:brief:brief": { fromFace: "bottom", toFace: "top", cp: [-80, 0] },
