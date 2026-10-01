@@ -3,7 +3,7 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer, type Server, type ServerResponse } from "node:http";
 import { dirname, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { toPayload, type WorkspacePayload } from "@pdt42/core";
+import type { WorkspacePayload } from "@pdt42/core";
 import { load } from "./discover.ts";
 
 // `pdt42 serve` and `pdt42 build`: the workspace in the browser, rendered by @pdt42/web.
@@ -23,8 +23,7 @@ export function webDir(singleFile = false): string {
 }
 
 export async function workspacePayload(dir: string): Promise<WorkspacePayload> {
-  const { workspace, diagnostics, steps } = await load(dir);
-  return toPayload(workspace, diagnostics, steps);
+  return (await load(dir)).payload;
 }
 
 const TYPES: Record<string, string> = {

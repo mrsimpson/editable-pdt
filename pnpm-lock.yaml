@@ -7,7 +7,7 @@ settings:
 catalogs:
   default:
     '@cli42/lib':
-      specifier: github:mrsimpson/cli42#0a129551c31e8e4d50738c57eee2a24c22100709
+      specifier: github:mrsimpson/cli42#714bf8729d7b81f0ee1a41f25b01491507861cfc
       version: 0.1.0
     '@playwright/test':
       specifier: 1.56.1
@@ -89,7 +89,7 @@ importers:
     dependencies:
       '@cli42/lib':
         specifier: 'catalog:'
-        version: https://codeload.github.com/mrsimpson/cli42/tar.gz/0a129551c31e8e4d50738c57eee2a24c22100709(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: https://codeload.github.com/mrsimpson/cli42/tar.gz/714bf8729d7b81f0ee1a41f25b01491507861cfc(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@pdt42/core':
         specifier: workspace:*
@@ -111,7 +111,7 @@ importers:
     dependencies:
       '@cli42/lib':
         specifier: 'catalog:'
-        version: https://codeload.github.com/mrsimpson/cli42/tar.gz/0a129551c31e8e4d50738c57eee2a24c22100709(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: https://codeload.github.com/mrsimpson/cli42/tar.gz/714bf8729d7b81f0ee1a41f25b01491507861cfc(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -143,7 +143,7 @@ importers:
     dependencies:
       '@cli42/lib':
         specifier: 'catalog:'
-        version: https://codeload.github.com/mrsimpson/cli42/tar.gz/0a129551c31e8e4d50738c57eee2a24c22100709(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: https://codeload.github.com/mrsimpson/cli42/tar.gz/714bf8729d7b81f0ee1a41f25b01491507861cfc(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@pdt42/core':
         specifier: workspace:*
         version: link:../core
@@ -222,8 +222,8 @@ packages:
   '@chevrotain/types@11.1.2':
     resolution: {integrity: sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==}
 
-  '@cli42/lib@https://codeload.github.com/mrsimpson/cli42/tar.gz/0a129551c31e8e4d50738c57eee2a24c22100709':
-    resolution: {tarball: https://codeload.github.com/mrsimpson/cli42/tar.gz/0a129551c31e8e4d50738c57eee2a24c22100709}
+  '@cli42/lib@https://codeload.github.com/mrsimpson/cli42/tar.gz/714bf8729d7b81f0ee1a41f25b01491507861cfc':
+    resolution: {tarball: https://codeload.github.com/mrsimpson/cli42/tar.gz/714bf8729d7b81f0ee1a41f25b01491507861cfc}
     version: 0.1.0
     engines: {node: '>=22.6'}
     peerDependencies:
@@ -2713,7 +2713,7 @@ snapshots:
 
   '@chevrotain/types@11.1.2': {}
 
-  '@cli42/lib@https://codeload.github.com/mrsimpson/cli42/tar.gz/0a129551c31e8e4d50738c57eee2a24c22100709(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@cli42/lib@https://codeload.github.com/mrsimpson/cli42/tar.gz/714bf8729d7b81f0ee1a41f25b01491507861cfc(mermaid@11.17.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@asciidoctor/core': 4.1.0
       marked: 14.1.4

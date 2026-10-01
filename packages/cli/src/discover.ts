@@ -1,13 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
-import {
-  parseWorkspace,
-  progress,
-  validate,
-  type Diagnostic,
-  type StepStatus,
-  type Workspace,
-} from "@pdt42/core";
+import { loadWorkspaceFromFiles, type LoadedWorkspace } from "@pdt42/core";
 
 const SKIP = new Set(["node_modules", "dist", ".git"]);
 
@@ -29,19 +22,14 @@ export async function discover(dir: string, base = dir): Promise<string[]> {
   return out.sort();
 }
 
-export interface Loaded {
-  workspace: Workspace;
-  diagnostics: Diagnostic[];
-  steps: StepStatus[];
-}
+export type Loaded = LoadedWorkspace;
 
+/** Load the workspace below `dir`: every `*.pdt42.md` file, prose rendered, validated. */
 export async function load(dir: string): Promise<Loaded> {
   const files = await discover(dir);
-  const workspace = parseWorkspace(
+  return loadWorkspaceFromFiles(
     await Promise.all(
-      files.map(async (file) => ({ file, content: await readFile(join(dir, file), "utf8") })),
+      files.map(async (path) => ({ path, content: await readFile(join(dir, path), "utf8") })),
     ),
   );
-  const diagnostics = validate(workspace);
-  return { workspace, diagnostics, steps: progress(workspace, diagnostics) };
 }
