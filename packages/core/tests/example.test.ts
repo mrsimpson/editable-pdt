@@ -104,3 +104,19 @@ describe("payload", () => {
     expect(JSON.parse(JSON.stringify(payload))).toEqual(payload);
   });
 });
+
+describe("payload documents", () => {
+  test("keep the canvas blocks, which the web view draws in place", async () => {
+    const { loadWorkspaceFromFiles } = await import("../src/index.ts");
+    const { payload } = await loadWorkspaceFromFiles(
+      files(ROOT).map((path) => ({
+        path: relative(ROOT, path),
+        content: readFileSync(path, "utf8"),
+      })),
+    );
+    const blocks = payload.documents.flatMap((d) =>
+      d.nodes.filter((n) => n.kind === "block" && n.blockType === "canvas"),
+    );
+    expect(blocks).toHaveLength(payload.canvases.length);
+  });
+});
