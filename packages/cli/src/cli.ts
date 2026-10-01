@@ -12,7 +12,8 @@ import {
   type Diagnostic,
 } from "@pdt42/core";
 import { load } from "./discover.ts";
-import { build, serve } from "./serve.ts";
+import { build, serve, warnUntracked } from "./serve.ts";
+import { loadDiff, type DiffSpec } from "./git.ts";
 import {
   explainJson,
   explainText,
@@ -38,12 +39,16 @@ Commands
   validate [--strict]      Check the model (exit 1 on errors, or on warnings with --strict)
   get [id] [--type <t>]    List elements, or show one with what references it
   rules                    Every validation rule with its rationale
-  serve [--port <n>]       Render the workspace in the browser, reloading on every change
+  diff [<ref> | <a>..<b>] [--staged]
+                           Check a change: blocks and the prose explaining them change together
+  serve [--port <n>]       Render the workspace in the browser, reloading on every change, with
+                           its history; --diff [<ref>] [--staged] shows a change
   build --out <dir>        Render the workspace as a static site [--single-file: one HTML file]
+                           [--diff [<ref>] [--staged]] [--with-history]
 
 Options
   --dir <path>             Workspace directory (default: $PDT42_DIR or the current directory)
-  --format json            Machine-readable output (validate, get, rules, guide, next)
+  --format json            Machine-readable output (validate, get, rules, guide, next, diff)
 
 The methodology is the Platform Design Toolkit 2.2 by Boundaryless SRL, whose canvases and
 guides are licensed CC BY-SA 4.0 — https://docs.boundaryless.io/methodology/legacy/pdt
@@ -54,13 +59,26 @@ interface Args {
   [key: string]: string | boolean | string[];
 }
 
+const FLAGS = new Set([
+  "--strict",
+  "--single-file",
+  "--with-history",
+  "--staged",
+  "--cached",
+  "--help",
+  "-h",
+]);
+
 function parseArgs(argv: string[]): Args {
   const args: Args = { _: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]!;
-    if (a === "--strict" || a === "--single-file" || a === "--help" || a === "-h")
-      args[a.replace(/^-+/, "")] = true;
-    else if (a.startsWith("--")) args[a.slice(2)] = argv[++i] ?? "";
+    if (FLAGS.has(a)) args[a.replace(/^-+/, "")] = true;
+    else if (a === "--diff") {
+      // A reference may follow (`--diff main`), or not (`--diff --staged`, `--diff` last).
+      const next = argv[i + 1];
+      args.diff = next !== undefined && !next.startsWith("-") ? (argv[++i] ?? "") : true;
+    } else if (a.startsWith("--")) args[a.slice(2)] = argv[++i] ?? "";
     else args._.push(a);
   }
   return args;
@@ -72,6 +90,18 @@ const SEVERITY = { error: "31;1", warning: "33;1", hint: "36" } as const;
 
 function print(text: string) {
   process.stdout.write(`${text}\n`);
+}
+
+/** The change `serve` and `build` show with `--diff [<ref>] [--staged]`. */
+function diffSpec(args: Args): DiffSpec | undefined {
+  if (args.diff === undefined) {
+    if (args.staged) throw new UsageError("--staged requires --diff");
+    return undefined;
+  }
+  return {
+    ...(typeof args.diff === "string" ? { reference: args.diff } : {}),
+    staged: Boolean(args.staged || args.cached),
+  };
 }
 
 async function main(): Promise<number> {
@@ -149,17 +179,68 @@ async function main(): Promise<number> {
       print(explainText(rest[0]));
       return 0;
     }
+    case "diff": {
+      if (rest.length > 1)
+        throw new UsageError("pdt42 diff [<ref> | <base>..<head> | <base>...<head>]");
+      const diff = await loadDiff(dir, {
+        ...(rest[0] ? { reference: rest[0] } : {}),
+        staged: Boolean(args.staged || args.cached),
+      });
+      const accepted =
+        diff.acceptanceBase !== undefined && process.env.PDT42_CONSISTENT === diff.acceptanceBase;
+      const remaining = accepted ? [] : diff.result.findings;
+      if (json) {
+        print(
+          JSON.stringify(
+            {
+              version: 1,
+              base: diff.payload.base,
+              head: diff.payload.head,
+              acceptanceBase: diff.acceptanceBase ?? null,
+              untracked: diff.untracked,
+              accepted,
+              findings: diff.result.findings,
+              model: diff.result.model,
+            },
+            null,
+            2,
+          ),
+        );
+        return remaining.length ? 1 : 0;
+      }
+      for (const f of diff.result.findings)
+        print(`${f.severity} ${f.file}:${f.line}  ${f.message}`);
+      warnUntracked(diff.untracked);
+      if (accepted) print("info These changes were accepted as intentional");
+      if (remaining.length) {
+        process.stderr.write(
+          `To accept these findings, set PDT42_CONSISTENT=${diff.baseCommit} and rerun the command.\n`,
+        );
+      }
+      return remaining.length ? 1 : 0;
+    }
     case "serve": {
       const port = Number(args.port || 4242);
       const host = String(args.host || "127.0.0.1");
-      await serve(dir, { port, host });
+      const diff = diffSpec(args);
+      if (diff) await loadDiff(dir, diff); // fail now, not in the browser, on a bad reference
+      await serve(dir, { port, host, ...(diff ? { diff } : {}) });
       print(`pdt42 serve  →  http://${host === "0.0.0.0" ? "localhost" : host}:${port}`);
       print(`Watching ${dir} — the browser reloads on every change. Ctrl+C to stop.`);
       return new Promise<number>(() => {});
     }
     case "build": {
-      if (!args.out) throw new UsageError("pdt42 build --out <dir> [--single-file]");
-      const target = await build(dir, resolve(String(args.out)), Boolean(args["single-file"]));
+      if (!args.out) {
+        throw new UsageError(
+          "pdt42 build --out <dir> [--single-file] [--diff [<ref>] [--staged]] [--with-history]",
+        );
+      }
+      const diff = diffSpec(args);
+      const target = await build(dir, resolve(String(args.out)), {
+        singleFile: Boolean(args["single-file"]),
+        withHistory: Boolean(args["with-history"]),
+        ...(diff ? { diff } : {}),
+      });
       print(`Wrote ${target}`);
       return 0;
     }

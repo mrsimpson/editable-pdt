@@ -16,3 +16,4 @@ export * from "./canvases.ts";
 export * from "./payload.ts";
 export * from "./canvas-model.ts";
 export * from "./workspace-files.ts";
+export * from "./diff.ts";
