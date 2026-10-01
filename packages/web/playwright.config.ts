@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Only the demo lives here for now: a screen recording and the screenshots for the site, not
-// functional tests. Run with `pnpm demo` (after `pnpm build`).
+// Functional tests of the web view (`pnpm test:e2e`, after `pnpm build`), and the demo: a screen
+// recording and the screenshots for the site (`pnpm demo`).
 
 export default defineConfig({
   testDir: "./tests",
@@ -9,6 +9,11 @@ export default defineConfig({
   retries: 0,
   reporter: "list",
   projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"], headless: true },
+      testMatch: ["**/serve-ui.spec.ts"],
+    },
     {
       name: "demo",
       use: {

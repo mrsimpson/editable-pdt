@@ -1,3 +1,4 @@
+import type { DiffDocument } from "@cli42/lib/diff";
 import type { WorkspaceIndex } from "./workspace.ts";
 
 export type ViewMode = "human" | "agent";
@@ -18,4 +19,6 @@ export interface Ctx {
   ix: WorkspaceIndex;
   state: ViewState;
   update(change: (state: ViewState) => void): void;
+  /** The chapters a visualized difference changes, by path (`serve`/`build --diff`). */
+  diffDocuments?: Map<string, DiffDocument>;
 }

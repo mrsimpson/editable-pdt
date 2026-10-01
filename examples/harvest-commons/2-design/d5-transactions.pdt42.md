@@ -23,7 +23,8 @@ improvement: A pre-order takes two minutes instead of a round of phone calls, an
 
 ### Neighbourhood hubs
 
-Pick-up shelves in cafés and bakeries, refrigerated where needed.
+Pick-up shelves in cafés and bakeries, refrigerated where needed. The weekly box (`x-weekly-box`)
+is collected here.
 
 ```pdt42
 :::channel

@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vp build && vp build --config vite.config.single.ts",
     "test": "vp test",
     "check": "vp check",
+    "test:e2e": "playwright test --project=chromium",
     "demo": "playwright test --project=demo"
   },
   "dependencies": {

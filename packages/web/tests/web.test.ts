@@ -9,7 +9,7 @@ import {
   validate,
   type AstNode,
 } from "@pdt42/core";
-import { parseHash } from "../src/App.tsx";
+import { parseRoute } from "@cli42/lib/web";
 import { blockSource, groupNodes } from "../src/DocumentView.tsx";
 import { renderMarkdown, slug } from "../src/markdown.ts";
 import { WorkspaceIndex } from "../src/workspace.ts";
@@ -90,16 +90,18 @@ describe("document grouping", () => {
 
   it("attaches the prose before an element, and its ignores, to the element", () => {
     const groups = groupNodes(nodes);
-    const run = groups.find((g) => g.kind === "run" && g.block);
-    expect(run).toMatchObject({ kind: "run", prose: "Prose about the farmers." });
-    expect(run?.kind === "run" && run.ignores.map((i) => i.ruleCode)).toEqual(["H002"]);
+    const run = groups.find((g) => g.kind === "prose-run" && g.block);
+    expect(run?.kind === "prose-run" && run.text.trim()).toBe("Prose about the farmers.");
+    expect(run?.kind === "prose-run" && run.ignores.map((i) => i.ruleCode)).toEqual(["H002"]);
   });
 
   it("keeps canvases out of prose runs", () => {
     const groups = groupNodes(nodes);
-    const canvas = groups.find((g) => g.kind === "node" && g.node.kind === "block");
+    const canvas = groups.find((g) => g.kind === "other" && g.node.kind === "block");
     expect(canvas).toBeDefined();
-    expect(groups.at(-1)).toMatchObject({ kind: "run", prose: "Closing words.", block: null });
+    const last = groups.at(-1);
+    expect(last).toMatchObject({ kind: "prose-run", block: null });
+    expect(last?.kind === "prose-run" && last.text.trim()).toBe("Closing words.");
   });
 
   it("prints a block back as source for the agent view", () => {
@@ -111,16 +113,18 @@ describe("document grouping", () => {
 });
 
 describe("routing", () => {
-  it("splits file and anchor at the first colon", () => {
-    expect(parseHash("#2-design/d5-transactions.pdt42.md:el-t-share-menus")).toEqual({
+  it("splits file and anchor at the first colon (the routes of every *42 web view)", () => {
+    expect(parseRoute("#2-design/d5-transactions.pdt42.md:el-t-share-menus")).toEqual({
+      view: "document",
       file: "2-design/d5-transactions.pdt42.md",
       anchor: "el-t-share-menus",
+      element: "t-share-menus",
     });
-    expect(parseHash("#1-exploration/e1-arenas.pdt42.md")).toEqual({
+    expect(parseRoute("#1-exploration/e1-arenas.pdt42.md")).toMatchObject({
       file: "1-exploration/e1-arenas.pdt42.md",
       anchor: null,
     });
-    expect(parseHash("")).toEqual({ file: "", anchor: null });
+    expect(parseRoute("")).toMatchObject({ file: "", anchor: null });
   });
 });
 
