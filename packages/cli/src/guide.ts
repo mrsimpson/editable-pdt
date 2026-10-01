@@ -1,4 +1,6 @@
+import { blockGuidance } from "@cli42/lib/explain";
 import {
+  BLOCK_SCHEMAS,
   blockFields,
   blockMeta,
   CANVASES,
@@ -14,6 +16,7 @@ import {
   nextStep,
   starterTemplate,
   stepDependencies,
+  isBlockType,
   type BlockType,
   type StepInfo,
   type Workspace,
@@ -239,6 +242,29 @@ export function nextText(steps: StepStatus[]): string {
   ].join("\n");
 }
 
+function blockTypeOf(type: string): BlockType {
+  if (!isBlockType(type)) {
+    throw new Error(`Unknown block type "${type}". Run \`pdt42 explain\` for the list.`);
+  }
+  return type;
+}
+
+/**
+ * A block type's guidance as JSON: what every *42 language's `explain --format json` gives
+ * (@cli42/lib/explain), with pdt42's step, attribute kinds and reference targets, and example.
+ */
+export function explainJson(type: string) {
+  const kind = blockTypeOf(type);
+  const meta = blockMeta(kind);
+  return {
+    blockType: kind,
+    step: meta.step,
+    ...blockGuidance(BLOCK_SCHEMAS[kind], kind),
+    attributes: blockFields(kind),
+    example: meta.example,
+  };
+}
+
 export function explainText(type: string | undefined): string {
   if (!type) {
     const lines = ["# Block types", ""];
@@ -253,13 +279,9 @@ export function explainText(type: string | undefined): string {
     lines.push("Run `pdt42 explain <type>` for its attributes and an example.");
     return lines.join("\n");
   }
-  const kind = type as BlockType;
-  let meta;
-  try {
-    meta = blockMeta(kind);
-  } catch {
-    throw new Error(`Unknown block type "${type}". Run \`pdt42 explain\` for the list.`);
-  }
+  const kind = blockTypeOf(type);
+  const meta = blockMeta(kind);
+  const scheme = blockGuidance(BLOCK_SCHEMAS[kind], kind).idScheme;
   const rows = blockFields(kind).map((f) => {
     const values = f.values
       ? f.values
@@ -283,6 +305,12 @@ export function explainText(type: string | undefined): string {
     "",
     `Introduced in step ${meta.step} (\`pdt42 guide step ${meta.step}\`).${meta.singleton ? " At most one per workspace." : ""}`,
     "",
+    ...(scheme
+      ? [
+          `Id: starts with \`${scheme.prefixes[0]}-\`${scheme.bareId ? ` (or is \`${scheme.prefixes[0]}\` itself)` : ""}.`,
+          "",
+        ]
+      : []),
     "| Attribute | Kind | Meaning |",
     "| --------- | ---- | ------- |",
     ...rows,
