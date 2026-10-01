@@ -6,6 +6,8 @@ import {
   fieldValue,
   incoming,
   nextStep,
+  proseOf,
+  titleOf,
   RULES,
   type Diagnostic,
 } from "@pdt42/core";
@@ -197,7 +199,7 @@ async function main(): Promise<number> {
           return 0;
         }
         print(
-          `${paint("1", element.title)}  ${paint("2", `${element.kind} · ${element.loc.file}:${element.loc.line}`)}`,
+          `${paint("1", titleOf(element))}  ${paint("2", `${element.kind} · ${element.loc.file}:${element.loc.line}`)}`,
         );
         for (const { name: key } of blockFields(element.kind)) {
           const value = fieldValue(element, key);
@@ -214,7 +216,7 @@ async function main(): Promise<number> {
               : `  ${key}: ${String(value as string | number | boolean)}`,
           );
         }
-        if (element.prose) print(`\n${element.prose.replace(/^/gm, "  ")}`);
+        if (proseOf(element)) print(`\n${proseOf(element).replace(/^/gm, "  ")}`);
         if (refs.length)
           print(`\n  referenced by: ${refs.map((r) => `${r.id} (${r.field})`).join(", ")}`);
         const own = diagnostics.filter((d) => d.element === id);
@@ -226,7 +228,7 @@ async function main(): Promise<number> {
       if (json) {
         print(
           JSON.stringify(
-            elements.map((e) => ({ kind: e.kind, id: e.id, title: e.title, loc: e.loc })),
+            elements.map((e) => ({ kind: e.kind, id: e.id, title: titleOf(e), loc: e.loc })),
             null,
             2,
           ),
@@ -237,7 +239,7 @@ async function main(): Promise<number> {
         const group = elements.filter((e) => e.kind === kind);
         if (!group.length) continue;
         print(paint("1", `${kind} (${group.length})`));
-        for (const e of group) print(`  ${e.id.padEnd(30)} ${e.title}`);
+        for (const e of group) print(`  ${e.id.padEnd(30)} ${titleOf(e)}`);
       }
       return 0;
     }

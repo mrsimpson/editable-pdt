@@ -1,7 +1,7 @@
 import { genericRules } from "@cli42/lib/rules";
 import { createValidator } from "@cli42/lib/validator";
 import type { Diagnostic as LibDiagnostic, Rule as LibRule, RuleDocs } from "@cli42/lib/validator";
-import { elementsOf, fieldValue, get, type Element, type Workspace } from "./model.ts";
+import { elementsOf, fieldValue, get, titleOf, type Element, type Workspace } from "./model.ts";
 import {
   BLOCK_SCHEMAS,
   BLOCK_TYPES,
@@ -384,7 +384,7 @@ const PDT_RULES: Rule[] = [
         .filter((e) => !roots.includes(e.kind) && !connected.has(e.id))
         .map((e) => ({
           ...at(e),
-          message: `${e.title} is connected to nothing else in the model`,
+          message: `${titleOf(e)} is connected to nothing else in the model`,
         }));
     },
   ),
@@ -686,7 +686,7 @@ const PDT_RULES: Rule[] = [
             : [
                 {
                   ...at(le, stage),
-                  message: `${le.title}: ${stage} challenges have no service for ${le.entity}`,
+                  message: `${titleOf(le)}: ${stage} challenges have no service for ${le.entity}`,
                 },
               ];
         }),
@@ -1009,7 +1009,7 @@ function chapterCanvasFindings(ws: Workspace): Finding[] {
       out.push({
         ...at(anchor),
         step: step.id,
-        message: `No ${canvas.title} for ${target.title} in ${[...chapterFiles].join(", ")} — ${hint(target.id)}`,
+        message: `No ${canvas.title} for ${titleOf(target)} in ${[...chapterFiles].join(", ")} — ${hint(target.id)}`,
       });
     }
   }

@@ -3,6 +3,7 @@ import {
   blockFields,
   blockMeta,
   fieldValue,
+  titleOf,
   type BlockType,
   type Diagnostic,
   type IgnoreNode,
@@ -46,7 +47,7 @@ export function RefChip({
       style={css({ "--c": colorOf(e.kind, role) })}
     >
       <span className="ref-chip__dot" />
-      {e.title}
+      {titleOf(e)}
       {note && <span className="ref-chip__note">{note}</span>}
     </a>
   );
@@ -150,7 +151,7 @@ export function ElementCard({
           <span className="badge" title={meta.description}>
             {e.kind}
           </span>
-          <span className="card__title">{e.title}</span>
+          <span className="card__title">{titleOf(e)}</span>
           <code className="card__id">{e.id}</code>
           {role && <span className="pill pill--role">{roleLabel(role)}</span>}
         </header>
@@ -195,7 +196,7 @@ export function ElementCard({
                     <a key={idx} className="ref-chip ref-chip--canvas" href={canvasHref(v)}>
                       ▦ {canvasTitle(v.canvas)}
                       {v.of && ctx.ix.byId.get(v.of) && (
-                        <span className="ref-chip__note">{ctx.ix.byId.get(v.of)!.title}</span>
+                        <span className="ref-chip__note">{titleOf(ctx.ix.byId.get(v.of)!)}</span>
                       )}
                     </a>
                   ))}

@@ -2,7 +2,7 @@ import type { IgnoreDirective } from "@cli42/lib/validator";
 import type { AstNode } from "./ast.ts";
 import type { CanvasView } from "./canvases.ts";
 import { STEPS } from "./methodology.ts";
-import type { Element, Workspace } from "./model.ts";
+import { titleOf, type Element, type Workspace } from "./model.ts";
 import type { StepState, StepStatus } from "./progress.ts";
 import type { Diagnostic } from "./validator.ts";
 
@@ -53,10 +53,9 @@ export function toPayload(
   steps: StepStatus[],
   fallbackName = "Platform design",
 ): WorkspacePayload {
-  const name =
-    ws.elements.find((e) => e.kind === "platform")?.title ??
-    ws.elements.find((e) => e.kind === "ecosystem")?.title ??
-    fallbackName;
+  const named = ["platform", "ecosystem"].map((kind) => ws.elements.find((e) => e.kind === kind));
+  const first = named.find((e) => e !== undefined);
+  const name = first ? titleOf(first) : fallbackName;
 
   const phaseOrder = (file: string) => {
     const step = STEPS.find((s) => s.file === file);
