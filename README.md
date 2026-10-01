@@ -138,7 +138,7 @@ request lists the changed elements and the findings, with a link to the page.
 ## For agents
 
 pdt42 is built to be driven by a coding agent, with a human in the conversation.
-`packages/skill/SKILL.md` (linked as `.agents/skills/pdt42`) teaches coding agents the
+`skills/pdt42/SKILL.md` teaches coding agents the
 format and the workflow; the CLI hands them the method one step at a time (`next`,
 `guide step`, `explain`, `validate`, most with `--format json`).
 
@@ -180,7 +180,7 @@ packages/core   schemas, method rules, methodology data, progress, canvases (on 
 packages/cli    the pdt42 command
 packages/web    the browser view: chapters, model boxes, canvases (pdt42 serve / build)
 packages/site   the landing page
-packages/skill  the agent skill
+skills/pdt42    the agent skill
 demo/           video and screenshots of the demo (packages/web/tests/demo.spec.ts) and the recorded
                 CLI session (packages/cli/tests/session.ts), used by the site
 examples/       Harvest Commons, a complete design across all three phases
