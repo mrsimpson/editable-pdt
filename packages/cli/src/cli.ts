@@ -12,6 +12,7 @@ import {
 import { load } from "./discover.ts";
 import { build, serve } from "./serve.ts";
 import {
+  explainJson,
   explainText,
   formatDiagnostic,
   guideCanvas,
@@ -140,14 +141,7 @@ async function main(): Promise<number> {
     case "explain": {
       if (json) {
         const type = rest[0];
-        const types = type ? [type] : BLOCK_TYPES;
-        print(
-          JSON.stringify(
-            Object.fromEntries(types.map((t) => [t, blockFields(t as never)])),
-            null,
-            2,
-          ),
-        );
+        print(JSON.stringify(type ? explainJson(type) : BLOCK_TYPES.map(explainJson), null, 2));
         return 0;
       }
       print(explainText(rest[0]));
