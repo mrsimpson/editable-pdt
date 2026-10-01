@@ -95,38 +95,38 @@ function nodeColor(kind: BlockType): string {
 const NODE_POS: Record<BlockType, [number, number]> = {
   // ── Col E: Exploration entry ──────────────────────────────────────────────
   ecosystem: [80, 55],
-  arena:     [80, 160],
-  job:       [80, 270],
-  entity:    [80, 380],
-  asset:     [80, 490],
-  moat:      [80, 590], // hidden
+  arena: [80, 160],
+  job: [80, 270],
+  entity: [80, 380],
+  asset: [80, 490],
+  moat: [80, 590], // hidden
 
   // ── Col E2: Exploration synthesis ─────────────────────────────────────────
   component: [280, 160],
-  play:      [280, 270],
-  scenario:  [280, 380],
-  brief:     [280, 490],
+  play: [280, 270],
+  scenario: [280, 380],
+  brief: [280, 490],
 
   // ── Col D: Design core ────────────────────────────────────────────────────
-  platform:     [510, 55],
-  motivation:   [510, 160],
+  platform: [510, 55],
+  motivation: [510, 160],
   relationship: [510, 290],
-  channel:      [510, 410],
-  transaction:  [510, 520],
+  channel: [510, 410],
+  transaction: [510, 520],
 
   // ── Col D2: Design detail ─────────────────────────────────────────────────
   "learning-engine": [740, 160],
-  service:           [740, 290],
-  experience:        [740, 410],
-  mvp:               [740, 520],
-  assumption:        [740, 600],
+  service: [740, 290],
+  experience: [740, 410],
+  mvp: [740, 520],
+  assumption: [740, 600],
 
   // ── Col G: Growth ─────────────────────────────────────────────────────────
   "value-proposition": [980, 90],
-  network:             [980, 220],
-  flywheel:            [980, 360],
-  liquidity:           [980, 490],
-  "growth-loop":       [1140, 360],
+  network: [980, 220],
+  flywheel: [980, 360],
+  liquidity: [980, 490],
+  "growth-loop": [1140, 360],
 };
 
 // ── Hidden kinds ──────────────────────────────────────────────────────────────
@@ -198,16 +198,16 @@ interface EdgeOverride {
 
 const EDGE_OVERRIDES: Record<string, EdgeOverride> = {
   // arena self-references
-  "arena:after:arena":    { fromFace: "top",    toFace: "right", cp: [-28, -28] },
-  "arena:enables:arena":  { fromFace: "bottom", toFace: "right", cp: [-28,  28] },
+  "arena:after:arena": { fromFace: "top", toFace: "right", cp: [-28, -28] },
+  "arena:enables:arena": { fromFace: "bottom", toFace: "right", cp: [-28, 28] },
   // component self-reference
   "component:needs:component": { fromFace: "top", toFace: "right", cp: [-28, -25] },
   // experience has two step targets (transaction + service) — nudge to separate
   "experience:steps:transaction": { cp: [0, -20] },
-  "experience:steps:service":     { cp: [0,  20] },
+  "experience:steps:service": { cp: [0, 20] },
   // platform → entity: two arcs, widely separated — owners enters via top arc, core-entity via bottom arc
-  "platform:owners:entity":      { fromFace: "left", toFace: "top",    cp: [-80, -100] },
-  "platform:core-entity:entity": { fromFace: "left", toFace: "bottom", cp: [-40,   80] },
+  "platform:owners:entity": { fromFace: "left", toFace: "top", cp: [-80, -100] },
+  "platform:core-entity:entity": { fromFace: "left", toFace: "bottom", cp: [-40, 80] },
   // job:arena — short upward arc in same column
   "job:arena:arena": { fromFace: "top", toFace: "bottom", cp: [-20, 0] },
   // job:entities — entity is below job in same column, straight down
@@ -220,10 +220,14 @@ const EDGE_OVERRIDES: Record<string, EdgeOverride> = {
   // nudge slightly right so the label clears the Channel box [510,460]
   "transaction:relationship:relationship": { fromFace: "top", toFace: "bottom", cp: [30, 0] },
   // value-proposition → relationship: long left arc from top of growth col
-  "value-proposition:relationship:relationship": { fromFace: "left", toFace: "right", cp: [0, -30] },
+  "value-proposition:relationship:relationship": {
+    fromFace: "left",
+    toFace: "right",
+    cp: [0, -30],
+  },
   // flywheel + liquidity → relationship: spread arcs
-  "flywheel:relationship:relationship":  { fromFace: "left", toFace: "right", cp: [0,  20] },
-  "liquidity:relationship:relationship": { fromFace: "left", toFace: "right", cp: [0,  60] },
+  "flywheel:relationship:relationship": { fromFace: "left", toFace: "right", cp: [0, 20] },
+  "liquidity:relationship:relationship": { fromFace: "left", toFace: "right", cp: [0, 60] },
   // growth-loop → flywheel: same row, straight left
   "growth-loop:feeds:flywheel": { fromFace: "left", toFace: "right" },
   // flywheel self-reference: exit bottom, enter right
