@@ -1,5 +1,6 @@
 import { createElement } from "react";
 import {
+  fieldValue,
   STEPS,
   type AstNode,
   type BlockNode,
@@ -34,7 +35,12 @@ export function groupNodes(nodes: AstNode[]): Group[] {
   let ignores: IgnoreNode[] = [];
   const flush = (block: BlockNode | null) => {
     if (!prose.length && !block) return;
-    groups.push({ kind: "run", prose: prose.join("\n\n"), block, ignores: block ? ignores : [] });
+    groups.push({
+      kind: "run",
+      prose: prose.join("\n").trim(),
+      block,
+      ignores: block ? ignores : [],
+    });
     prose = [];
     if (block) ignores = [];
   };
@@ -57,7 +63,8 @@ export function groupNodes(nodes: AstNode[]): Group[] {
 export function blockSource(node: BlockNode): string {
   const lines = [`:::${node.blockType}`];
   for (const [key, value] of Object.entries(node.attributes)) {
-    if (Array.isArray(value)) lines.push(`${key}:`, ...value.map((v) => `  - ${v}`));
+    const items = node.lists?.[key];
+    if (items) lines.push(`${key}:`, ...items.map((v) => `  - ${v}`));
     else lines.push(`${key}: ${value}`);
   }
   lines.push(":::");
@@ -102,7 +109,8 @@ function ProseRun({
     return <ElementCard ctx={ctx} id={id} ignores={ignores} onDismiss={toggle} />;
   }
   const findings = ctx.ix.findings((d) => d.element === id);
-  const role = element?.kind === "entity" ? (element.data.role as string | undefined) : undefined;
+  const role =
+    element?.kind === "entity" ? (fieldValue(element, "role") as string | undefined) : undefined;
   return (
     <div className="run" id={`el-${id}`} data-element={id}>
       <button
@@ -136,7 +144,7 @@ function ChapterHeader({ ctx, doc }: { ctx: Ctx; doc: PayloadDocument }) {
   // Findings about the chapter as a whole, and findings no element here can show.
   const loose = ctx.ix.findings(
     (d) =>
-      d.loc.file === doc.file &&
+      d.file === doc.filePath &&
       (CHAPTER_RULES.has(d.code) || !d.element || !ctx.ix.byId.has(d.element)),
   );
   return (
@@ -155,7 +163,7 @@ function ChapterHeader({ ctx, doc }: { ctx: Ctx; doc: PayloadDocument }) {
             </span>
           );
         })}
-        <code className="chapter__file">{doc.file}</code>
+        <code className="chapter__file">{doc.filePath}</code>
       </div>
       <FindingList findings={loose} />
     </header>
@@ -169,7 +177,7 @@ function GroupView({ ctx, g, agent }: { ctx: Ctx; g: Group; agent: boolean }) {
       <div className="agent-run">
         {g.prose && <Source text={g.prose} />}
         {g.ignores.map((i, idx) => (
-          <Source key={idx} text={`:::ignore ${i.code} ${i.reason} :::`} />
+          <Source key={idx} text={`:::ignore ${i.ruleCode} ${i.reason ?? ""} :::`} />
         ))}
         {g.block && <Source text={blockSource(g.block)} lang="pdt42" />}
       </div>
@@ -198,13 +206,7 @@ function GroupView({ ctx, g, agent }: { ctx: Ctx; g: Group; agent: boolean }) {
       return <CanvasFrame ctx={ctx} drawn={drawn} />;
     }
     case "ignore":
-      return agent ? <Source text={`:::ignore ${node.code} ${node.reason} :::`} /> : null;
-    case "parse-error":
-      return (
-        <div className="finding finding--error">
-          <code>parse</code> {node.message} (line {node.line})
-        </div>
-      );
+      return agent ? <Source text={`:::ignore ${node.ruleCode} ${node.reason ?? ""} :::`} /> : null;
     default:
       return null;
   }

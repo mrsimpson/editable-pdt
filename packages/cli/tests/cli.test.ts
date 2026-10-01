@@ -29,7 +29,7 @@ describe("pdt42", () => {
     );
     const r = pdt("--dir", dir, "validate");
     expect(r.code).toBe(1);
-    expect(r.out).toContain('E002 x.pdt42.md:9  between: "a" does not exist');
+    expect(r.out).toContain('E002 x.pdt42.md:6  between: "a" does not exist');
   });
 
   test("guide and next start a blank workspace at D1; guide step hands out the template", () => {

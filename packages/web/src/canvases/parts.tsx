@@ -26,7 +26,7 @@ export function Sticky({
   return (
     <a
       className={cx("sticky", variant && `sticky--${variant}`, extra)}
-      href={e ? elementHref(e.file, e.id) : undefined}
+      href={e ? elementHref(e.loc.file, e.id) : undefined}
       style={css({ "--c": colorOf(item.kind, item.role) })}
       title={label ? `${item.title} (${item.kind} ${item.id})` : `${item.kind} ${item.id}`}
       data-ref={item.id}

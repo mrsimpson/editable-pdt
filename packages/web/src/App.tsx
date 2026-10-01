@@ -23,8 +23,8 @@ export function parseHash(hash: string): { file: string; anchor: string | null }
 export function applyHash(state: ViewState, ix: WorkspaceIndex, hash: string): void {
   const { file, anchor } = parseHash(hash);
   const doc = ix.document(file) ?? ix.payload.documents[0];
-  const changed = doc?.file !== state.file;
-  state.file = doc?.file ?? "";
+  const changed = doc?.filePath !== state.file;
+  state.file = doc?.filePath ?? "";
   state.sidebarOpen = false;
   if (anchor?.startsWith("el-")) state.expanded.add(anchor.slice(3));
   state.scrollTo = anchor ?? (changed ? "top" : null);
@@ -98,7 +98,7 @@ export function App({ initial, live }: { initial: WorkspacePayload; live: boolea
 
   // A chapter that disappeared on reload falls back to the first one.
   useEffect(() => {
-    if (!ix.document(state.file)) update((s) => (s.file = ix.payload.documents[0]?.file ?? ""));
+    if (!ix.document(state.file)) update((s) => (s.file = ix.payload.documents[0]?.filePath ?? ""));
   }, [ix, state.file, update]);
 
   // Scroll to the anchor the last navigation asked for, once it is rendered.

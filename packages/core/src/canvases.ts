@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from "@cli42/lib/schema";
 import type { BlockNode, SourceLocation } from "./ast.ts";
 import { CANVASES, canvasById } from "./methodology.ts";
 import { PEER_ROLES } from "./schemas.ts";
-import type { Element, Workspace } from "./model.ts";
+import { fieldValue, type Element, type Workspace } from "./model.ts";
 
 // Canvases are views, not elements. A `:::canvas` block places one of the PDT canvases in a
 // chapter; its content is generated from the model, so the canvas can never drift from it.
@@ -42,7 +42,7 @@ export function toCanvasView(
   heading: string | undefined,
 ): { view?: CanvasView; issues: CanvasParseIssue[] } {
   const attributes = Object.fromEntries(
-    Object.entries(node.attributes).map(([k, v]) => [k, Array.isArray(v) ? v.join(", ") : v]),
+    Object.entries(node.attributes).map(([k, v]) => [k, node.lists?.[k]?.join(", ") ?? v]),
   );
   const parsed = CanvasBlockSchema.strict().safeParse(attributes);
   if (!parsed.success) {
@@ -51,7 +51,7 @@ export function toCanvasView(
         const key = String(issue.path[0] ?? "");
         return {
           message: key ? `:::canvas ${key}: ${issue.message}` : `:::canvas: ${issue.message}`,
-          loc: { file, line: node.attributeLines[key] ?? node.startLine },
+          loc: { file, line: node.startLine },
         };
       }),
     };
@@ -73,7 +73,7 @@ export function canvasScope(ws: Workspace, canvasId: string): Element[] | undefi
     const ids = new Set(
       ws.elements
         .filter((e) => e.kind === kind)
-        .map((e) => (e.data as Record<string, unknown>)[field])
+        .map((e) => fieldValue(e, field))
         .filter((v): v is string => typeof v === "string"),
     );
     return ws.elements.filter((e) => ids.has(e.id));
@@ -85,7 +85,7 @@ export function canvasScope(ws: Workspace, canvasId: string): Element[] | undefi
       return ws.elements.filter(
         (e) =>
           e.kind === "entity" &&
-          (PEER_ROLES as readonly string[]).includes(String((e.data as { role?: string }).role)),
+          (PEER_ROLES as readonly string[]).includes(String(fieldValue(e, "role"))),
       );
     case "transactions-board":
       return referenced("transaction", "relationship");

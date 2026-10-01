@@ -63,7 +63,7 @@ describe("step guidance", () => {
     for (const step of STEPS) {
       const uncommented = starterTemplate(step.id).replace(/<!--|-->/g, "");
       const ws = parseWorkspace([{ file: "t.pdt42.md", content: uncommented }]);
-      expect(ws.issues, step.id).toEqual([]);
+      expect(ws.parseErrors, step.id).toEqual([]);
       expect(ws.elements.length, step.id).toBeGreaterThan(0);
     }
   });
@@ -96,11 +96,10 @@ describe("payload", () => {
     const diagnostics = validate(ws);
     const payload = toPayload(ws, diagnostics, progress(ws, diagnostics));
     expect(payload.name).toBe("Harvest Commons");
-    expect(payload.documents[0]!.file).toBe("1-exploration/e1-arenas.pdt42.md");
-    expect(payload.documents.find((d) => d.file.endsWith("d1-ecosystem.pdt42.md"))!.steps).toEqual([
-      "D1",
-      "D2",
-    ]);
+    expect(payload.documents[0]!.filePath).toBe("1-exploration/e1-arenas.pdt42.md");
+    expect(
+      payload.documents.find((d) => d.filePath.endsWith("d1-ecosystem.pdt42.md"))!.steps,
+    ).toEqual(["D1", "D2"]);
     expect(payload.canvases.length).toBe(28);
     expect(JSON.parse(JSON.stringify(payload))).toEqual(payload);
   });

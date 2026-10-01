@@ -16,7 +16,21 @@ base:
 implementation: Concierge — the cooperative composes boxes by hand from a spreadsheet
 status: running
 :::
+```
 
+```pdt42
+:::canvas
+id: cv-mvp-box
+canvas: mvp
+of: mvp-box-pilot
+:::
+```
+
+### Households stay for a whole season
+
+The pilot only pays off if households stay for a whole season; their renewal is the riskiest bet.
+
+```pdt42
 :::assumption
 id: a-renew
 title: Households stay for a whole season
@@ -27,7 +41,13 @@ test: Offer the season subscription in week 10
 criteria: 70 % renew
 status: open
 :::
+```
 
+### Households trust a café shelf with their food
+
+A café shelf works as a hub only if households trust it with their food.
+
+```pdt42
 :::assumption
 id: a-hub-trust
 title: Households trust a café shelf with their food
@@ -37,7 +57,13 @@ test: Track boxes left uncollected
 criteria: Fewer than 5 % uncollected per week
 status: validated
 :::
+```
 
+### An 8 % commission covers hubs and routes
+
+The commission has to carry hubs and routes; if it does not, the pilot cannot grow.
+
+```pdt42
 :::assumption
 id: a-margin
 title: An 8 % commission covers hubs and routes
@@ -47,14 +73,6 @@ riskiest: yes
 test: Book every cost of the pilot per box
 criteria: Contribution margin positive by week 8
 status: open
-:::
-```
-
-```pdt42
-:::canvas
-id: cv-mvp-box
-canvas: mvp
-of: mvp-box-pilot
 :::
 ```
 
@@ -72,7 +90,21 @@ base:
 implementation: Wizard of Oz — pre-orders on paper, confirmed by phone
 status: planned
 :::
+```
 
+```pdt42
+:::canvas
+id: cv-mvp-chefs
+canvas: mvp
+of: mvp-chefs-circle
+:::
+```
+
+### Chefs commit to volumes five months ahead
+
+The circle only works if chefs commit to volumes five months ahead.
+
+```pdt42
 :::assumption
 id: a-commit
 title: Chefs commit to volumes five months ahead
@@ -82,7 +114,13 @@ riskiest: yes
 test: Two planning evenings in the college kitchen
 criteria: Each chef commits to at least three varieties
 :::
+```
 
+### Chefs accept deliveries from farms they never met
+
+Chefs order from farms they have never met only if the deliveries earn their trust.
+
+```pdt42
 :::assumption
 id: a-delivery-trust
 title: Chefs accept deliveries from farms they never met
@@ -91,7 +129,13 @@ kind: trust
 test: Rotate deliveries between the three farms
 criteria: No chef cancels a delivery
 :::
+```
 
+### Chefs pay the commission on top of the farm price
+
+Chefs have to accept the commission on top of the farm price, or the circle carries no costs.
+
+```pdt42
 :::assumption
 id: a-chef-price
 title: Chefs pay the commission on top of the farm price
@@ -99,13 +143,5 @@ mvp: mvp-chefs-circle
 kind: business-model
 test: Quote prices including the commission
 criteria: All three chefs sign the pre-order
-:::
-```
-
-```pdt42
-:::canvas
-id: cv-mvp-chefs
-canvas: mvp
-of: mvp-chefs-circle
 :::
 ```

@@ -304,5 +304,5 @@ export function explainText(type: string | undefined): string {
 }
 
 export function formatDiagnostic(d: Diagnostic): string {
-  return `- ${d.code} ${d.severity} ${d.loc.file}:${d.loc.line} — ${d.message}`;
+  return `- ${d.code} ${d.severity} ${d.file}:${d.line} — ${d.message}`;
 }

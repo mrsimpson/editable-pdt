@@ -13,6 +13,7 @@
     "demo": "playwright test --project=demo"
   },
   "dependencies": {
+    "@cli42/lib": "catalog:",
     "@pdt42/core": "workspace:*",
     "marked": "catalog:",
     "react": "catalog:",

@@ -3,10 +3,18 @@
 // `explain`, the validator, `guide` and the canvases all read these schemas and their metadata.
 //
 // Field metadata (`FieldMeta`) is attached by the field helpers below; block metadata
-// (`BlockMeta`) by `block()`. Both live in zod's global registry via `.meta()`.
+// (`BlockMeta`) by `block()`. Both live in zod's global registry via `.meta()`, next to the
+// metadata every *42 language gives its schemas (description, crossRefs, authoringTips,
+// idPrefixes — read by @cli42/lib).
+//
+// The element's `kind` is its block type, as in every *42 language. The `kind:` attribute some
+// blocks have (the kind of value, of moat, of service …) is the element's `category`.
 
-import { z } from "zod";
-import type { RawValue } from "./ast.ts";
+import { shapeOf, z } from "@cli42/lib/schema";
+import type { BlockSchema, CrossRefMeta } from "@cli42/lib/schema";
+
+/** A raw attribute value: `key: value` gives a string, `key:` + `- item` lines give a list. */
+export type RawValue = string | string[];
 
 // ---------------------------------------------------------------------------
 // Vocabularies
@@ -111,7 +119,7 @@ const asRefs = (v: RawValue) =>
     .filter(Boolean);
 
 function field<T extends z.ZodType>(schema: T, meta: FieldMeta) {
-  return schema.meta({ pdt: meta });
+  return schema.meta({ description: meta.description, pdt: meta });
 }
 
 const required = z.string().min(1, "must not be empty");
@@ -269,10 +277,47 @@ export interface BlockMeta {
   tips: string[];
   /** A minimal, valid example body (attributes only). */
   example: string;
+  /** The id scheme: ids start with this prefix and "-" (see WG08). */
+  idPrefix: string;
+  /** The prefix alone is a valid id too (a singleton's `platform`). */
+  bareId?: boolean;
 }
 
-function block<T extends z.ZodRawShape>(shape: T, meta: BlockMeta) {
-  return z.object(shape).meta({ pdtBlock: meta });
+/** The output of a block's attributes: its `kind:` attribute becomes `category`. */
+type Renamed<O> = O extends { kind?: infer K } ? Omit<O, "kind"> & { category: K } : O;
+
+function block<T extends z.ZodRawShape>(
+  shape: T,
+  meta: BlockMeta,
+): z.ZodType<Renamed<z.output<z.ZodObject<T>>>, z.input<z.ZodObject<T>>> {
+  const crossRefs: CrossRefMeta[] = Object.entries(shape).flatMap(([name, schema]) => {
+    const pdt = (z.globalRegistry.get(schema as z.ZodType) as { pdt?: FieldMeta } | undefined)?.pdt;
+    if (pdt?.kind !== "ref" && pdt?.kind !== "refs") return [];
+    return [
+      {
+        field: name,
+        targetKind: (pdt.target ?? []).join(" or "),
+        cardinality: pdt.kind === "refs" ? "many" : "one",
+        relation: name,
+      },
+    ];
+  });
+  const object = z.object(shape);
+  const schema =
+    "kind" in shape
+      ? object.transform((attributes) => {
+          const { kind, ...rest } = attributes as Record<string, unknown>;
+          return { ...rest, category: kind };
+        })
+      : object;
+  return schema.meta({
+    pdtBlock: meta,
+    description: meta.description,
+    authoringTips: meta.tips,
+    crossRefs,
+    idPrefixes: [meta.idPrefix],
+    ...(meta.bareId ? { bareId: true } : {}),
+  }) as unknown as z.ZodType<Renamed<z.output<z.ZodObject<T>>>, z.input<z.ZodObject<T>>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -297,6 +342,7 @@ export const EcosystemSchema = block(
       "Describe in prose who creates and exchanges value today — you cannot design for an ecosystem that does not exist.",
       "Name the context honestly: most real cases mix ecosystem mobilisation and product/service innovation.",
     ],
+    idPrefix: "eco",
     example: "id: eco-food\ntitle: Regional food system\ncontext: ecosystem-mobilization",
   },
 );
@@ -322,6 +368,7 @@ export const ArenaSchema = block(
       "An arena rarely has more than ten roles and a step two to five — if a step involves twenty, promote it to an arena.",
       "The universal job map (define, locate, prepare, confirm, execute, monitor, modify, conclude) helps find steps.",
     ],
+    idPrefix: "ar",
     example:
       "id: ar-selling\ntitle: Selling the harvest\noutcome: Produce reaches a kitchen at a fair price\nfocus: yes\nsteps:\n  - Find buyers\n  - Agree quantities\n  - Deliver",
   },
@@ -343,6 +390,7 @@ export const JobSchema = block(
       "Enumerate the most frequent or valuable experiences first, among the most relevant entities.",
       "Scan after getting out of the building: a round of open interviews beats desk research.",
     ],
+    idPrefix: "j",
     example:
       "id: j-find-buyers\ntitle: Find buyers for the week's harvest\narena: ar-selling\nentities: e-farmers, e-restaurants\njob-step: locate",
   },
@@ -382,6 +430,7 @@ export const EntitySchema = block(
       "Portrait: start from potential, then the compressors (goals, pressures), then the gains.",
       "Map the gains they seek in their current experience, not the gains you plan to offer.",
     ],
+    idPrefix: "e",
     example:
       "id: e-farmers\ntitle: Small-scale farmers\nrole: peer-producer\ntype: family businesses\nclusters:\n  - Vegetable growers\n  - Orchards\npressures:\n  - Volatile demand\nconvenience-gains:\n  - Selling without driving to town",
   },
@@ -410,6 +459,7 @@ export const AssetSchema = block(
       "Run the questions strictly in order: an asset must be valuable before rare, rare before inimitable.",
       "Look at every layer: user cohorts you reach, activities you facilitate, technology you own.",
     ],
+    idPrefix: "as",
     example:
       "id: as-cold-chain\ntitle: Refrigerated vans and depot\nvrio: vri\nlayer: infrastructure",
   },
@@ -436,6 +486,7 @@ export const MoatSchema = block(
       "To spot a moat, look for alternative routes to the same value flow — if none exist, a moat is there.",
       "Don't plan to replace moats; ask how to streamline the interaction with them or turn them into partners.",
     ],
+    idPrefix: "mo",
     example:
       "id: mo-wholesale\ntitle: Regional wholesale market\nkind: demand-aggregator\nlayer: aggregator",
   },
@@ -465,6 +516,7 @@ export const ComponentSchema = block(
       "Unbundle into atoms: a gym becomes instructor, machines and real estate — each with its own evolution.",
       "An industrial, pipeline value chain looks like a C; the platform plays turn it into a Z.",
     ],
+    idPrefix: "c",
     example:
       "id: c-delivery\ntitle: Last-mile delivery\nvisibility: 40\nevolution: custom\ntarget: product\nneeds: c-vans",
   },
@@ -490,6 +542,7 @@ export const PlaySchema = block(
       "The plays are a library, not a checklist — keep only those with a real impact here.",
       "Note transaction standardisation and product-side insights: they feed the transactions engine.",
     ],
+    idPrefix: "pl",
     example:
       "id: pl-producers-up\nplay: pp2\ninsight: Farmers are hidden behind wholesalers; bring them to the top as users",
   },
@@ -511,6 +564,7 @@ export const ScenarioSchema = block(
       "Play only the cards whose signal is visible in the landscape.",
       "Same card name, different layer, different move — read the layer first.",
     ],
+    idPrefix: "sc",
     example: "id: sc-profession\ntitle: Hosts of pick-up points become a profession\npattern: e4",
   },
 );
@@ -534,6 +588,7 @@ export const BriefSchema = block(
       "Focus the space on a core two-sided relationship; other entities can play ancillary roles.",
       "When the value chain splits into sub-chains (hardware/software, rentals/experiences), pick one space.",
     ],
+    idPrefix: "br",
     example:
       "id: br-main\ntitle: Planned harvests for local kitchens\narena: ar-selling\nentities: e-farmers, e-restaurants",
   },
@@ -565,6 +620,8 @@ export const PlatformSchema = block(
       "The narrative should promise every participant an easier way to exchange value and to learn faster inside than outside.",
       "Choose the core entity in step D4, once portraits and motivations are known.",
     ],
+    idPrefix: "platform",
+    bareId: true,
     example: "id: platform-main\ntitle: Harvest Commons\nowners: e-coop\ncore-entity: e-farmers",
   },
 );
@@ -587,6 +644,7 @@ export const MotivationSchema = block(
       "Always map money, reputation and feedback: they drive quality.",
       "Empty cells are a signal too.",
     ],
+    idPrefix: "m",
     example:
       "id: m-farmers-eaters\nfrom: e-farmers\nto: e-households\ngives: Vegetables picked the day before\nstatus: current\nkind: goods",
   },
@@ -607,6 +665,7 @@ export const RelationshipSchema = block(
       "Pick one to three core relationships; a triangle often works well.",
       "Every entity in a core relationship needs a portrait — you will check the pull against it.",
     ],
+    idPrefix: "r",
     example:
       "id: r-farmer-kitchen\ntitle: Farmer ↔ restaurant\nbetween: e-farmers, e-restaurants\ncore: yes",
   },
@@ -628,6 +687,7 @@ export const ChannelSchema = block(
       "Don't think only in software: removing bureaucracy and unnecessary steps is often the bigger win.",
       "Describe the improvement as a reduction of transaction cost.",
     ],
+    idPrefix: "ch",
     example:
       "id: ch-app\ntitle: Harvest app\nmedium: digital\ncomponents:\n  - Weekly availability list\n  - Standard pre-order contract",
   },
@@ -660,6 +720,7 @@ export const TransactionSchema = block(
       "Group two transactions only when they make no sense apart (book and pay in advance).",
       "Moving from value flows to value units is what later lets you attach a business model.",
     ],
+    idPrefix: "t",
     example:
       "id: t-preorder\ntitle: Pre-order the season's volumes\nrelationship: r-farmer-kitchen\nfrom: e-restaurants\nto: e-farmers\nvalue-unit: Committed kilos per variety\nhappening: no\nchannel: ch-app\nkind: money",
   },
@@ -688,6 +749,7 @@ export const LearningEngineSchema = block(
       "Focus on one or few key challenges per stage, and one or few services per challenge.",
       "A path from the consumption side to the production side is an internal growth engine.",
     ],
+    idPrefix: "le",
     example:
       "id: le-farmers\nentity: e-farmers\nonboarding:\n  - Publishing a first harvest forecast\ngetting-better:\n  - Planning crops against demand\nevolves-to: e-coop",
   },
@@ -714,6 +776,7 @@ export const ServiceSchema = block(
       "Services answer the challenges of a learning-engine stage — link them with `stage`.",
       "Consider offering learning for free when the platform charges per transaction: it is a strong attraction point.",
     ],
+    idPrefix: "s",
     example:
       "id: s-storefront\ntitle: Storefront in a day\nfor: e-farmers\nstage: onboarding\nkind: empowering\nchannel: ch-app",
   },
@@ -751,6 +814,7 @@ export const ExperienceSchema = block(
       "Focus on onboarding and getting better — the transformative step usually belongs to another experience.",
       "Explore the business model last, when the full flow of value is visible.",
     ],
+    idPrefix: "x",
     example:
       "id: x-box\ntitle: The weekly harvest box\ncore-entity: e-households\nroles: e-farmers\nrelationship: r-farmer-household\nsteps: s-onboard, t-subscribe, t-deliver\nrevenues:\n  - 8 % commission per box",
   },
@@ -773,6 +837,7 @@ export const MvpSchema = block(
       "Always start from what you have.",
       "A platform MVP is interactive: its value grows with network effects, so test the pull, not just the product.",
     ],
+    idPrefix: "mvp",
     example:
       "id: mvp-pilot\ntitle: Twelve-week pilot\nexperiences: x-box\nimplementation: Concierge — orders by spreadsheet\nstatus: running",
   },
@@ -802,6 +867,7 @@ export const AssumptionSchema = block(
       "Test business model, trust and attraction as early as possible.",
       "Prefer unbiased criteria such as conversion rates over opinions.",
     ],
+    idPrefix: "a",
     example:
       "id: a-renew\ntitle: Households renew after a season\nmvp: mvp-pilot\nkind: attraction\nriskiest: yes\ntest: Offer renewal in week 10\ncriteria: 70 % renew",
   },
@@ -835,6 +901,7 @@ export const ValuePropositionSchema = block(
       "Model the strategy you have, not an aspirational one — leave out elements that are not present.",
       "A product side for suppliers often solves the chicken-and-egg problem: come for the tool, stay for the network.",
     ],
+    idPrefix: "vp",
     example:
       "id: vp-farm-tools\ntitle: Farm back-office\nkind: product\ncustomer: e-farmers\nbundle:\n  - Harvest forecasts\n  - Invoicing",
   },
@@ -866,6 +933,7 @@ export const NetworkSchema = block(
       "The properties belong to the relationship, not to the platform — 'we are like Airbnb' rarely holds.",
       "Commoditised, local, polygamous supply tends to plateau (asymptotic network effects).",
     ],
+    idPrefix: "n",
     example:
       "id: n-kitchen\nrelationship: r-farmer-kitchen\nsupply: differentiated\nlocation: regional\nfrequency: high\ntactics: single-user-value, community-content",
   },
@@ -894,6 +962,7 @@ export const FlywheelSchema = block(
       "Always start from one core network-effect flywheel.",
       "Two to four flywheels, not ten — and find the bottleneck.",
     ],
+    idPrefix: "fw",
     example:
       "id: fw-core\ntitle: More farms, better boxes\ntype: indirect-network\nloop:\n  - More farms\n  - More choice\n  - More households",
   },
@@ -918,6 +987,7 @@ export const LiquiditySchema = block(
       "Nine times out of ten, start with supply — unless you already own demand or supply is a commodity.",
       "Benchmarks help: OpenTable needed about 25 restaurants per city, Airbnb about 300 homes.",
     ],
+    idPrefix: "lq",
     example:
       "id: lq-kitchen\nrelationship: r-farmer-kitchen\ncanonical-unit: Chef-owned restaurants in the city centre\nstart-with: supply",
   },
@@ -939,6 +1009,7 @@ export const GrowthLoopSchema = block(
     description: "A growth loop of the growth model: output of the system fed back as input.",
     step: "G5",
     tips: ["Write the loop as an equation — it is what the growth model spreadsheet will compute."],
+    idPrefix: "gl",
     example:
       "id: gl-recipes\ntitle: Recipes bring neighbours\ntype: ugc\nequation: new households = shared recipes × click-through × conversion",
   },
@@ -994,7 +1065,7 @@ export interface FieldInfo extends FieldMeta {
 }
 
 export function blockFields(type: BlockType): FieldInfo[] {
-  return Object.entries(BLOCK_SCHEMAS[type].shape).map(([name, schema]) => ({
+  return Object.entries(shapeOf(BLOCK_SCHEMAS[type] as BlockSchema)).map(([name, schema]) => ({
     name,
     ...(z.globalRegistry.get(schema as z.ZodType) as { pdt: FieldMeta }).pdt,
   }));

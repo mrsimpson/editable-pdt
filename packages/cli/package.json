@@ -37,6 +37,9 @@
     "test": "vp test",
     "check": "vp check"
   },
+  "dependencies": {
+    "@cli42/lib": "catalog:"
+  },
   "devDependencies": {
     "@pdt42/core": "workspace:*",
     "@pdt42/web": "workspace:*",

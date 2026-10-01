@@ -65,7 +65,7 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
           <strong className="nav__step">{s.id}</strong> {s.title}
         </span>
       );
-      if (!doc || claimed.has(doc.file)) {
+      if (!doc || claimed.has(doc.filePath)) {
         // The step shares a chapter with another step, or has none yet.
         return (
           <li
@@ -75,7 +75,7 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
           >
             <a
               className="nav__link"
-              href={doc ? `#${doc.file}` : undefined}
+              href={doc ? `#${doc.filePath}` : undefined}
               style={css({ "--c": `var(--c-${phase})` })}
             >
               <span className={cx("nav__mark", `nav__mark--${status?.state ?? "todo"}`)}>
@@ -86,8 +86,8 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
           </li>
         );
       }
-      claimed.add(doc.file);
-      return docLink(doc.file, label, status?.state ?? "todo", phase);
+      claimed.add(doc.filePath);
+      return docLink(doc.filePath, label, status?.state ?? "todo", phase);
     });
 
   const phases = PHASES.map((p, idx) => (
@@ -98,7 +98,7 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
       <ul className="nav__steps">{stepItems(p.id)}</ul>
     </li>
   ));
-  const others = ix.payload.documents.filter((d) => !claimed.has(d.file) && !d.steps.length);
+  const others = ix.payload.documents.filter((d) => !claimed.has(d.filePath) && !d.steps.length);
 
   return (
     <aside className={cx("sidebar", state.sidebarOpen && "sidebar--open")}>
@@ -150,7 +150,7 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
           {others.length > 0 && (
             <li className="nav__phase">
               <span className="nav__phase-title">Other chapters</span>
-              <ul className="nav__steps">{others.map((d) => docLink(d.file, d.title))}</ul>
+              <ul className="nav__steps">{others.map((d) => docLink(d.filePath, d.title))}</ul>
             </li>
           )}
         </ul>
