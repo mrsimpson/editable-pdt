@@ -21,9 +21,13 @@ export interface SidebarProps {
   changes?: Map<string, DiffDocument>;
   /** Present when there is a history (serve, build --with-history). */
   history?: { onSelect: () => void; onSelectDocuments: () => void; panel: ReactNode };
+  /** Called when the user clicks the Meta-model footer link. */
+  onMetaModel?: () => void;
+  /** Whether the meta-model view is currently active. */
+  showMetaModel?: boolean;
 }
 
-export function Sidebar({ ctx, onTheme, view, changes, history }: SidebarProps) {
+export function Sidebar({ ctx, onTheme, view, changes, history, onMetaModel, showMetaModel }: SidebarProps) {
   const { ix, state } = ctx;
   const claimed = new Set<string>();
   const counts = {
@@ -229,6 +233,17 @@ export function Sidebar({ ctx, onTheme, view, changes, history }: SidebarProps) 
           <span className="count count--hint">{counts.hint}</span>
         </span>
       </footer>
+      {onMetaModel && (
+        <div className="sidebar__meta-model">
+          <button
+            className={cx("sidebar__meta-model-btn", showMetaModel && "sidebar__meta-model-btn--active")}
+            onClick={onMetaModel}
+            aria-current={showMetaModel ? "page" : undefined}
+          >
+            ~ Meta-model
+          </button>
+        </div>
+      )}
       <p className="sidebar__credit">
         Drawn with <a href="https://github.com/mrsimpson/pdt42">pdt42</a> after the{" "}
         <a href="https://www.boundaryless.io/pdt-toolkit/">Platform Design Toolkit</a> by
