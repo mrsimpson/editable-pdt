@@ -129,6 +129,12 @@ An intentional finding is accepted where it occurs: `:::ignore <CODE> <reason> :
 facts changed while the prose explaining it did not (or the other way round) is a finding, exit 1.
 `PDT42_CONSISTENT=<base commit>` accepts the findings of a change on purpose.
 
+Every pull request gets a platform design review, as in biz42 and arc42-language
+(`.github/workflows/platform-review.yml`, `scripts/platform-review.ts`): for each reviewed
+workspace, the change since the merge base is linted and rendered as one self-contained HTML page
+(`pdt42 build --diff <base>...HEAD --single-file`), attached to the run, and a comment on the pull
+request lists the changed elements and the findings, with a link to the page.
+
 ## For agents
 
 pdt42 is built to be driven by a coding agent, with a human in the conversation.
@@ -151,7 +157,7 @@ in `.vibe/` following the EPCC workflow (explore, plan, code, commit).
 ```bash
 pnpm test            # vp test
 pnpm check           # vp check: format, lint, types
-pnpm --filter @pdt42/web test:e2e  # Playwright: the web view (after pnpm build)
+pnpm --filter @pdt42/web test:e2e  # Playwright: the web view and the review script (after pnpm build)
 pnpm build           # web app, CLI bundle (with the web app beside it), landing page
 pnpm docs:meta-model # regenerate docs/meta-model.md
 pnpm demo            # the demo: walkthrough video, screenshots and CLI session into demo/

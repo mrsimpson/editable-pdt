@@ -12,7 +12,7 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"], headless: true },
-      testMatch: ["**/serve-ui.spec.ts"],
+      testMatch: ["**/serve-ui.spec.ts", "**/review-script.spec.ts"],
     },
     {
       name: "demo",
