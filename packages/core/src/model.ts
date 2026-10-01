@@ -91,7 +91,7 @@ export function buildWorkspace(documents: DocumentAst[]): Workspace {
   for (const element of elements) if (!byId.has(element.id)) byId.set(element.id, element);
 
   return {
-    documents: built.documents,
+    documents,
     elements,
     byId,
     parseErrors: built.parseErrors,
