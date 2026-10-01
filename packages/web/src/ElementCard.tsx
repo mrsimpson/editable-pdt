@@ -11,7 +11,7 @@ import {
 import { css, cx } from "./react-util.ts";
 import { inline } from "./markdown.ts";
 import type { Ctx } from "./context.ts";
-import { canvasHref, canvasTitle, colorOf, elementHref, roleLabel } from "./workspace.ts";
+import { canvasTitle, colorOf, roleLabel } from "./workspace.ts";
 
 /** Incoming references shown before the rest fold away. */
 const FOLD = 10;
@@ -42,7 +42,7 @@ export function RefChip({
   return (
     <a
       className={cx("ref-chip", incoming && "ref-chip--incoming")}
-      href={elementHref(e.loc.file, e.id)}
+      href={ctx.ix.elementHref(e.id)}
       title={`${e.kind} ${e.id}`}
       style={css({ "--c": colorOf(e.kind, role) })}
     >
@@ -193,7 +193,7 @@ export function ElementCard({
                 <span className="relations__label">on canvases</span>
                 <span className="chips">
                   {canvases.map((v, idx) => (
-                    <a key={idx} className="ref-chip ref-chip--canvas" href={canvasHref(v)}>
+                    <a key={idx} className="ref-chip ref-chip--canvas" href={ctx.ix.canvasHref(v)}>
                       ▦ {canvasTitle(v.canvas)}
                       {v.of && ctx.ix.byId.get(v.of) && (
                         <span className="ref-chip__note">{titleOf(ctx.ix.byId.get(v.of)!)}</span>

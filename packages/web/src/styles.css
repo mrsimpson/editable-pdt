@@ -1472,3 +1472,31 @@ button {
 .chips--folded > .chips__more {
   display: inline-block;
 }
+
+/* ─── Changes, history and earlier versions (the shared views of @cli42/lib/web-react) ── */
+
+.sidebar__tabs {
+  margin: 0 16px 8px;
+}
+
+.nav__changes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 16px 8px;
+}
+
+.version-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 1.5rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text-muted);
+}

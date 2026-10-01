@@ -1,49 +1,51 @@
-import type { WorkspacePayload } from "@pdt42/core";
+import { loadWorkspaceFromFiles, type DiffPayload, type WorkspacePayload } from "@pdt42/core";
+import type { DiffDocument } from "@cli42/lib/diff";
+import {
+  changesHref,
+  historyHref,
+  openVersion,
+  parseRoute,
+  pearlKey,
+  versionHref,
+} from "@cli42/lib/web";
+import type { HistorySource, Route, SnapshotFiles } from "@cli42/lib/web";
+import {
+  ChangesView,
+  HistoryChain,
+  HistoryEntryView,
+  WebViewProvider,
+  useHistory,
+  useSnapshot,
+  useTheme,
+  useVersion,
+} from "@cli42/lib/web-react";
+import type { WebView } from "@cli42/lib/web-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import type { Ctx, ViewState } from "./context.ts";
-import { DocumentView } from "./DocumentView.tsx";
+import { DocumentView, NodesView, isElementBlock } from "./DocumentView.tsx";
 import { Sidebar } from "./Sidebar.tsx";
 import { WorkspaceIndex } from "./workspace.ts";
 
-// ─── Hash routing ────────────────────────────────────────────────────────────
+// ─── Routing ─────────────────────────────────────────────────────────────────
+//
+// The routes of every *42 web view (@cli42/lib/web):
 //
 //   #2-design/d5-transactions.pdt42.md                     chapter
 //   #2-design/d5-transactions.pdt42.md:el-t-share-menus    chapter + element (model box opens)
 //   #2-design/d5-transactions.pdt42.md:cv-board-restaurant chapter + canvas or heading
-//
-// File names contain no colons, so the first colon separates file and anchor.
+//   #changes                                               the visualized difference
+//   #history[:<commit|worktree>[:message]]                 the history, one pearl selected
+//   ?version=<commit>                                      an earlier version as a whole
 
-export function parseHash(hash: string): { file: string; anchor: string | null } {
-  const fragment = decodeURIComponent(hash.replace(/^#/, ""));
-  const colon = fragment.indexOf(":");
-  if (colon < 0) return { file: fragment, anchor: null };
-  return { file: fragment.slice(0, colon), anchor: fragment.slice(colon + 1) || null };
-}
-
-export function applyHash(state: ViewState, ix: WorkspaceIndex, hash: string): void {
-  const { file, anchor } = parseHash(hash);
-  const doc = ix.document(file) ?? ix.payload.documents[0];
+export function applyRoute(state: ViewState, ix: WorkspaceIndex, route: Route): void {
+  state.sidebarOpen = false;
+  if (route.view !== "document") return;
+  const path = route.file ? ix.routes.resolve(route.file) : undefined;
+  const doc = (path && ix.document(path)) || ix.payload.documents[0];
   const changed = doc?.filePath !== state.file;
   state.file = doc?.filePath ?? "";
-  state.sidebarOpen = false;
-  if (anchor?.startsWith("el-")) state.expanded.add(anchor.slice(3));
-  state.scrollTo = anchor ?? (changed ? "top" : null);
-}
-
-function currentTheme(): "light" | "dark" {
-  const set = document.documentElement.getAttribute("data-theme");
-  if (set === "light" || set === "dark") return set;
-  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function toggleTheme(): void {
-  const next = currentTheme() === "dark" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", next);
-  try {
-    localStorage.setItem("theme", next);
-  } catch {
-    // Storage may be unavailable (private mode, file://): the toggle still works for the page.
-  }
+  if (route.element) state.expanded.add(route.element);
+  state.scrollTo = route.anchor ?? (changed ? "top" : null);
 }
 
 function initialState(ix: WorkspaceIndex): ViewState {
@@ -54,7 +56,7 @@ function initialState(ix: WorkspaceIndex): ViewState {
     scrollTo: null,
     sidebarOpen: false,
   };
-  applyHash(state, ix, location.hash);
+  applyRoute(state, ix, parseRoute(location.hash));
   return state;
 }
 
@@ -64,14 +66,142 @@ async function fetchWorkspace(): Promise<WorkspacePayload> {
   return (await res.json()) as WorkspacePayload;
 }
 
-/**
- * The workspace in the browser. `live`: reload the workspace whenever `pdt42 serve` announces a
- * change (not for a static build, whose workspace is injected into the page).
- */
-export function App({ initial, live }: { initial: WorkspacePayload; live: boolean }) {
-  const [payload, setPayload] = useState(initial);
-  const ix = useMemo(() => new WorkspaceIndex(payload), [payload]);
+interface DiffState {
+  diff: DiffPayload | null;
+  error: string | null;
+}
+
+/** The difference `serve --diff` shows: 404 without --diff, 500 with the reason it failed. */
+async function fetchDiff(): Promise<DiffState> {
+  const res = await fetch("./api/diff", { cache: "no-store" });
+  if (res.status === 404) return { diff: null, error: null };
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    return { diff: null, error: body.error ?? `${res.status} ${res.statusText}` };
+  }
+  return { diff: (await res.json()) as DiffPayload, error: null };
+}
+
+/** An earlier version, built in the browser from the history's files. */
+async function loadVersion({ files }: SnapshotFiles): Promise<WorkspacePayload> {
+  return (await loadWorkspaceFromFiles(files)).payload;
+}
+
+function LoadError({ title, error }: { title: string; error: string }) {
+  return (
+    <div className="load-error">
+      <h1>{title}</h1>
+      <pre>{error}</pre>
+    </div>
+  );
+}
+
+/** Loads the workspace (and the difference and history), and the version the URL asks for. */
+export function Root() {
+  const [payload, setPayload] = useState<WorkspacePayload | null>(null);
+  const [diffState, setDiffState] = useState<DiffState>({ diff: null, error: null });
+  const [history, setHistory] = useState<HistorySource | null>(null);
+  const [refresh, setRefresh] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const version = useVersion();
+  const snapshot = useSnapshot(
+    payload ? history : undefined,
+    version,
+    loadVersion,
+    "This site has no history.",
+  );
+
+  useEffect(() => {
+    const injected = window.__WORKSPACE__;
+    if (injected) {
+      setPayload(injected);
+      setDiffState({ diff: window.__DIFF__ ?? null, error: null });
+      setHistory(window.__HISTORY__ ?? null);
+      return;
+    }
+    // pdt42 serve: always offers the history; its index answers why when there is none.
+    setHistory({ base: "./api/history/" });
+    let active = true;
+    let events: EventSource | undefined;
+    Promise.all([fetchWorkspace(), fetchDiff()])
+      .then(([workspace, diff]) => {
+        if (!active) return;
+        setPayload(workspace);
+        setDiffState(diff);
+        if (!("EventSource" in window)) return;
+        events = new EventSource("./api/workspace/events");
+        events.addEventListener("workspace", () => {
+          setRefresh((n) => n + 1);
+          fetchWorkspace().then(setPayload, (e: unknown) => setError(String(e)));
+          fetchDiff().then(setDiffState, (e: unknown) =>
+            setDiffState({ diff: null, error: String(e) }),
+          );
+        });
+      })
+      .catch((e: unknown) => setError(String(e)));
+    return () => {
+      active = false;
+      events?.close();
+    };
+  }, []);
+
+  if (error) return <LoadError title="Could not load the workspace" error={error} />;
+  if (!payload) return <div className="empty">Loading…</div>;
+  if (version) {
+    if (snapshot.status === "error") {
+      return (
+        <div className="load-error" data-testid="version-error">
+          <h1>Could not load version {version.slice(0, 8)}</h1>
+          <pre>{snapshot.reason}</pre>
+          <a href={versionHref(null)}>Back to the current version</a>
+        </div>
+      );
+    }
+    if (snapshot.status === "loading") {
+      return <div className="empty">Loading version {version.slice(0, 8)}…</div>;
+    }
+    // The difference belongs to the current version, so it is not shown here.
+    return (
+      <App
+        key={version}
+        initial={snapshot.payload}
+        diff={null}
+        diffError={null}
+        history={history}
+        refresh={refresh}
+        version={version}
+      />
+    );
+  }
+  return (
+    <App
+      key="current"
+      initial={payload}
+      diff={diffState.diff}
+      diffError={diffState.error}
+      history={history}
+      refresh={refresh}
+      version={null}
+    />
+  );
+}
+
+interface AppProps {
+  initial: WorkspacePayload;
+  diff: DiffPayload | null;
+  diffError: string | null;
+  history: HistorySource | null;
+  refresh: number;
+  /** The commit of the earlier version shown, if any. */
+  version: string | null;
+}
+
+/** The workspace in the browser: chapters, the changes and the history. */
+export function App({ initial, diff, diffError, history, refresh, version }: AppProps) {
+  const ix = useMemo(() => new WorkspaceIndex(initial), [initial]);
+  const [route, setRoute] = useState<Route>(() => parseRoute(location.hash));
   const [state, setState] = useState(() => initialState(ix));
+  const { toggle: toggleTheme } = useTheme();
 
   const update = useCallback((change: (s: ViewState) => void) => {
     setState((prev) => {
@@ -82,19 +212,14 @@ export function App({ initial, live }: { initial: WorkspacePayload; live: boolea
   }, []);
 
   useEffect(() => {
-    const onHashChange = () => update((s) => applyHash(s, ix, location.hash));
+    const onHashChange = () => {
+      const next = parseRoute(location.hash);
+      setRoute(next);
+      update((s) => applyRoute(s, ix, next));
+    };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [ix, update]);
-
-  useEffect(() => {
-    if (!live || !("EventSource" in window)) return;
-    const events = new EventSource("./api/workspace/events");
-    events.addEventListener("workspace", () => {
-      fetchWorkspace().then(setPayload, (error: unknown) => console.error(error));
-    });
-    return () => events.close();
-  }, [live]);
 
   // A chapter that disappeared on reload falls back to the first one.
   useEffect(() => {
@@ -116,29 +241,149 @@ export function App({ initial, live }: { initial: WorkspacePayload; live: boolea
     }
   }, [state]);
 
-  const ctx: Ctx = { ix, state, update };
+  // The changes: #changes, and the landing page whenever a difference is shown.
+  const hasDiff = diff !== null || diffError !== null;
+  const showChanges =
+    hasDiff &&
+    (route.view === "changes" || (route.view === "document" && !route.file && !route.anchor));
+  const diffDocuments = useMemo(
+    () => new Map<string, DiffDocument>(diff?.view.documents.map((d) => [d.file, d]) ?? []),
+    [diff],
+  );
+
+  // The history: #history, #history:<commit|worktree>[:message]
+  const showHistory = history !== null && route.view === "history";
+  const historyKey = route.view === "history" ? route.key : null;
+  const historyMessage = route.view === "history" && route.message;
+  const historyData = useHistory<DiffPayload>(history, refresh);
+  const pearls = historyData.state.status === "ready" ? historyData.state.pearls : [];
+  useEffect(() => {
+    // Entering the history without a selection opens the newest pearl.
+    if (showHistory && historyKey === null && pearls[0]) {
+      window.history.replaceState(null, "", historyHref(pearlKey(pearls[0])));
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    }
+  }, [showHistory, historyKey, pearls]);
+  const selectPearl = (key: string, message = false) => {
+    location.hash = historyHref(key, message);
+  };
+  const selectedPearl = pearls.find((pearl) => pearlKey(pearl) === historyKey);
+  const versionPearl = version ? pearls.find((pearl) => pearl.commit === version) : undefined;
+
+  const ctx: Ctx = { ix, state, update, ...(hasDiff ? { diffDocuments } : {}) };
+  const webView = useMemo<WebView>(
+    () => ({
+      labels: { model: "platform design" },
+      isBlock: isElementBlock,
+      renderNodes: (props) => <NodesView ctx={ctx} {...props} />,
+    }),
+    // The context changes with every state change; the views read it when they render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ix, state, diffDocuments],
+  );
+
+  const diffElementLink = (id: string) => {
+    const href = ix.elementHref(id);
+    return href ? { href } : null;
+  };
+
   return (
-    <div className="layout">
-      <button
-        className="menu-button"
-        aria-label="Open navigation"
-        onClick={() => update((s) => (s.sidebarOpen = true))}
-      >
-        ☰ {ix.document(state.file)?.title ?? "Chapters"}
-      </button>
-      {state.sidebarOpen && (
+    <WebViewProvider value={webView}>
+      <div className="layout">
         <button
-          className="backdrop"
-          aria-label="Close navigation"
-          onClick={() => update((s) => (s.sidebarOpen = false))}
+          className="menu-button"
+          aria-label="Open navigation"
+          onClick={() => update((s) => (s.sidebarOpen = true))}
+        >
+          ☰ {ix.document(state.file)?.title ?? "Chapters"}
+        </button>
+        {state.sidebarOpen && (
+          <button
+            className="backdrop"
+            aria-label="Close navigation"
+            onClick={() => update((s) => (s.sidebarOpen = false))}
+          />
+        )}
+        <Sidebar
+          ctx={ctx}
+          onTheme={toggleTheme}
+          view={showHistory ? "history" : showChanges ? "changes" : "document"}
+          changes={hasDiff ? diffDocuments : undefined}
+          history={
+            history
+              ? {
+                  onSelect: () => {
+                    if (version) openVersion(null, historyHref(version));
+                    else location.hash = historyHref();
+                  },
+                  onSelectDocuments: () => {
+                    location.hash = hasDiff ? changesHref : ix.documentHref(state.file);
+                  },
+                  panel: (
+                    <HistoryChain
+                      state={historyData.state}
+                      entries={historyData.entries}
+                      chunkErrors={historyData.chunkErrors}
+                      requestChunk={historyData.requestChunk}
+                      selectedKey={historyKey}
+                      onSelect={(key) => selectPearl(key)}
+                    />
+                  ),
+                }
+              : undefined
+          }
         />
-      )}
-      <Sidebar ctx={ctx} onTheme={toggleTheme} />
-      <main className="main">
-        <DocumentView ctx={ctx} />
-      </main>
-    </div>
+        <main className="main">
+          {version && (
+            <p className="version-banner" role="status" data-testid="version-banner">
+              <span>
+                Earlier version <code>{version.slice(0, 8)}</code>
+                {versionPearl && (
+                  <>
+                    {" "}
+                    · {versionPearl.subject} · {versionPearl.date.slice(0, 10)}
+                  </>
+                )}
+              </span>
+              <a
+                href={versionHref(null)}
+                data-testid="version-leave"
+                onClick={(event) => {
+                  event.preventDefault();
+                  openVersion(null);
+                }}
+              >
+                Back to the current version
+              </a>
+            </p>
+          )}
+          {showHistory ? (
+            <HistoryEntryView
+              pearl={selectedPearl}
+              entry={historyKey ? historyData.entries.get(historyKey) : undefined}
+              chunkError={
+                selectedPearl ? historyData.chunkErrors.get(selectedPearl.chunk) : undefined
+              }
+              requestChunk={historyData.requestChunk}
+              viewMode={state.mode}
+              elementHref={(id) => ix.elementHref(id)}
+              messageOpen={historyMessage}
+              onToggleMessage={() => historyKey && selectPearl(historyKey, !historyMessage)}
+              onBrowse={(commit) => openVersion(commit)}
+            />
+          ) : showChanges ? (
+            <ChangesView
+              diff={diff}
+              error={diffError}
+              viewMode={state.mode}
+              elementLink={diffElementLink}
+              documentLink={(file) => ({ href: ix.documentHref(file) })}
+            />
+          ) : (
+            <DocumentView ctx={ctx} />
+          )}
+        </main>
+      </div>
+    </WebViewProvider>
   );
 }
-
-export { fetchWorkspace };

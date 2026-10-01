@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { Ref } from "@pdt42/core";
 import { css, cx } from "../react-util.ts";
 import type { Ctx } from "../context.ts";
-import { colorOf, elementHref } from "../workspace.ts";
+import { colorOf } from "../workspace.ts";
 
 // Building blocks of every canvas: areas, and stickies that link to their element's section.
 
@@ -26,7 +26,7 @@ export function Sticky({
   return (
     <a
       className={cx("sticky", variant && `sticky--${variant}`, extra)}
-      href={e ? elementHref(e.loc.file, e.id) : undefined}
+      href={e ? ctx.ix.elementHref(e.id) : undefined}
       style={css({ "--c": colorOf(item.kind, item.role) })}
       title={label ? `${item.title} (${item.kind} ${item.id})` : `${item.kind} ${item.id}`}
       data-ref={item.id}

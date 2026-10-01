@@ -1,4 +1,8 @@
-import { createElement } from "react";
+import { createElement, useMemo } from "react";
+import { groupNodes as groupDocumentNodes, linkElementIds } from "@cli42/lib/web";
+import type { RenderGroup } from "@cli42/lib/web";
+import { ChapterDiff, headingClass } from "@cli42/lib/web-react";
+import type { RenderNodesProps } from "@cli42/lib/web-react";
 import {
   fieldValue,
   titleOf,
@@ -7,58 +11,38 @@ import {
   type BlockNode,
   type IgnoreNode,
   type PayloadDocument,
+  type PayloadElement,
 } from "@pdt42/core";
 import { css, cx } from "./react-util.ts";
 import type { Ctx } from "./context.ts";
 import { ElementCard, FindingList } from "./ElementCard.tsx";
 import { CanvasFrame } from "./canvases/CanvasFrame.tsx";
 import { renderMarkdown, slug } from "./markdown.ts";
-import { colorOf } from "./workspace.ts";
+import { WorkspaceIndex, colorOf } from "./workspace.ts";
 
-// A chapter, rendered like arc42 renders one: prose, with every element's prose swappable for
-// its model box (click the stripe), canvases in place, and the agent view showing the source.
+// A chapter, rendered like every *42 web view renders one: prose, with every element's prose
+// swappable for its model box (click the stripe), canvases in place, the agent view showing the
+// source — and, when a visualized difference touches the chapter, its changes inline.
 
 /** Rules about a chapter rather than one element (W011: the chapter lacks its canvas). */
 const CHAPTER_RULES = new Set(["W011"]);
 
-type Group =
-  | { kind: "run"; prose: string; block: BlockNode | null; ignores: IgnoreNode[] }
-  | { kind: "node"; node: AstNode };
+const isCanvas = (n: { kind: string }): boolean =>
+  n.kind === "block" && (n as BlockNode).blockType === "canvas";
 
-const isCanvas = (n: AstNode): n is BlockNode => n.kind === "block" && n.blockType === "canvas";
-const isElement = (n: AstNode | undefined): n is BlockNode =>
-  n?.kind === "block" && n.blockType !== "canvas";
+/** Whether a node is an element's block, introduced by the prose before it (canvases are not). */
+export function isElementBlock(node: { kind: string }): node is BlockNode {
+  return node.kind === "block" && (node as BlockNode).inPdt42Fence && !isCanvas(node);
+}
 
-/** Consecutive prose, and the element block that follows it, form one run. */
-export function groupNodes(nodes: AstNode[]): Group[] {
-  const groups: Group[] = [];
-  let prose: string[] = [];
-  let ignores: IgnoreNode[] = [];
-  const flush = (block: BlockNode | null) => {
-    if (!prose.length && !block) return;
-    groups.push({
-      kind: "run",
-      prose: prose.join("\n").trim(),
-      block,
-      ignores: block ? ignores : [],
-    });
-    prose = [];
-    if (block) ignores = [];
-  };
-  for (const node of nodes) {
-    if (node.kind === "prose") prose.push(node.text);
-    else if (node.kind === "ignore") ignores.push(node);
-    else if (isElement(node)) flush(node);
-    else {
-      flush(null);
-      for (const i of ignores) groups.push({ kind: "node", node: i });
-      ignores = [];
-      groups.push({ kind: "node", node });
-    }
-  }
-  flush(null);
-  for (const i of ignores) groups.push({ kind: "node", node: i });
-  return groups;
+export type Group = RenderGroup<AstNode, BlockNode, IgnoreNode>;
+
+/**
+ * Prose runs and other nodes of a chapter (see `groupNodes` of @cli42/lib/web): consecutive
+ * prose renders as one, and the element block that follows it belongs to it.
+ */
+export function groupNodes(nodes: readonly AstNode[]): Group[] {
+  return groupDocumentNodes<AstNode, BlockNode, IgnoreNode>(nodes, { isBlock: isElementBlock });
 }
 
 export function blockSource(node: BlockNode): string {
@@ -81,22 +65,29 @@ function Source({ text, lang }: { text: string; lang?: string }) {
   );
 }
 
-function Prose({ text }: { text: string }) {
-  return <div className="prose" dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }} />;
+/** Prose as HTML (rendered on the server), with the ids it mentions linked to their elements. */
+function Prose({ ctx, html, text, own }: { ctx: Ctx; html?: string; text: string; own?: string }) {
+  const rendered = useMemo(
+    () => linkElementIds(html ?? renderMarkdown(text), ctx.ix.links, own),
+    [ctx.ix, html, text, own],
+  );
+  return <div className="prose" dangerouslySetInnerHTML={{ __html: rendered }} />;
 }
 
 function ProseRun({
   ctx,
-  prose,
+  text,
+  html,
   block,
   ignores,
 }: {
   ctx: Ctx;
-  prose: string;
+  text: string;
+  html?: string;
   block: BlockNode | null;
   ignores: IgnoreNode[];
 }) {
-  if (!block) return <Prose text={prose} />;
+  if (!block) return <Prose ctx={ctx} text={text} html={html} />;
   const id = String(block.attributes.id ?? "");
   const element = ctx.ix.byId.get(id);
   const toggle = () =>
@@ -105,7 +96,7 @@ function ProseRun({
       else s.expanded.add(id);
     });
   // Without prose there is nothing to swap with: the model box stands on its own.
-  if (!prose.trim()) return <ElementCard ctx={ctx} id={id} ignores={ignores} />;
+  if (!text.trim()) return <ElementCard ctx={ctx} id={id} ignores={ignores} />;
   if (ctx.state.expanded.has(id)) {
     return <ElementCard ctx={ctx} id={id} ignores={ignores} onDismiss={toggle} />;
   }
@@ -130,14 +121,18 @@ function ProseRun({
           />
         )}
       </button>
-      <Prose text={prose} />
+      <Prose ctx={ctx} text={text} html={html} own={id} />
     </div>
   );
 }
 
 function Heading({ level, text }: { level: number; text: string }) {
   const tag = `h${Math.min(level, 6)}`;
-  return createElement(tag, { className: `heading heading--${level}`, id: slug(text) }, text);
+  return createElement(
+    tag,
+    { className: cx(`heading heading--${level}`, headingClass(level)), id: slug(text) },
+    text,
+  );
 }
 
 function ChapterHeader({ ctx, doc }: { ctx: Ctx; doc: PayloadDocument }) {
@@ -172,11 +167,11 @@ function ChapterHeader({ ctx, doc }: { ctx: Ctx; doc: PayloadDocument }) {
 }
 
 function GroupView({ ctx, g, agent }: { ctx: Ctx; g: Group; agent: boolean }) {
-  if (g.kind === "run") {
-    if (!agent) return <ProseRun ctx={ctx} {...g} />;
+  if (g.kind === "prose-run") {
+    if (!agent) return <ProseRun ctx={ctx} html={g.renderedHtml} {...g} />;
     return (
       <div className="agent-run">
-        {g.prose && <Source text={g.prose} />}
+        {g.text.trim() && <Source text={g.text.trim()} />}
         {g.ignores.map((i, idx) => (
           <Source key={idx} text={`:::ignore ${i.ruleCode} ${i.reason ?? ""} :::`} />
         ))}
@@ -187,13 +182,19 @@ function GroupView({ ctx, g, agent }: { ctx: Ctx; g: Group; agent: boolean }) {
   const node = g.node;
   switch (node.kind) {
     case "heading":
+      // The chapter title is the page's heading.
+      if (node.level === 1) return null;
       return agent ? (
         <Source text={`${"#".repeat(node.level)} ${node.text}`} />
       ) : (
         <Heading level={node.level} text={node.text} />
       );
     case "block": {
-      if (!isCanvas(node)) return null;
+      if (!isCanvas(node)) {
+        return agent || !node.inPdt42Fence ? (
+          <Source text={blockSource(node)} lang="pdt42" />
+        ) : null;
+      }
       const id = String(node.attributes.id ?? "");
       const drawn = ctx.ix.canvases.get(id);
       if (agent) return <Source text={blockSource(node)} lang="pdt42" />;
@@ -213,6 +214,39 @@ function GroupView({ ctx, g, agent }: { ctx: Ctx; g: Group; agent: boolean }) {
   }
 }
 
+/** Document nodes as the chapter renders them (the shared views call this for diff sections). */
+export function NodesView({
+  ctx,
+  nodes,
+  proseHtml,
+  content,
+  viewMode,
+}: Pick<RenderNodesProps, "nodes" | "proseHtml" | "content" | "viewMode"> & { ctx: Ctx }) {
+  // A diff side brings its own elements: its model boxes show that version.
+  const own = useMemo<Ctx>(() => {
+    if (!content) return ctx;
+    const ix = new WorkspaceIndex({
+      ...ctx.ix.payload,
+      elements: content.elements as PayloadElement[],
+    });
+    return { ...ctx, ix };
+  }, [ctx, content]);
+  const groups = useMemo(() => groupNodes(nodes as AstNode[]), [nodes]);
+  let run = 0;
+  return (
+    <>
+      {groups.map((g, i) => {
+        const group =
+          g.kind === "prose-run" && proseHtml
+            ? { ...g, renderedHtml: proseHtml[run++] ?? g.renderedHtml }
+            : g;
+        // Groups have no identity of their own; their position in the chapter is stable.
+        return <GroupView key={i} ctx={own} g={group} agent={viewMode === "agent"} />;
+      })}
+    </>
+  );
+}
+
 export function DocumentView({ ctx }: { ctx: Ctx }) {
   const doc = ctx.ix.document(ctx.state.file) ?? ctx.ix.payload.documents[0];
   if (!doc) {
@@ -223,17 +257,18 @@ export function DocumentView({ ctx }: { ctx: Ctx }) {
     );
   }
   const agent = ctx.state.mode === "agent";
-  const h1 = doc.nodes.find((n) => n.kind === "heading" && n.level === 1);
-  const groups = groupNodes(doc.nodes.filter((n) => n !== h1));
+  const diff = ctx.diffDocuments?.get(doc.filePath);
+  if (diff) {
+    return (
+      <ChapterDiff diff={diff} document={doc} viewMode={ctx.state.mode} targetElementId={null} />
+    );
+  }
 
   return (
     <article className={cx("chapter", agent && "chapter--agent")}>
-      <h1 className="heading heading--1">{doc.title}</h1>
+      <h1 className={cx("heading heading--1", headingClass(1))}>{doc.title}</h1>
       <ChapterHeader ctx={ctx} doc={doc} />
-      {groups.map((g, i) => (
-        // Groups have no identity of their own; their position in the chapter is stable.
-        <GroupView key={i} ctx={ctx} g={g} agent={agent} />
-      ))}
+      <NodesView ctx={ctx} nodes={doc.nodes} viewMode={ctx.state.mode} />
     </article>
   );
 }

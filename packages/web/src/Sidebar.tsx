@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import type { DiffDocument } from "@cli42/lib/diff";
+import { changesHref } from "@cli42/lib/web";
+import { ChangeCounts } from "@cli42/lib/web-react";
 import { PHASES, STEPS } from "@pdt42/core";
 import { css, cx } from "./react-util.ts";
 import type { Ctx } from "./context.ts";
@@ -9,7 +12,18 @@ import { slug } from "./markdown.ts";
 
 const MARK = { done: "✓", open: "●", todo: "○" } as const;
 
-export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
+export interface SidebarProps {
+  ctx: Ctx;
+  onTheme: () => void;
+  /** What the main area shows. */
+  view: "document" | "changes" | "history";
+  /** The chapters a visualized difference changes (serve/build --diff), by path. */
+  changes?: Map<string, DiffDocument>;
+  /** Present when there is a history (serve, build --with-history). */
+  history?: { onSelect: () => void; onSelectDocuments: () => void; panel: ReactNode };
+}
+
+export function Sidebar({ ctx, onTheme, view, changes, history }: SidebarProps) {
   const { ix, state } = ctx;
   const claimed = new Set<string>();
   const counts = {
@@ -26,12 +40,14 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
     stepState?: keyof typeof MARK,
     phase?: string,
   ) => {
-    const active = state.file === file;
+    const active = view === "document" && state.file === file;
+    const changed = changes?.get(file);
     return (
       <li key={file} className={cx("nav__item", active && "nav__item--active")}>
         <a
           className="nav__link"
-          href={`#${file}`}
+          href={ix.documentHref(file)}
+          aria-current={active ? "page" : undefined}
           style={css(phase ? { "--c": `var(--c-${phase})` } : undefined)}
         >
           {stepState && (
@@ -40,13 +56,18 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
             </span>
           )}
           <span className="nav__label">{label}</span>
+          {changed && (
+            <span data-testid="doc-change-badge">
+              <ChangeCounts {...changed} />
+            </span>
+          )}
         </a>
         {active && (
           <ul className="nav__headings">
             {headings(file).map((n, i) =>
               n.kind === "heading" ? (
                 <li key={i}>
-                  <a href={`#${file}:${slug(n.text)}`}>{n.text}</a>
+                  <a href={ix.documentHref(file, slug(n.text))}>{n.text}</a>
                 </li>
               ) : null,
             )}
@@ -75,7 +96,7 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
           >
             <a
               className="nav__link"
-              href={doc ? `#${doc.filePath}` : undefined}
+              href={doc ? ix.documentHref(doc.filePath) : undefined}
               style={css({ "--c": `var(--c-${phase})` })}
             >
               <span className={cx("nav__mark", `nav__mark--${status?.state ?? "todo"}`)}>
@@ -144,7 +165,50 @@ export function Sidebar({ ctx, onTheme }: { ctx: Ctx; onTheme: () => void }) {
           ◐
         </button>
       </div>
-      <nav>
+      {history && (
+        <div className="toggle sidebar__tabs" role="tablist" aria-label="Sidebar view">
+          <button
+            role="tab"
+            data-testid="sidebar-tab-documents"
+            aria-selected={view !== "history"}
+            className={cx("toggle__option", view !== "history" && "toggle__option--on")}
+            onClick={history.onSelectDocuments}
+          >
+            Chapters
+          </button>
+          <button
+            role="tab"
+            data-testid="sidebar-tab-history"
+            aria-selected={view === "history"}
+            className={cx("toggle__option", view === "history" && "toggle__option--on")}
+            onClick={history.onSelect}
+          >
+            History
+          </button>
+        </div>
+      )}
+      {view === "history" && history?.panel}
+      {view !== "history" && changes && (
+        <a
+          className={cx("nav__link nav__changes", view === "changes" && "nav__item--active")}
+          href={changesHref}
+          data-testid="sidebar-changes-link"
+          aria-current={view === "changes" ? "page" : undefined}
+        >
+          <span className="nav__label">Changes</span>
+          <ChangeCounts
+            {...[...changes.values()].reduce(
+              (total, d) => ({
+                added: total.added + d.added,
+                modified: total.modified + d.modified,
+                removed: total.removed + d.removed,
+              }),
+              { added: 0, modified: 0, removed: 0 },
+            )}
+          />
+        </a>
+      )}
+      <nav hidden={view === "history"}>
         <ul className="nav">
           {phases}
           {others.length > 0 && (

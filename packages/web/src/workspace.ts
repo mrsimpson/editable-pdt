@@ -1,3 +1,4 @@
+import { DocumentRoutes, WorkspaceLinks } from "@cli42/lib/web";
 import {
   CANVASES,
   PHASES,
@@ -23,6 +24,9 @@ export interface DrawnCanvas {
 
 export class WorkspaceIndex {
   readonly payload: WorkspacePayload;
+  /** The routes of the chapters, and the links to elements (@cli42/lib/web). */
+  readonly routes: DocumentRoutes;
+  readonly links: WorkspaceLinks;
   readonly byId: Map<string, PayloadElement>;
   readonly canvases: Map<string, DrawnCanvas>;
   /** For every element, the canvases it appears on. */
@@ -31,6 +35,8 @@ export class WorkspaceIndex {
 
   constructor(payload: WorkspacePayload) {
     this.payload = payload;
+    this.routes = new DocumentRoutes(payload.documents.map((d) => d.filePath));
+    this.links = new WorkspaceLinks(this.routes, payload.elements);
     this.byId = new Map(payload.elements.map((e) => [e.id, e]));
     this.canvases = new Map();
     this.canvasesOf = new Map();
@@ -53,6 +59,21 @@ export class WorkspaceIndex {
 
   document(file: string): PayloadDocument | undefined {
     return this.payload.documents.find((d) => d.filePath === file);
+  }
+
+  /** The link to an element, opened in its chapter. */
+  elementHref(id: string): string | undefined {
+    return this.links.elementHref(id);
+  }
+
+  /** The link to a placed canvas, in its chapter. */
+  canvasHref(view: Pick<CanvasView, "id" | "loc">): string {
+    return this.routes.documentHref(view.loc.file, view.id);
+  }
+
+  /** The link to a chapter, scrolled to an anchor if given. */
+  documentHref(file: string, anchor?: string): string {
+    return this.routes.documentHref(file, anchor);
   }
 
   findings(filter: (d: Diagnostic) => boolean): Diagnostic[] {
@@ -80,16 +101,6 @@ function refIds(value: unknown, out = new Set<string>()): Set<string> {
     for (const v of Object.values(o)) refIds(v, out);
   }
   return out;
-}
-
-// ─── Links ───────────────────────────────────────────────────────────────────
-
-export function elementHref(file: string, id: string): string {
-  return `#${file}:el-${id}`;
-}
-
-export function canvasHref(view: Pick<CanvasView, "id" | "loc">): string {
-  return `#${view.loc.file}:${view.id}`;
 }
 
 // ─── Colours ─────────────────────────────────────────────────────────────────
