@@ -2,7 +2,7 @@ packages:
   - packages/*
 
 catalog:
-  "@cli42/lib": github:mrsimpson/cli42#0a129551c31e8e4d50738c57eee2a24c22100709
+  "@cli42/lib": github:mrsimpson/cli42#714bf8729d7b81f0ee1a41f25b01491507861cfc
   "@playwright/test": 1.56.1
   "@semantic-release/changelog": 7.0.0
   "@semantic-release/exec": 7.1.0
