@@ -44,7 +44,8 @@ pdt42 next                      # the step to work on next, and why
 pdt42 guide step D1             # one step: file, dependencies, how-to, starter template
 pdt42 explain transaction       # one block type
 pdt42 validate                  # consistency check
-pdt42 serve                     # read it in the browser, live
+pdt42 diff                      # check a change: block and prose change together
+pdt42 serve                     # read it in the browser, live, with its history
 ```
 
 pdt42 keeps no state of its own. `guide` and `next` work out where the design stands from the
@@ -58,7 +59,8 @@ runs the CLI from source on the example.
 ## See it
 
 `pdt42 serve` renders the workspace in the browser and reloads on every change;
-`pdt42 build --out site` writes the same as a static site (`--single-file`: one HTML page).
+`pdt42 build --out site` writes the same as a static site (`--single-file`: one HTML page,
+`--with-history`: with the history).
 
 - **Chapters** follow the method: the sidebar lists the phases and steps with their status.
 - **Prose and model box.** Click the stripe beside an element's prose to swap it for its model
@@ -69,6 +71,12 @@ runs the CLI from source on the example.
   one colour per platform role). Every sticky is a link to its element; `#<file>:el-<id>` opens
   the model box.
 - **Agent view** shows the chapter as the source the agent reads and writes.
+- **Ids in prose** link to their elements — in text, or as `` `x-weekly-box` ``.
+- **Changes.** `serve --diff [<ref>] [--staged]` and `build --diff` open on a summary of the
+  change and show it inline in its chapters: changed sections marked, attribute changes word by
+  word, the previous version one click away.
+- **History.** In a Git repository the sidebar's _History_ lists every commit that touched the
+  design, with its change and message; _Browse this version_ opens the whole design as it was.
 
 A chapter without its canvas gets a warning (W011) naming the `:::canvas` block to add:
 
@@ -98,15 +106,28 @@ of: r-farmer-restaurant
 
 `pdt42 validate` reports three levels, each rule with its rationale (`pdt42 rules`):
 
-- **Errors: the model is broken.** Duplicate ids, references that don't resolve (references are
-  mostly optional, but a reference that is set must point to an existing element of the right
-  type), schema violations, unknown blocks, more than one platform.
+- **Errors: the model is broken.** Duplicate ids (EG01), blocks that cannot be built — unknown
+  blocks, missing or invalid attributes, unreadable lines, unclosed blocks (EG02) — blocks of a
+  step outside the step's chapter file (EG03) or outside any section (EG04), references that
+  don't resolve (E002: references are mostly optional, but a reference that is set must point to
+  an existing element of the right type), more than one platform (E005), invalid canvases (E006).
 - **Warnings: the model contradicts the method.** A transaction outside its relationship, an
   experience whose steps involve roles it doesn't list, a learning engine for a stakeholder, an MVP
-  without assumptions, a chapter without its canvas.
+  without assumptions, a chapter without its canvas — and the conventions every \*42 language
+  shares: unknown attributes (WG01), a block without prose above it (WG02), several blocks under
+  one heading (WG03), a block outside the ` ```pdt42 ` fence (WG05), an id without its kind's prefix
+  (WG08: `e-` for entities, `t-` for transactions … — `pdt42 explain <type>` names it).
 - **Hints: the design has a gap the method would fill.** Incomplete portraits, peers missing from
   the motivations matrix, core relationships without transactions, experiences without a business
   model, MVPs that don't test business model, trust and attraction, orphan elements.
+
+An intentional finding is accepted where it occurs: `:::ignore <CODE> <reason> :::` inside a
+` ```pdt42 ` fence suppresses the next warning or hint with that code at or after the directive
+(WG06 reports a directive that suppresses nothing; errors cannot be ignored, WG07).
+
+`pdt42 diff [<ref> | <a>..<b>] [--staged]` checks a change before it is committed: a block whose
+facts changed while the prose explaining it did not (or the other way round) is a finding, exit 1.
+`PDT42_CONSISTENT=<base commit>` accepts the findings of a change on purpose.
 
 ## For agents
 
@@ -121,12 +142,16 @@ chapter, `validate` reports the missing canvas, the agent adds it, and `next` mo
 ## Development
 
 pnpm workspace, TypeScript, [zod](https://zod.dev) schemas as the single source of truth, and
-[vite-plus](https://viteplus.dev) (`vp`) for tests, lint, type-check and packaging. Work is planned
+[vite-plus](https://viteplus.dev) (`vp`) for tests, lint, type-check and packaging. pdt42 is a
+[cli42](https://github.com/mrsimpson/cli42) language, like arc42-language and biz42: parser,
+model builder, validation engine, generic rules, semantic diff, Git history and the shared web
+views come from `@cli42/lib`; pdt42 adds its schemas, method rules, methodology and canvases. Work is planned
 in `.vibe/` following the EPCC workflow (explore, plan, code, commit).
 
 ```bash
 pnpm test            # vp test
 pnpm check           # vp check: format, lint, types
+pnpm --filter @pdt42/web test:e2e  # Playwright: the web view (after pnpm build)
 pnpm build           # web app, CLI bundle (with the web app beside it), landing page
 pnpm docs:meta-model # regenerate docs/meta-model.md
 pnpm demo            # the demo: walkthrough video, screenshots and CLI session into demo/
@@ -139,12 +164,13 @@ request that changes the site (landing page, web app, example or demo) as a prev
 `pr-preview/pr-<number>/`. The preview's link is commented on the pull request and it is removed
 when the pull request closes.
 
-The web app mirrors arc42-language's: React, marked for prose, vite-plugin-singlefile for
+The web app uses the shared web view of every \*42 language (`@cli42/lib/web`,
+`@cli42/lib/web-react`): React, prose rendered on the server, vite-plugin-singlefile for
 `--single-file`. `pnpm demo` is a Playwright project: it records the walkthrough (`demo/demo.webm`)
 and takes the site's screenshots.
 
 ```
-packages/core   parser, zod schemas, model builder, validator, methodology data, progress
+packages/core   schemas, method rules, methodology data, progress, canvases (on @cli42/lib)
 packages/cli    the pdt42 command
 packages/web    the browser view: chapters, model boxes, canvases (pdt42 serve / build)
 packages/site   the landing page
