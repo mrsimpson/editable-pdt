@@ -1,4 +1,4 @@
-import { CANVASES, STEPS } from "@pdt42/core";
+import { CANVASES, STEPS, titleOf } from "@pdt42/core";
 import { css, cx } from "../react-util.ts";
 import type { Ctx } from "../context.ts";
 import type { DrawnCanvas } from "../workspace.ts";
@@ -26,7 +26,7 @@ export function CanvasFrame({ ctx, drawn }: { ctx: Ctx; drawn: DrawnCanvas }) {
         </span>
         <span className="canvas__title">
           {info?.title ?? drawn.view.canvas}
-          {of && <span className="canvas__of"> · {of.title}</span>}
+          {of && <span className="canvas__of"> · {titleOf(of)}</span>}
         </span>
         {info && (
           <a className="canvas__source" href={info.source} target="_blank" rel="noopener">

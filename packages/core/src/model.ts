@@ -13,19 +13,21 @@ import { BLOCK_SCHEMAS, blockFields, type BlockType } from "./schemas.ts";
 
 type Schemas = typeof BLOCK_SCHEMAS;
 
-/** What every element has beyond its attributes: its title, prose and end line. */
-export interface ElementExtras {
-  /** `title` if present, else the heading above the block, else the id. */
-  title: string;
-  /** Markdown between the heading and the block: the explanation of the element. */
-  prose: string;
-  endLine: number;
+/** An element of kind K, as in every *42 language: its attributes (flat), kind and location. */
+export type Element<K extends BlockType = BlockType> = K extends BlockType
+  ? ElementOf<Pick<Schemas, K>, SourceLocation>
+  : never;
+
+/** What an element is called: its `title`, else the heading above its block, else its id. */
+export function titleOf(element: Element): string {
+  const title = (element as { title?: unknown }).title;
+  return (typeof title === "string" && title) || element.loc.heading || element.id;
 }
 
-/** An element of kind K: its attributes (flat), its kind and location, and its extras. */
-export type Element<K extends BlockType = BlockType> = K extends BlockType
-  ? ElementOf<Pick<Schemas, K>, SourceLocation> & ElementExtras
-  : never;
+/** The prose between the heading and the element's block: the explanation of the element. */
+export function proseOf(element: Element): string {
+  return element.loc.prose?.trim() ?? "";
+}
 
 export interface Reference {
   from: Element;
@@ -70,14 +72,12 @@ export function buildWorkspace(documents: DocumentAst[]): Workspace {
   const built = buildModel(documents.map(withoutCanvases), { elements: BLOCK_SCHEMAS });
   const canvasIssues: Workspace["canvasIssues"] = [];
 
-  const endLines = new Map<string, number>();
   const canvases: CanvasView[] = [];
   for (const doc of documents) {
     let heading: string | undefined;
     for (const node of doc.nodes) {
       if (node.kind === "heading") heading = node.text;
       if (node.kind !== "block") continue;
-      endLines.set(`${doc.filePath}:${node.startLine}`, node.endLine);
       if (node.blockType !== "canvas") continue;
       const { view, issues } = toCanvasView(node as BlockNode, doc.filePath, heading);
       if (view) canvases.push(view);
@@ -85,15 +85,7 @@ export function buildWorkspace(documents: DocumentAst[]): Workspace {
     }
   }
 
-  const elements = built.elements.map((element) => {
-    const explicit = "title" in element && typeof element.title === "string" ? element.title : "";
-    return {
-      ...element,
-      title: explicit || element.loc.heading || element.id,
-      prose: element.loc.prose?.trim() ?? "",
-      endLine: endLines.get(`${element.loc.file}:${element.loc.line}`) ?? element.loc.line,
-    } as Element;
-  });
+  const elements = built.elements as Element[];
 
   const byId = new Map<string, Element>();
   for (const element of elements) if (!byId.has(element.id)) byId.set(element.id, element);

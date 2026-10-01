@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import {
   fieldValue,
+  titleOf,
   STEPS,
   type AstNode,
   type BlockNode,
@@ -116,8 +117,8 @@ function ProseRun({
       <button
         className="run__stripe"
         style={css({ "--c": element ? colorOf(element.kind, role) : "var(--text-muted)" })}
-        title={`Show the model box of ${element?.title ?? id}`}
-        aria-label={`Show the model box of ${element?.title ?? id}`}
+        title={`Show the model box of ${element ? titleOf(element) : id}`}
+        aria-label={`Show the model box of ${element ? titleOf(element) : id}`}
         onClick={toggle}
       >
         {findings.length > 0 && (

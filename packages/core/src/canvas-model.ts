@@ -8,6 +8,7 @@ import {
   canvasById,
 } from "./methodology.ts";
 import type { PayloadElement, WorkspacePayload } from "./payload.ts";
+import { titleOf } from "./model.ts";
 import { EVOLUTION, LAYERS, LEARNING_STAGES } from "./schemas.ts";
 
 // What each canvas shows, derived from the model. Renderers (web, and later text or SVG
@@ -41,7 +42,7 @@ class Index {
   }
   ref(e: PayloadElement): Ref {
     const role = e.kind === "entity" ? (attributes(e).role as string | undefined) : undefined;
-    return { id: e.id, title: e.title, kind: e.kind, ...(role ? { role } : {}) };
+    return { id: e.id, title: titleOf(e), kind: e.kind, ...(role ? { role } : {}) };
   }
   refOf(id: unknown): Ref | undefined {
     const e = this.get(id);
@@ -322,7 +323,9 @@ export interface EcosystemModel {
 
 function ecosystem(ix: Index): EcosystemModel {
   const order = ["stakeholder", "peer-consumer", "peer-producer", "partner", "owner"];
-  const name = ix.of("ecosystem")[0]?.title ?? ix.of("platform")[0]?.title ?? ix.payload.name;
+  const ecosystem = ix.of("ecosystem")[0];
+  const platform = ix.of("platform")[0];
+  const name = ecosystem ? titleOf(ecosystem) : platform ? titleOf(platform) : ix.payload.name;
   return {
     canvas: "ecosystem",
     name,

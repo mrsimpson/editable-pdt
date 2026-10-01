@@ -1,4 +1,11 @@
-import { CANVASES, PHASES, parseWorkspace, type CanvasInfo, type Element } from "@pdt42/core";
+import {
+  CANVASES,
+  PHASES,
+  parseWorkspace,
+  titleOf,
+  type CanvasInfo,
+  type Element,
+} from "@pdt42/core";
 import { EXAMPLES } from "./canvas-examples.ts";
 import { initTheme } from "./theme.ts";
 import "./styles.css";
@@ -55,8 +62,13 @@ function block(file: string, from: number, to: number): string {
   return ["```pdt42", ...source.slice(from - 1, to), "```"].join("\n");
 }
 
+/** The source of an element's block: from its `:::type` line to the closing `:::`. */
 function elementBlock(element: Element): string {
-  return block(element.loc.file, element.loc.line, element.endLine);
+  const source = lines.get(element.loc.file) ?? [];
+  const close = source.findIndex(
+    (line, index) => index >= element.loc.line && line.trim() === ":::",
+  );
+  return block(element.loc.file, element.loc.line, close < 0 ? source.length : close + 1);
 }
 
 function canvasBlock(viewId: string): { source: string; href: string } | undefined {
@@ -155,7 +167,10 @@ function section(canvas: CanvasInfo): HTMLElement {
         ].join("\n"),
     ),
     ...(element
-      ? [el("h4", {}, `One element on it: ${element.title}`), el("pre", {}, elementBlock(element))]
+      ? [
+          el("h4", {}, `One element on it: ${titleOf(element)}`),
+          el("pre", {}, elementBlock(element)),
+        ]
       : []),
   );
 
