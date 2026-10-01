@@ -256,7 +256,9 @@ async function main(): Promise<number> {
         );
       }
       return diagnostics.some(
-        (d) => d.severity === "error" || (args.strict && d.severity === "warning"),
+        (d) =>
+          d.severity === "error" ||
+          (args.strict && (d.severity === "warning" || d.severity === "hint")),
       )
         ? 1
         : 0;
