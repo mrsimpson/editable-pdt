@@ -92,7 +92,7 @@ describe("document grouping", () => {
     const groups = groupNodes(nodes);
     const run = groups.find((g) => g.kind === "run" && g.block);
     expect(run).toMatchObject({ kind: "run", prose: "Prose about the farmers." });
-    expect(run?.kind === "run" && run.ignores.map((i) => i.code)).toEqual(["H002"]);
+    expect(run?.kind === "run" && run.ignores.map((i) => i.ruleCode)).toEqual(["H002"]);
   });
 
   it("keeps canvases out of prose runs", () => {

@@ -2,6 +2,7 @@ packages:
   - packages/*
 
 catalog:
+  "@cli42/lib": github:mrsimpson/cli42#0a129551c31e8e4d50738c57eee2a24c22100709
   "@playwright/test": 1.56.1
   "@semantic-release/changelog": 7.0.0
   "@semantic-release/exec": 7.1.0
@@ -20,7 +21,6 @@ catalog:
   vite-plugin-singlefile: 2.3.3
   vite-plus: 0.1.24
   vitest: npm:@voidzero-dev/vite-plus-test@latest
-  zod: 4.5.4
 
 catalogMode: prefer
 overrides:
@@ -33,3 +33,5 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
     vitest: "*"
+onlyBuiltDependencies:
+  - "@cli42/lib"

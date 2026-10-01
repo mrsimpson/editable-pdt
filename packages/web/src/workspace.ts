@@ -52,7 +52,7 @@ export class WorkspaceIndex {
   }
 
   document(file: string): PayloadDocument | undefined {
-    return this.payload.documents.find((d) => d.file === file);
+    return this.payload.documents.find((d) => d.filePath === file);
   }
 
   findings(filter: (d: Diagnostic) => boolean): Diagnostic[] {

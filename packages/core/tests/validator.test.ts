@@ -3,8 +3,8 @@ import { parseWorkspace, RULES, validate } from "../src/index.ts";
 import { doc, farmers, kitchens, run } from "./helpers.ts";
 
 describe("errors", () => {
-  test("E001 duplicate ids", () => {
-    expect(run(doc(farmers, farmers)).codes).toContain("E001");
+  test("EG01 duplicate ids", () => {
+    expect(run(doc(farmers, farmers)).codes).toContain("EG01");
   });
 
   test("E002 references must resolve to the right type — when set", () => {
@@ -22,16 +22,16 @@ describe("errors", () => {
     expect(run(doc(farmers, ":::platform\nid: p\ntitle: P\n:::")).codes).not.toContain("E002");
   });
 
-  test("E003 schema violations point at the attribute line", () => {
-    const { diagnostics } = run(doc(":::entity\nid: e\ntitle: E\nrole: customer\n:::"));
-    const d = diagnostics.find((x) => x.code === "E003")!;
-    expect(d.message).toMatch(/^role:/);
-    expect(d.loc.line).toBe(9);
+  test("EG02 schema violations point at the block and name the attribute", () => {
+    const { diagnostics } = run(doc(":::entity\nid: e-x\ntitle: E\nrole: customer\n:::"));
+    const d = diagnostics.find((x) => x.code === "EG02")!;
+    expect(d.message).toMatch(/^Invalid role 'customer' on entity — use one of:/);
+    expect(d.line).toBe(6);
   });
 
-  test("E003 unknown attributes; E004 unknown block types", () => {
-    expect(run(doc(":::entity\nid: e\ntitle: E\ncolour: red\n:::")).codes).toContain("E003");
-    expect(run(doc(":::persona\nid: p\n:::")).codes).toContain("E004");
+  test("WG01 unknown attributes; EG02 unknown block types", () => {
+    expect(run(doc(":::entity\nid: e-x\ntitle: E\ncolour: red\n:::")).codes).toContain("WG01");
+    expect(run(doc(":::persona\nid: p\n:::")).codes).toContain("EG02");
   });
 
   test("E005 at most one platform", () => {

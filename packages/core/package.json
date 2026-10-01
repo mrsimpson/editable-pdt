@@ -21,7 +21,7 @@
     "check": "vp check"
   },
   "dependencies": {
-    "zod": "catalog:"
+    "@cli42/lib": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

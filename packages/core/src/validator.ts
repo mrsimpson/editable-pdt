@@ -1,11 +1,24 @@
-import type { SourceLocation } from "./ast.ts";
-import { elementsOf, get, type Element, type Workspace } from "./model.ts";
-import { blockMeta, crossReferences, PEER_ROLES, type BlockType } from "./schemas.ts";
+import { genericRules } from "@cli42/lib/rules";
+import { createValidator } from "@cli42/lib/validator";
+import type { Diagnostic as LibDiagnostic, Rule as LibRule, RuleDocs } from "@cli42/lib/validator";
+import { elementsOf, fieldValue, get, type Element, type Workspace } from "./model.ts";
+import {
+  BLOCK_SCHEMAS,
+  BLOCK_TYPES,
+  blockMeta,
+  crossReferences,
+  PEER_ROLES,
+  type BlockType,
+} from "./schemas.ts";
 import { canvasById, STEPS } from "./methodology.ts";
 import { canvasScope } from "./canvases.ts";
 
 // The rule registry. Each rule describes itself — `pdt42 rules` prints the registry — and names the
 // methodology step it belongs to, so `pdt42 guide` can show a step's open findings.
+//
+// The rules every *42 language has (EGxx, WGxx: duplicate ids, blocks that cannot be built,
+// unknown attributes, blocks without prose, ids off their scheme …) come from @cli42/lib/rules;
+// the validation engine and its ignore directives from @cli42/lib/validator.
 //
 //   error    the model is broken
 //   warning  the model contradicts itself or the method
@@ -25,7 +38,8 @@ export interface Finding {
   message: string;
   /** For rules spanning several steps: the step this finding belongs to. */
   step?: string;
-  loc: SourceLocation;
+  file: string;
+  line: number;
   element?: string;
 }
 
@@ -34,56 +48,33 @@ export interface Rule {
   check(ws: Workspace): Finding[];
 }
 
-export interface Diagnostic extends Finding {
-  code: string;
-  severity: Severity;
+/** A finding of the validator: where, which rule, and — for pdt42's rules — element and step. */
+export interface Diagnostic extends LibDiagnostic {
+  element?: string;
   step?: string;
 }
 
-const at = (e: Element, field?: string): Pick<Finding, "loc" | "element"> => ({
-  loc: { file: e.loc.file, line: (field && e.attributeLines[field]) || e.loc.line },
+// Findings point at the element's block (`field` names the attribute the finding is about).
+const at = (e: Element, _field?: string): Pick<Finding, "file" | "line" | "element"> => ({
+  file: e.loc.file,
+  line: e.loc.line,
   element: e.id,
 });
 
-const isPeer = (e: Element<"entity">) =>
-  (PEER_ROLES as readonly string[]).includes(e.data.role ?? "");
+const isPeer = (e: Element<"entity">) => (PEER_ROLES as readonly string[]).includes(e.role ?? "");
 const hasPhase = (ws: Workspace, phase: string) =>
   ws.elements.some((e) => STEPS.find((s) => s.id === blockMeta(e.kind).step)?.phase === phase);
 const designStarted = (ws: Workspace) => hasPhase(ws, "design");
 const growthStarted = (ws: Workspace) => hasPhase(ws, "growth");
-const coreRelationships = (ws: Workspace) =>
-  elementsOf(ws, "relationship").filter((r) => r.data.core);
-const partiesOf = (t: Element<"transaction">) => [t.data.from, t.data.to];
+const coreRelationships = (ws: Workspace) => elementsOf(ws, "relationship").filter((r) => r.core);
+const partiesOf = (t: Element<"transaction">) => [t.from, t.to];
 
 function rule(meta: RuleMeta, check: (ws: Workspace) => Finding[]): Rule {
   return { meta, check };
 }
 
-export const RULES: Rule[] = [
+const PDT_RULES: Rule[] = [
   // ── Errors ────────────────────────────────────────────────────────────────
-  rule(
-    {
-      code: "E001",
-      severity: "error",
-      title: "Duplicate id",
-      rationale:
-        "Every reference and every sticky on a canvas points to exactly one element; two elements with one id make both ambiguous.",
-    },
-    (ws) => {
-      const seen = new Map<string, Element>();
-      const out: Finding[] = [];
-      for (const e of ws.elements) {
-        const first = seen.get(e.id);
-        if (first)
-          out.push({
-            ...at(e, "id"),
-            message: `Id "${e.id}" is already used at ${first.loc.file}:${first.loc.line}`,
-          });
-        else seen.set(e.id, e);
-      }
-      return out;
-    },
-  ),
   rule(
     {
       code: "E002",
@@ -100,7 +91,8 @@ export const RULES: Rule[] = [
         if (!target)
           return [
             {
-              loc: ref.loc,
+              file: ref.loc.file,
+              line: ref.loc.line,
               element: ref.from.id,
               message: `${ref.field}: "${ref.to}" does not exist`,
             },
@@ -108,7 +100,8 @@ export const RULES: Rule[] = [
         if (!allowed.includes(target.kind)) {
           return [
             {
-              loc: ref.loc,
+              file: ref.loc.file,
+              line: ref.loc.line,
               element: ref.from.id,
               message: `${ref.field}: "${ref.to}" is a ${target.kind}, expected ${allowed.join(" or ")}`,
             },
@@ -117,31 +110,6 @@ export const RULES: Rule[] = [
         return [];
       });
     },
-  ),
-  rule(
-    {
-      code: "E003",
-      severity: "error",
-      title: "Invalid block content",
-      rationale:
-        "Attributes decide where an element appears and how it connects; a missing required field or an unknown value leaves it nowhere.",
-    },
-    (ws) =>
-      ws.issues
-        .filter((i) => i.code === "E003")
-        .map(({ message, loc, element }) => ({ message, loc, element })),
-  ),
-  rule(
-    {
-      code: "E004",
-      severity: "error",
-      title: "Unreadable block",
-      rationale: "Unknown block types and malformed lines would otherwise be lost silently.",
-    },
-    (ws) =>
-      ws.issues
-        .filter((i) => i.code === "E004")
-        .map(({ message, loc, element }) => ({ message, loc, element })),
   ),
   rule(
     {
@@ -171,13 +139,11 @@ export const RULES: Rule[] = [
         "A :::canvas block names one of the PDT canvases; canvases drawn once per element (a portrait, a transactions board …) say which element with `of`, and it must exist and have the right type.",
     },
     (ws) => {
-      const out: Finding[] = ws.issues
-        .filter((i) => i.code === "E006")
-        .map(({ message, loc }) => ({ message, loc }));
+      const out: Finding[] = [...ws.canvasIssues];
       const seen = new Map<string, string>();
       for (const view of ws.canvases) {
         const info = canvasById(view.canvas)!;
-        const at = { loc: view.loc };
+        const at = { file: view.loc.file, line: view.loc.line };
         const first = seen.get(view.id);
         if (first || ws.byId.has(view.id)) {
           out.push({
@@ -214,19 +180,6 @@ export const RULES: Rule[] = [
   // ── Warnings ──────────────────────────────────────────────────────────────
   rule(
     {
-      code: "W001",
-      severity: "warning",
-      title: "Block without prose",
-      rationale:
-        "The canvases show what; the prose explains why. A block nobody explained cannot be discussed or challenged.",
-    },
-    (ws) =>
-      ws.elements
-        .filter((e) => e.kind !== "motivation" && e.kind !== "assumption" && !e.prose.trim())
-        .map((e) => ({ ...at(e), message: `${e.title} has no explanatory prose above its block` })),
-  ),
-  rule(
-    {
       code: "W002",
       severity: "warning",
       title: "Relationship not between two entities",
@@ -236,7 +189,7 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "relationship")
-        .filter((r) => r.data.between.length !== 2 || r.data.between[0] === r.data.between[1])
+        .filter((r) => r.between.length !== 2 || r.between[0] === r.between[1])
         .map((r) => ({
           ...at(r, "between"),
           message: `${r.title} must connect two different entity-roles`,
@@ -253,9 +206,9 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "transaction").flatMap((t) => {
-        const r = get(ws, "relationship", t.data.relationship);
+        const r = get(ws, "relationship", t.relationship);
         if (!r) return [];
-        const outside = partiesOf(t).filter((p) => !r.data.between.includes(p));
+        const outside = partiesOf(t).filter((p) => !r.between.includes(p));
         return outside.length
           ? [
               {
@@ -277,8 +230,8 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "transaction")
-        .filter((t) => t.data.from === t.data.to)
-        .map((t) => ({ ...at(t, "to"), message: `${t.title} goes from ${t.data.from} to itself` })),
+        .filter((t) => t.from === t.to)
+        .map((t) => ({ ...at(t, "to"), message: `${t.title} goes from ${t.from} to itself` })),
   ),
   rule(
     {
@@ -291,12 +244,12 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "experience").flatMap((x) => {
-        const r = get(ws, "relationship", x.data.relationship);
-        return r && !r.data.between.includes(x.data["core-entity"])
+        const r = get(ws, "relationship", x.relationship);
+        return r && !r.between.includes(x["core-entity"])
           ? [
               {
                 ...at(x, "core-entity"),
-                message: `${x.data["core-entity"]} is not part of ${r.title}`,
+                message: `${x["core-entity"]} is not part of ${r.title}`,
               },
             ]
           : [];
@@ -313,8 +266,8 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "experience").flatMap((x) => {
-        const involved = new Set([x.data["core-entity"], ...x.data.roles]);
-        return x.data.steps.flatMap((stepId) => {
+        const involved = new Set([x["core-entity"], ...x.roles]);
+        return x.steps.flatMap((stepId) => {
           const t = get(ws, "transaction", stepId);
           const missing = t ? partiesOf(t).filter((p) => !involved.has(p)) : [];
           return missing.length
@@ -339,12 +292,12 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "learning-engine").flatMap((le) => {
-        const entity = get(ws, "entity", le.data.entity);
-        return entity && (entity.data.role === "owner" || entity.data.role === "stakeholder")
+        const entity = get(ws, "entity", le.entity);
+        return entity && (entity.role === "owner" || entity.role === "stakeholder")
           ? [
               {
                 ...at(le, "entity"),
-                message: `${entity.title} is a ${entity.data.role}, not a participant`,
+                message: `${entity.title} is a ${entity.role}, not a participant`,
               },
             ]
           : [];
@@ -361,13 +314,13 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "platform").flatMap((p) =>
-        p.data.owners.flatMap((id) => {
+        p.owners.flatMap((id) => {
           const e = get(ws, "entity", id);
-          return e && e.data.role !== "owner"
+          return e && e.role !== "owner"
             ? [
                 {
                   ...at(p, "owners"),
-                  message: `${e.title} owns the platform but has role ${e.data.role ?? "(none)"}`,
+                  message: `${e.title} owns the platform but has role ${e.role ?? "(none)"}`,
                 },
               ]
             : [];
@@ -384,7 +337,7 @@ export const RULES: Rule[] = [
       step: "D8",
     },
     (ws) => {
-      const tested = new Set(elementsOf(ws, "assumption").map((a) => a.data.mvp));
+      const tested = new Set(elementsOf(ws, "assumption").map((a) => a.mvp));
       return elementsOf(ws, "mvp")
         .filter((m) => !tested.has(m.id))
         .map((m) => ({ ...at(m), message: `${m.title} tests no assumption` }));
@@ -401,14 +354,14 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "experience").flatMap((x) => {
-        const involved = new Set([x.data["core-entity"], ...x.data.roles]);
-        return x.data.steps.flatMap((stepId) => {
+        const involved = new Set([x["core-entity"], ...x.roles]);
+        return x.steps.flatMap((stepId) => {
           const s = get(ws, "service", stepId);
-          return s && s.data.for.length && !s.data.for.some((f) => involved.has(f))
+          return s && s.for.length && !s.for.some((f) => involved.has(f))
             ? [
                 {
                   ...at(x, "steps"),
-                  message: `Service ${stepId} is offered to ${s.data.for.join(", ")}, none of whom take part`,
+                  message: `Service ${stepId} is offered to ${s.for.join(", ")}, none of whom take part`,
                 },
               ]
             : [];
@@ -447,8 +400,8 @@ export const RULES: Rule[] = [
     (ws) =>
       elementsOf(ws, "platform").flatMap((p) => {
         const missing = [
-          elementsOf(ws, "ecosystem").length && !p.data.ecosystem ? "ecosystem" : "",
-          elementsOf(ws, "brief").length && !p.data.brief ? "brief" : "",
+          elementsOf(ws, "ecosystem").length && !p.ecosystem ? "ecosystem" : "",
+          elementsOf(ws, "brief").length && !p.brief ? "brief" : "",
         ].filter(Boolean);
         return missing.length
           ? [
@@ -484,7 +437,7 @@ export const RULES: Rule[] = [
     },
     (ws) => {
       const arenas = elementsOf(ws, "arena");
-      return arenas.length && !arenas.some((a) => a.data.focus)
+      return arenas.length && !arenas.some((a) => a.focus)
         ? [{ ...at(arenas[0]!), message: "No arena has `focus: yes`" }]
         : [];
     },
@@ -500,10 +453,10 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "asset")
-        .filter((a) => a.data.vrio !== "vrio")
+        .filter((a) => a.vrio !== "vrio")
         .map((a) => ({
           ...at(a, "vrio"),
-          message: `${a.title} stops at "${a.data.vrio}" — treat it as supporting, not as an advantage`,
+          message: `${a.title} stops at "${a.vrio}" — treat it as supporting, not as an advantage`,
         })),
   ),
   rule(
@@ -516,8 +469,8 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "brief").flatMap((b) => {
-        const arena = get(ws, "arena", b.data.arena);
-        return arena && !arena.data.focus
+        const arena = get(ws, "arena", b.arena);
+        return arena && !arena.focus
           ? [{ ...at(b, "arena"), message: `${arena.title} is not marked as focus arena` }]
           : [];
       }),
@@ -536,7 +489,7 @@ export const RULES: Rule[] = [
     (ws) =>
       designStarted(ws)
         ? elementsOf(ws, "entity")
-            .filter((e) => !e.data.role)
+            .filter((e) => !e.role)
             .map((e) => ({ ...at(e), message: `${e.title} has no role` }))
         : [],
   ),
@@ -571,7 +524,7 @@ export const RULES: Rule[] = [
       step: "D1",
     },
     (ws) => {
-      const first = elementsOf(ws, "entity").find((e) => e.data.role);
+      const first = elementsOf(ws, "entity").find((e) => e.role);
       return first && !elementsOf(ws, "platform").length
         ? [{ ...at(first), message: "Add a :::platform block with its owners" }]
         : [];
@@ -590,7 +543,7 @@ export const RULES: Rule[] = [
       elementsOf(ws, "entity")
         .filter(isPeer)
         .flatMap((e) => {
-          const d = e.data;
+          const d = e;
           const missing = [
             !(d.assets.length || d.capabilities.length || d.potential.length) && "potential",
             !(d.goals.length || d.pressures.length) && "goals or pressures",
@@ -617,7 +570,7 @@ export const RULES: Rule[] = [
     (ws) => {
       const motivations = elementsOf(ws, "motivation");
       if (!motivations.length) return [];
-      const involved = new Set(motivations.flatMap((m) => [m.data.from, m.data.to]));
+      const involved = new Set(motivations.flatMap((m) => [m.from, m.to]));
       return elementsOf(ws, "entity")
         .filter((e) => isPeer(e) && !involved.has(e.id))
         .map((e) => ({
@@ -642,14 +595,14 @@ export const RULES: Rule[] = [
       if (firstMotivation && !coreRelationships(ws).length) {
         out.push({ ...at(firstMotivation), message: "No relationship is marked `core: yes`" });
       }
-      if (platform && firstMotivation && !platform.data["core-entity"]) {
+      if (platform && firstMotivation && !platform["core-entity"]) {
         out.push({ ...at(platform), message: "The platform has no core-entity" });
       }
-      const core = platform?.data["core-entity"];
+      const core = platform?.["core-entity"];
       if (
         core &&
         coreRelationships(ws).length &&
-        !coreRelationships(ws).some((r) => r.data.between.includes(core))
+        !coreRelationships(ws).some((r) => r.between.includes(core))
       ) {
         out.push({
           ...at(platform!, "core-entity"),
@@ -668,7 +621,7 @@ export const RULES: Rule[] = [
       step: "D5",
     },
     (ws) => {
-      const covered = new Set(elementsOf(ws, "transaction").map((t) => t.data.relationship));
+      const covered = new Set(elementsOf(ws, "transaction").map((t) => t.relationship));
       return coreRelationships(ws)
         .filter((r) => !covered.has(r.id))
         .map((r) => ({ ...at(r), message: `${r.title} has no transactions yet` }));
@@ -686,9 +639,9 @@ export const RULES: Rule[] = [
     (ws) =>
       elementsOf(ws, "transaction").flatMap((t) => {
         const missing = [
-          !t.data["value-unit"] && "value-unit",
-          !t.data.channel && "channel",
-          !t.data.relationship && "relationship",
+          !t["value-unit"] && "value-unit",
+          !t.channel && "channel",
+          !t.relationship && "relationship",
         ].filter(Boolean);
         return missing.length
           ? [{ ...at(t), message: `${t.title} has no ${missing.join(", ")}` }]
@@ -705,8 +658,8 @@ export const RULES: Rule[] = [
       step: "D6",
     },
     (ws) => {
-      const served = new Set(elementsOf(ws, "learning-engine").map((l) => l.data.entity));
-      const core = new Set(coreRelationships(ws).flatMap((r) => r.data.between));
+      const served = new Set(elementsOf(ws, "learning-engine").map((l) => l.entity));
+      const core = new Set(coreRelationships(ws).flatMap((r) => r.between));
       return elementsOf(ws, "entity")
         .filter((e) => isPeer(e) && core.has(e.id) && !served.has(e.id))
         .map((e) => ({ ...at(e), message: `No learning engine helps ${e.title} evolve` }));
@@ -724,16 +677,16 @@ export const RULES: Rule[] = [
     (ws) =>
       elementsOf(ws, "learning-engine").flatMap((le) =>
         (["onboarding", "getting-better", "new-opportunity"] as const).flatMap((stage) => {
-          if (!le.data[stage].length) return [];
+          if (!le[stage].length) return [];
           const served = elementsOf(ws, "service").some(
-            (s) => s.data.stage === stage && s.data.for.includes(le.data.entity),
+            (s) => s.stage === stage && s.for.includes(le.entity),
           );
           return served
             ? []
             : [
                 {
                   ...at(le, stage),
-                  message: `${le.title}: ${stage} challenges have no service for ${le.data.entity}`,
+                  message: `${le.title}: ${stage} challenges have no service for ${le.entity}`,
                 },
               ];
         }),
@@ -750,8 +703,8 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "experience").flatMap((x) => {
-        const kinds = new Set(x.data.steps.map((id) => ws.byId.get(id)?.kind).filter(Boolean));
-        if (!x.data.steps.length) return [{ ...at(x), message: `${x.title} has no steps` }];
+        const kinds = new Set(x.steps.map((id) => ws.byId.get(id)?.kind).filter(Boolean));
+        if (!x.steps.length) return [{ ...at(x), message: `${x.title} has no steps` }];
         if (!kinds.has("service"))
           return [
             { ...at(x, "steps"), message: `${x.title} has no platform service among its steps` },
@@ -772,10 +725,10 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "experience")
-        .filter((x) => !x.data.revenues.length || !x.data.costs.length)
+        .filter((x) => !x.revenues.length || !x.costs.length)
         .map((x) => ({
           ...at(x),
-          message: `${x.title} has no ${!x.data.revenues.length ? "revenues" : "costs"}`,
+          message: `${x.title} has no ${!x.revenues.length ? "revenues" : "costs"}`,
         })),
   ),
   rule(
@@ -787,7 +740,7 @@ export const RULES: Rule[] = [
       step: "D8",
     },
     (ws) => {
-      const tested = new Set(elementsOf(ws, "mvp").flatMap((m) => m.data.experiences));
+      const tested = new Set(elementsOf(ws, "mvp").flatMap((m) => m.experiences));
       return elementsOf(ws, "experience")
         .filter((x) => !tested.has(x.id))
         .map((x) => ({ ...at(x), message: `No MVP tests ${x.title}` }));
@@ -804,16 +757,16 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "mvp").flatMap((m) => {
-        const own = elementsOf(ws, "assumption").filter((a) => a.data.mvp === m.id);
+        const own = elementsOf(ws, "assumption").filter((a) => a.mvp === m.id);
         if (!own.length) return [];
-        const kinds = new Set(own.map((a) => a.data.kind));
+        const kinds = new Set(own.map((a) => a.category));
         const missing = (["business-model", "trust", "attraction"] as const).filter(
           (k) => !kinds.has(k),
         );
         const out: Finding[] = [];
         if (missing.length)
           out.push({ ...at(m), message: `${m.title} tests no ${missing.join(", ")} assumption` });
-        if (!own.some((a) => a.data.riskiest))
+        if (!own.some((a) => a.riskiest))
           out.push({ ...at(m), message: `${m.title} marks no assumption as riskiest` });
         return out;
       }),
@@ -828,10 +781,10 @@ export const RULES: Rule[] = [
     },
     (ws) =>
       elementsOf(ws, "assumption")
-        .filter((a) => !a.data.test || !a.data.criteria)
+        .filter((a) => !a.test || !a.criteria)
         .map((a) => ({
           ...at(a),
-          message: `${a.title} has no ${!a.data.test ? "test" : "criteria"}`,
+          message: `${a.title} has no ${!a.test ? "test" : "criteria"}`,
         })),
   ),
 
@@ -847,7 +800,7 @@ export const RULES: Rule[] = [
     },
     (ws) => {
       if (!growthStarted(ws)) return [];
-      const covered = new Set(elementsOf(ws, "network").map((n) => n.data.relationship));
+      const covered = new Set(elementsOf(ws, "network").map((n) => n.relationship));
       return coreRelationships(ws)
         .filter((r) => !covered.has(r.id))
         .map((r) => ({ ...at(r), message: `${r.title} has no network properties` }));
@@ -865,9 +818,7 @@ export const RULES: Rule[] = [
     (ws) => {
       const flywheels = elementsOf(ws, "flywheel");
       return flywheels.length &&
-        !flywheels.some(
-          (f) => f.data.type === "direct-network" || f.data.type === "indirect-network",
-        )
+        !flywheels.some((f) => f.type === "direct-network" || f.type === "indirect-network")
         ? [
             {
               ...at(flywheels[0]!),
@@ -888,16 +839,16 @@ export const RULES: Rule[] = [
     },
     (ws) => [
       ...elementsOf(ws, "flywheel")
-        .filter((f) => !f.data.relationship && !f.data.reinforces)
+        .filter((f) => !f.relationship && !f.reinforces)
         .map((f) => ({
           ...at(f),
           message: `${f.title} names neither the relationship it grows from nor the flywheel it reinforces`,
         })),
       ...elementsOf(ws, "growth-loop")
-        .filter((g) => !g.data.acquires || !g.data.feeds)
+        .filter((g) => !g.acquires || !g.feeds)
         .map((g) => ({
           ...at(g),
-          message: `${g.title} does not say ${!g.data.acquires ? "which role it acquires" : "which flywheel it feeds"}`,
+          message: `${g.title} does not say ${!g.acquires ? "which role it acquires" : "which flywheel it feeds"}`,
         })),
     ],
   ),
@@ -912,7 +863,7 @@ export const RULES: Rule[] = [
     },
     (ws) => {
       if (!growthStarted(ws)) return [];
-      const planned = new Set(elementsOf(ws, "liquidity").map((l) => l.data.relationship));
+      const planned = new Set(elementsOf(ws, "liquidity").map((l) => l.relationship));
       return coreRelationships(ws)
         .filter((r) => !planned.has(r.id))
         .map((r) => ({ ...at(r), message: `${r.title} has no liquidity plan` }));
@@ -920,25 +871,96 @@ export const RULES: Rule[] = [
   ),
 ];
 
+// ── The rules every *42 language has ────────────────────────────────────────
+
+/** The chapter of each methodology file: its position among the steps' files. */
+const CHAPTER_FILES = [...new Set(STEPS.map((step) => step.file))];
+const basename = (path: string) => path.split("/").pop() ?? path;
+
+/** The chapter a file is by the methodology's convention, or null for any other file. */
+function chapterOfFile(path: string): number | null {
+  const index = CHAPTER_FILES.findIndex((file) => basename(file) === basename(path));
+  return index < 0 ? null : index + 1;
+}
+
+/** The chapter of each block type: the file of the step that introduces it (EG03). */
+const CHAPTERS = Object.fromEntries(
+  BLOCK_TYPES.map((kind) => {
+    const step = STEPS.find((s) => s.id === blockMeta(kind).step);
+    return [kind, step ? CHAPTER_FILES.indexOf(step.file) + 1 : 0];
+  }),
+) as Record<BlockType, number>;
+
+/** The documents as the generic rules read them: canvases are views, not blocks of the model. */
+function modelView(ws: Workspace) {
+  return {
+    ...ws,
+    documents: ws.documents.map((doc) => ({
+      ...doc,
+      nodes: doc.nodes.filter((n) => !(n.kind === "block" && n.blockType === "canvas")),
+    })),
+  };
+}
+
+const GENERIC_RULES: Rule[] = genericRules({
+  chapters: CHAPTERS,
+  chapterOfFile,
+  fenceFlag: "inPdt42Fence",
+  fenceDescription: () => "```pdt42 fence",
+  schemas: BLOCK_SCHEMAS,
+}).map((generic) => ({
+  meta: {
+    code: generic.meta.code,
+    severity: generic.meta.severity,
+    title: generic.meta.docs.description,
+    rationale: generic.meta.docs.rationale,
+  },
+  check: (ws) =>
+    generic
+      .check(modelView(ws), undefined)
+      .map(({ message, file, line }) => ({ message, file, line })),
+}));
+
+/** Every rule: the generic ones first (EGxx, WGxx), then pdt42's own. */
+export const RULES: Rule[] = [...GENERIC_RULES, ...PDT_RULES];
+
+interface PdtRuleDocs extends RuleDocs {
+  step?: string;
+}
+
+/** A rule as the validation engine runs it: findings with code, severity and step. */
+function engineRule(rule: Rule): LibRule<Workspace, undefined, undefined, PdtRuleDocs> {
+  return {
+    meta: {
+      code: rule.meta.code,
+      severity: rule.meta.severity,
+      type: rule.meta.severity === "hint" ? "suggestion" : "problem",
+      docs: {
+        description: rule.meta.title,
+        rationale: rule.meta.rationale,
+        recommended: true,
+        ...(rule.meta.step ? { step: rule.meta.step } : {}),
+      },
+    },
+    check: (ws) =>
+      rule.check(ws).map(
+        (finding): Diagnostic => ({
+          ...finding,
+          code: rule.meta.code,
+          severity: rule.meta.severity,
+          ...((finding.step ?? rule.meta.step) ? { step: finding.step ?? rule.meta.step } : {}),
+        }),
+      ),
+  };
+}
+
+const validator = createValidator({ rules: RULES.map(engineRule) });
+
 export function validate(ws: Workspace): Diagnostic[] {
-  const out: Diagnostic[] = [];
-  for (const r of RULES) {
-    for (const finding of r.check(ws)) {
-      if (ws.ignores.get(finding.loc.file)?.has(r.meta.code)) continue;
-      out.push({
-        ...finding,
-        code: r.meta.code,
-        severity: r.meta.severity,
-        step: finding.step ?? r.meta.step,
-      });
-    }
-  }
   const order: Record<Severity, number> = { error: 0, warning: 1, hint: 2 };
-  return out.sort(
+  return (validator.validate(ws, undefined) as Diagnostic[]).sort(
     (a, b) =>
-      order[a.severity] - order[b.severity] ||
-      a.loc.file.localeCompare(b.loc.file) ||
-      a.loc.line - b.loc.line,
+      order[a.severity] - order[b.severity] || a.file.localeCompare(b.file) || a.line - b.line,
   );
 }
 
@@ -955,7 +977,7 @@ function chapterCanvasFindings(ws: Workspace): Finding[] {
             ({ type, fields }) =>
               e.kind === type &&
               fields.some((f) => {
-                const v = (e.data as Record<string, unknown>)[f];
+                const v = fieldValue(e, f);
                 return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== "";
               }),
           ),

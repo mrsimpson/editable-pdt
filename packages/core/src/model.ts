@@ -1,38 +1,31 @@
-import type { DocumentAst, HeadingNode, ProseNode, SourceLocation } from "./ast.ts";
+import { buildIndex, buildWorkspace as buildModel } from "@cli42/lib/model";
+import type { ElementOf, ParseError, ParseWarning } from "@cli42/lib/model";
+import type { IgnoreDirective } from "@cli42/lib/validator";
+import type { BlockNode, DocumentAst, SourceLocation } from "./ast.ts";
 import { parseMarkdown } from "./parser.ts";
 import { toCanvasView, type CanvasView } from "./canvases.ts";
-import {
-  BLOCK_SCHEMAS,
-  blockFields,
-  isBlockType,
-  type BlockData,
-  type BlockType,
-} from "./schemas.ts";
+import { BLOCK_SCHEMAS, blockFields, type BlockType } from "./schemas.ts";
 
-// Builds the element model from parsed documents. Blocks are validated against their zod schema;
-// problems become build issues with precise file:line locations. The validator adds the
-// cross-element rules on top.
+// Builds the element model from parsed documents with the model builder every *42 language
+// shares (@cli42/lib/model): blocks are validated against their schema into flat elements
+// (`{ ...attributes, kind, loc }`), and what cannot be built becomes a parse error (or, for
+// unknown attributes, a warning). Canvases are views, not elements: pdt42 reads them apart.
 
-export interface Element<K extends BlockType = BlockType> {
-  kind: K;
-  id: string;
+type Schemas = typeof BLOCK_SCHEMAS;
+
+/** What every element has beyond its attributes: its title, prose and end line. */
+export interface ElementExtras {
   /** `title` if present, else the heading above the block, else the id. */
   title: string;
-  data: BlockData<K>;
   /** Markdown between the heading and the block: the explanation of the element. */
   prose: string;
-  heading?: { text: string; level: number; line: number };
-  loc: SourceLocation;
   endLine: number;
-  attributeLines: Record<string, number>;
 }
 
-export interface BuildIssue {
-  code: "E003" | "E004" | "E006";
-  message: string;
-  loc: SourceLocation;
-  element?: string;
-}
+/** An element of kind K: its attributes (flat), its kind and location, and its extras. */
+export type Element<K extends BlockType = BlockType> = K extends BlockType
+  ? ElementOf<Pick<Schemas, K>, SourceLocation> & ElementExtras
+  : never;
 
 export interface Reference {
   from: Element;
@@ -45,122 +38,78 @@ export interface Workspace {
   documents: DocumentAst[];
   elements: Element[];
   byId: Map<string, Element>;
-  issues: BuildIssue[];
-  /** Rule codes suppressed per file. */
-  ignores: Map<string, Set<string>>;
+  /** Blocks that could not be built. */
+  parseErrors: ParseError[];
+  /** `:::canvas` blocks that could not be read (E006). */
+  canvasIssues: Array<{ message: string; file: string; line: number }>;
+  /** Blocks built with attributes their schema does not know. */
+  parseWarnings: ParseWarning[];
+  ignoreDirectives: IgnoreDirective[];
   references: Reference[];
+  /** The edges of the model, as the semantic diff reads them (relation = reference field). */
+  edges: Array<{ from: string; relation: string; to: string }>;
   /** The canvases placed in the chapters, in document order. */
   canvases: CanvasView[];
+  diagrams: never[];
+}
+
+/** The value of a block's attribute on its element (the `kind:` attribute is `category`). */
+export function fieldValue(element: Element, field: string): unknown {
+  return (element as unknown as Record<string, unknown>)[field === "kind" ? "category" : field];
+}
+
+/** Canvases are read apart from the model builder: they are views, not elements. */
+function withoutCanvases(doc: DocumentAst): DocumentAst {
+  return {
+    ...doc,
+    nodes: doc.nodes.filter((node) => !(node.kind === "block" && node.blockType === "canvas")),
+  };
 }
 
 export function buildWorkspace(documents: DocumentAst[]): Workspace {
-  const elements: Element[] = [];
-  const issues: BuildIssue[] = [];
-  const ignores = new Map<string, Set<string>>();
+  const built = buildModel(documents.map(withoutCanvases), { elements: BLOCK_SCHEMAS });
+  const canvasIssues: Workspace["canvasIssues"] = [];
+
+  const endLines = new Map<string, number>();
   const canvases: CanvasView[] = [];
-
   for (const doc of documents) {
-    const fileIgnores = new Set<string>();
-    ignores.set(doc.file, fileIgnores);
-    let heading: HeadingNode | undefined;
-    let prose: ProseNode[] = [];
-    let blocksUnderHeading = 0;
-
+    let heading: string | undefined;
     for (const node of doc.nodes) {
-      switch (node.kind) {
-        case "heading":
-          heading = node;
-          prose = [];
-          blocksUnderHeading = 0;
-          break;
-        case "prose":
-          prose.push(node);
-          break;
-        case "ignore":
-          fileIgnores.add(node.code);
-          break;
-        case "parse-error":
-          issues.push({
-            code: "E004",
-            message: node.message,
-            loc: { file: doc.file, line: node.line },
-          });
-          break;
-        case "block": {
-          if (node.blockType === "canvas") {
-            // Canvases are views, placed where they appear; they do not own the prose above.
-            const { view, issues: canvasIssues } = toCanvasView(node, doc.file, heading?.text);
-            if (view) canvases.push(view);
-            for (const issue of canvasIssues) issues.push({ code: "E006", ...issue });
-            break;
-          }
-          blocksUnderHeading++;
-          const loc = { file: doc.file, line: node.startLine };
-          if (!isBlockType(node.blockType)) {
-            issues.push({ code: "E004", message: `Unknown block type :::${node.blockType}`, loc });
-            break;
-          }
-          const kind = node.blockType;
-          const known = new Set(blockFields(kind).map((f) => f.name));
-          for (const key of Object.keys(node.attributes)) {
-            if (!known.has(key)) {
-              issues.push({
-                code: "E003",
-                message: `:::${kind} has no attribute "${key}"`,
-                loc: { file: doc.file, line: node.attributeLines[key] ?? node.startLine },
-                element: String(node.attributes.id ?? ""),
-              });
-            }
-          }
-          const parsed = BLOCK_SCHEMAS[kind].safeParse(node.attributes);
-          if (!parsed.success) {
-            for (const issue of parsed.error.issues) {
-              const key = String(issue.path[0] ?? "");
-              issues.push({
-                code: "E003",
-                message: key ? `${key}: ${issue.message}` : issue.message,
-                loc: { file: doc.file, line: node.attributeLines[key] ?? node.startLine },
-                element: String(node.attributes.id ?? ""),
-              });
-            }
-            break;
-          }
-          const data = parsed.data as BlockData<typeof kind>;
-          const title =
-            ("title" in data && typeof data.title === "string" && data.title) ||
-            (heading && blocksUnderHeading === 1 ? heading.text : "") ||
-            data.id;
-          elements.push({
-            kind,
-            id: data.id,
-            title,
-            data,
-            prose: prose.map((p) => p.text).join("\n\n"),
-            heading: heading
-              ? { text: heading.text, level: heading.level, line: heading.line }
-              : undefined,
-            loc,
-            endLine: node.endLine,
-            attributeLines: node.attributeLines,
-          });
-          prose = [];
-          break;
-        }
-      }
+      if (node.kind === "heading") heading = node.text;
+      if (node.kind !== "block") continue;
+      endLines.set(`${doc.filePath}:${node.startLine}`, node.endLine);
+      if (node.blockType !== "canvas") continue;
+      const { view, issues } = toCanvasView(node as BlockNode, doc.filePath, heading);
+      if (view) canvases.push(view);
+      for (const issue of issues) canvasIssues.push({ message: issue.message, ...issue.loc });
     }
   }
+
+  const elements = built.elements.map((element) => {
+    const explicit = "title" in element && typeof element.title === "string" ? element.title : "";
+    return {
+      ...element,
+      title: explicit || element.loc.heading || element.id,
+      prose: element.loc.prose?.trim() ?? "",
+      endLine: endLines.get(`${element.loc.file}:${element.loc.line}`) ?? element.loc.line,
+    } as Element;
+  });
 
   const byId = new Map<string, Element>();
   for (const element of elements) if (!byId.has(element.id)) byId.set(element.id, element);
 
   return {
-    documents,
+    documents: built.documents,
     elements,
     byId,
-    issues,
-    ignores,
+    parseErrors: built.parseErrors,
+    canvasIssues,
+    parseWarnings: built.parseWarnings,
+    ignoreDirectives: built.ignoreDirectives,
     references: collectReferences(elements),
+    edges: buildIndex(elements, BLOCK_SCHEMAS).edges,
     canvases,
+    diagrams: [],
   };
 }
 
@@ -169,18 +118,9 @@ function collectReferences(elements: Element[]): Reference[] {
   for (const element of elements) {
     for (const field of blockFields(element.kind)) {
       if (field.kind !== "ref" && field.kind !== "refs") continue;
-      const value = (element.data as Record<string, unknown>)[field.name];
-      for (const to of ([] as unknown[]).concat(value ?? [])) {
+      for (const to of ([] as unknown[]).concat(fieldValue(element, field.name) ?? [])) {
         if (typeof to === "string" && to) {
-          out.push({
-            from: element,
-            field: field.name,
-            to,
-            loc: {
-              file: element.loc.file,
-              line: element.attributeLines[field.name] ?? element.loc.line,
-            },
-          });
+          out.push({ from: element, field: field.name, to, loc: element.loc });
         }
       }
     }

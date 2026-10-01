@@ -1,5 +1,5 @@
 import { STEPS, type StepInfo } from "./methodology.ts";
-import { elementsOf, type Workspace } from "./model.ts";
+import { elementsOf, fieldValue, type Workspace } from "./model.ts";
 import type { Diagnostic } from "./validator.ts";
 
 // Where a workspace stands in the methodology: per step, whether its blocks exist and whether
@@ -23,9 +23,7 @@ function countFor(ws: Workspace, step: StepInfo): number {
   const enriched = (step.enriches ?? []).reduce(
     (n, { type, fields }) =>
       n +
-      elementsOf(ws, type).filter((e) =>
-        fields.some((f) => hasValues((e.data as Record<string, unknown>)[f])),
-      ).length,
+      elementsOf(ws, type).filter((e) => fields.some((f) => hasValues(fieldValue(e, f)))).length,
     0,
   );
   return step.blocks.length ? created : enriched;

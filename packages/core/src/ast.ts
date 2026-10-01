@@ -1,56 +1,47 @@
-// AST produced by the line parser. The parser does not know the block types: it emits every
-// block it finds, and the model builder decides what is valid.
+// The AST of a pdt42 document: the nodes of @cli42/lib's parser, as every *42 language has them,
+// with pdt42's fence flag on blocks. pdt42 has no `:::diagram` blocks; a diagram node is kept so
+// the parser's dialect is complete.
+import type {
+  BareMermaidNode,
+  HeadingNode,
+  IgnoreNode,
+  MarkdownBlockNode,
+  ProseNode,
+} from "@cli42/lib/parser";
 
+export type { BareMermaidNode, HeadingNode, IgnoreNode, ProseNode };
+
+/** Where something is: its document and line, and the heading and prose before it. */
 export interface SourceLocation {
   file: string;
   line: number;
+  /** The text of the nearest heading before it in its document, if any. */
+  heading?: string;
+  /** Prose lines between that heading and the block, if any. */
+  prose?: string;
 }
 
-export interface HeadingNode {
-  kind: "heading";
-  level: number;
-  text: string;
-  line: number;
-}
+/** A `:::type` block; `inPdt42Fence` says whether it sat inside a ```pdt42 fence. */
+export type BlockNode = MarkdownBlockNode & { inPdt42Fence: boolean };
 
-export interface ProseNode {
-  kind: "prose";
-  text: string;
-  /** First and last non-blank line of the paragraph group. */
+/** A `:::diagram` block — not part of pdt42; the model builder ignores it. */
+export interface DiagramNode {
+  kind: "diagram";
+  id: string;
+  source: string;
   startLine: number;
   endLine: number;
 }
 
-/** A raw attribute value: `key: value` gives a string, `key:` + `- item` lines give a list. */
-export type RawValue = string | string[];
-
-export interface BlockNode {
-  kind: "block";
-  blockType: string;
-  attributes: Record<string, RawValue>;
-  /** Line of the attribute, for precise diagnostics. */
-  attributeLines: Record<string, number>;
-  startLine: number;
-  endLine: number;
-  fenceStart: number;
-}
-
-export interface IgnoreNode {
-  kind: "ignore";
-  code: string;
-  reason: string;
-  line: number;
-}
-
-export interface ParseErrorNode {
-  kind: "parse-error";
-  message: string;
-  line: number;
-}
-
-export type AstNode = HeadingNode | ProseNode | BlockNode | IgnoreNode | ParseErrorNode;
+export type AstNode =
+  | HeadingNode
+  | ProseNode
+  | BlockNode
+  | DiagramNode
+  | BareMermaidNode
+  | IgnoreNode;
 
 export interface DocumentAst {
-  file: string;
+  filePath: string;
   nodes: AstNode[];
 }

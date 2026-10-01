@@ -23,6 +23,9 @@ export interface Ref {
 
 type Data = Record<string, unknown>;
 
+/** An element's attributes, read loosely: the canvases read many kinds alike. */
+const attributes = (e: PayloadElement): Data => e as unknown as Data;
+
 class Index {
   readonly payload: WorkspacePayload;
   readonly byId: Map<string, PayloadElement>;
@@ -37,7 +40,7 @@ class Index {
     return typeof id === "string" ? this.byId.get(id) : undefined;
   }
   ref(e: PayloadElement): Ref {
-    const role = e.kind === "entity" ? (e.data.role as string | undefined) : undefined;
+    const role = e.kind === "entity" ? (attributes(e).role as string | undefined) : undefined;
     return { id: e.id, title: e.title, kind: e.kind, ...(role ? { role } : {}) };
   }
   refOf(id: unknown): Ref | undefined {
@@ -69,8 +72,8 @@ export interface ArenaScanModel {
 
 function arenaScan(ix: Index): ArenaScanModel {
   const arenas = ix.of("arena");
-  const enabledIds = new Set(arenas.flatMap((a) => list(a.data, "enables")));
-  const enabling = arenas.filter((a) => list(a.data, "enables").length > 0);
+  const enabledIds = new Set(arenas.flatMap((a) => list(attributes(a), "enables")));
+  const enabling = arenas.filter((a) => list(attributes(a), "enables").length > 0);
   const enabled = arenas.filter((a) => enabledIds.has(a.id) && !enabling.includes(a));
   const rest = arenas.filter((a) => !enabling.includes(a) && !enabled.includes(a));
   // Sequence: order by the `after` relation (a simple topological sort, stable otherwise).
@@ -78,21 +81,21 @@ function arenaScan(ix: Index): ArenaScanModel {
   const visit = (a: PayloadElement, seen: Set<string>) => {
     if (ordered.includes(a) || seen.has(a.id)) return;
     seen.add(a.id);
-    for (const before of list(a.data, "after")) {
+    for (const before of list(attributes(a), "after")) {
       const b = rest.find((r) => r.id === before);
       if (b) visit(b, seen);
     }
     ordered.push(a);
   };
   for (const a of rest) visit(a, new Set());
-  const focus = arenas.filter((a) => a.data.focus === true);
+  const focus = arenas.filter((a) => attributes(a).focus === true);
   return {
     canvas: "arena-scan",
     enabled: enabled.map((a) => ix.ref(a)),
     sequence: ordered.map((a) => ix.ref(a)),
     enabling: enabling.map((a) => ix.ref(a)),
     focus: focus.map((a) => a.id),
-    steps: focus.map((a) => ({ arena: ix.ref(a), steps: list(a.data, "steps") })),
+    steps: focus.map((a) => ({ arena: ix.ref(a), steps: list(attributes(a), "steps") })),
   };
 }
 
@@ -116,15 +119,15 @@ function layers(ix: Index, only?: Set<string>): LayerRow[] {
     label: LAYER_LABELS[layer]!,
     entities: ix
       .of("entity")
-      .filter((e) => e.data.layer === layer && (!only || only.has(e.id)))
+      .filter((e) => attributes(e).layer === layer && (!only || only.has(e.id)))
       .map((e) => ix.ref(e)),
     assets: ix
       .of("asset")
-      .filter((e) => e.data.layer === layer)
+      .filter((e) => attributes(e).layer === layer)
       .map((e) => ix.ref(e)),
     moats: ix
       .of("moat")
-      .filter((e) => e.data.layer === layer)
+      .filter((e) => attributes(e).layer === layer)
       .map((e) => ix.ref(e)),
   }));
 }
@@ -142,15 +145,15 @@ function ecosystemScan(ix: Index): EcosystemScanModel {
     layers: layers(ix),
     jobs: ix.of("job").map((j) => ({
       job: ix.ref(j),
-      arena: ix.refOf(j.data.arena),
-      entities: ix.refsOf(j.data.entities),
-      jobStep: str(j.data, "job-step"),
+      arena: ix.refOf(attributes(j).arena),
+      entities: ix.refsOf(attributes(j).entities),
+      jobStep: str(attributes(j), "job-step"),
     })),
     unplaced: ix
       .of("entity")
       .filter(
         (e) =>
-          !e.data.layer &&
+          !attributes(e).layer &&
           ix.payload.references.some((r) => r.to === e.id && ix.get(r.from)?.kind === "job"),
       )
       .map((e) => ix.ref(e)),
@@ -166,10 +169,10 @@ function vrio(ix: Index): VrioModel {
   return {
     canvas: "vrio",
     assets: ix.of("asset").map((a) => {
-      const level = str(a.data, "vrio") ?? "";
+      const level = str(attributes(a), "vrio") ?? "";
       return {
         asset: ix.ref(a),
-        layer: str(a.data, "layer"),
+        layer: str(attributes(a), "layer"),
         v: level.length >= 1,
         r: level.length >= 2,
         i: level.length >= 3,
@@ -204,14 +207,17 @@ const stageX = (stage: string | undefined) => {
 };
 
 function wardley(ix: Index, of: string | undefined): WardleyModel {
-  const components = ix.of("component").filter((c) => !of || c.data.arena === of);
+  const components = ix.of("component").filter((c) => !of || attributes(c).arena === of);
   const nodes = components.map((c, i) => ({
     ref: ix.ref(c),
     // Spread components of the same stage a little so labels do not collide.
-    x: (stageX(str(c.data, "evolution")) ?? 0.5) + ((i % 3) - 1) * 0.03,
-    y: typeof c.data.visibility === "number" ? (c.data.visibility as number) / 100 : 0.5,
-    targetX: stageX(str(c.data, "target")),
-    evolution: str(c.data, "evolution"),
+    x: (stageX(str(attributes(c), "evolution")) ?? 0.5) + ((i % 3) - 1) * 0.03,
+    y:
+      typeof attributes(c).visibility === "number"
+        ? (attributes(c).visibility as number) / 100
+        : 0.5,
+    targetX: stageX(str(attributes(c), "target")),
+    evolution: str(attributes(c), "evolution"),
   }));
   const ids = new Set(components.map((c) => c.id));
   return {
@@ -219,7 +225,7 @@ function wardley(ix: Index, of: string | undefined): WardleyModel {
     arena: ix.refOf(of),
     nodes,
     links: components.flatMap((c) =>
-      list(c.data, "needs")
+      list(attributes(c), "needs")
         .filter((n) => ids.has(n))
         .map((to) => ({ from: c.id, to })),
     ),
@@ -240,11 +246,11 @@ function platformPlays(ix: Index): PlatformPlaysModel {
       label,
       applied: ix
         .of("play")
-        .filter((p) => p.data.play === id)
+        .filter((p) => attributes(p).play === id)
         .map((p) => ({
           play: ix.ref(p),
-          insight: str(p.data, "insight") ?? "",
-          affects: ix.refsOf(p.data.affects),
+          insight: str(attributes(p), "insight") ?? "",
+          affects: ix.refsOf(attributes(p).affects),
         })),
     })),
   };
@@ -263,7 +269,7 @@ function patternCards(ix: Index): PatternCardsModel {
       label,
       scenarios: ix
         .of("scenario")
-        .filter((s) => s.data.pattern === id)
+        .filter((s) => attributes(s).pattern === id)
         .map((s) => ix.ref(s)),
     })),
   };
@@ -290,16 +296,16 @@ function brief(ix: Index): BriefModel {
     layers: layers(ix),
     scenarios: ix.of("scenario").map((s) => ({
       scenario: ix.ref(s),
-      pattern: `${String(s.data.pattern).toUpperCase()} · ${PATTERN_LABELS[String(s.data.pattern)] ?? ""}`,
-      impact: str(s.data, "impact"),
+      pattern: `${String(attributes(s).pattern).toUpperCase()} · ${PATTERN_LABELS[String(attributes(s).pattern)] ?? ""}`,
+      impact: str(attributes(s), "impact"),
     })),
     brief: b && {
       ref: ix.ref(b),
-      arena: ix.refOf(b.data.arena),
-      entities: ix.refsOf(b.data.entities),
-      standardize: list(b.data, "standardize"),
-      productSide: list(b.data, "product-side"),
-      moats: ix.refsOf(b.data.moats),
+      arena: ix.refOf(attributes(b).arena),
+      entities: ix.refsOf(attributes(b).entities),
+      standardize: list(attributes(b), "standardize"),
+      productSide: list(attributes(b), "product-side"),
+      moats: ix.refsOf(attributes(b).moats),
     },
   };
 }
@@ -328,13 +334,13 @@ function ecosystem(ix: Index): EcosystemModel {
         code: info.code,
         entities: ix
           .of("entity")
-          .filter((e) => e.data.role === role)
+          .filter((e) => attributes(e).role === role)
           .map((e) => ix.ref(e)),
       };
     }),
     unassigned: ix
       .of("entity")
-      .filter((e) => !e.data.role)
+      .filter((e) => !attributes(e).role)
       .map((e) => ix.ref(e)),
   };
 }
@@ -357,7 +363,7 @@ export interface PortraitModel {
 
 function portrait(ix: Index, of: string | undefined): PortraitModel {
   const e = ix.get(of);
-  const d = e?.data ?? {};
+  const d = e ? attributes(e) : {};
   return {
     canvas: "entity-portrait",
     entity: e && ix.ref(e),
@@ -390,22 +396,22 @@ export interface MotivationsModel {
 
 function motivations(ix: Index): MotivationsModel {
   const ms = ix.of("motivation");
-  const involved = new Set(ms.flatMap((m) => [m.data.from, m.data.to]));
+  const involved = new Set(ms.flatMap((m) => [attributes(m).from, attributes(m).to]));
   const roles = ix
     .of("entity")
     .filter((e) => involved.has(e.id))
-    .sort((a, b) => roleRank(a.data.role as string) - roleRank(b.data.role as string))
+    .sort((a, b) => roleRank(attributes(a).role as string) - roleRank(attributes(b).role as string))
     .map((e) => ix.ref(e));
   const cells = new Map<string, MatrixItem[]>();
   for (const m of ms) {
-    const key = `${String(m.data.from)}>${String(m.data.to)}`;
+    const key = `${String(attributes(m).from)}>${String(attributes(m).to)}`;
     cells.set(key, [
       ...(cells.get(key) ?? []),
       {
         ref: ix.ref(m),
-        gives: str(m.data, "gives") ?? "",
-        status: str(m.data, "status"),
-        kind: str(m.data, "kind"),
+        gives: str(attributes(m), "gives") ?? "",
+        status: str(attributes(m), "status"),
+        kind: str(attributes(m), "category"),
       },
     ]);
   }
@@ -440,7 +446,7 @@ export interface BoardModel {
 
 function board(ix: Index, of: string | undefined): BoardModel {
   const r = ix.get(of);
-  const between = r ? list(r.data, "between") : [];
+  const between = r ? list(attributes(r), "between") : [];
   const role1 = between[0];
   return {
     canvas: "transactions-board",
@@ -448,18 +454,19 @@ function board(ix: Index, of: string | undefined): BoardModel {
     roles: [ix.refOf(between[0]), ix.refOf(between[1])],
     rows: ix
       .of("transaction")
-      .filter((t) => t.data.relationship === of)
+      .filter((t) => attributes(t).relationship === of)
       .map((t) => {
-        const channel = ix.get(t.data.channel);
+        const channel = ix.get(attributes(t).channel);
         return {
           ref: ix.ref(t),
-          happening: t.data.happening === true,
-          arrow: t.data.direction === "two-way" ? "↔" : t.data.from === role1 ? "→" : "←",
-          valueUnit: str(t.data, "value-unit"),
-          kind: str(t.data, "kind"),
+          happening: attributes(t).happening === true,
+          arrow:
+            attributes(t).direction === "two-way" ? "↔" : attributes(t).from === role1 ? "→" : "←",
+          valueUnit: str(attributes(t), "value-unit"),
+          kind: str(attributes(t), "category"),
           channel: channel && ix.ref(channel),
-          components: channel ? list(channel.data, "components") : [],
-          improvement: channel ? str(channel.data, "improvement") : undefined,
+          components: channel ? list(attributes(channel), "components") : [],
+          improvement: channel ? str(attributes(channel), "improvement") : undefined,
         };
       }),
   };
@@ -491,24 +498,26 @@ function learning(ix: Index): LearningModel {
       .of("learning-engine")
       .sort(
         (a, b) =>
-          roleRank(ix.get(a.data.entity)?.data.role as string) -
-          roleRank(ix.get(b.data.entity)?.data.role as string),
+          roleRank(ix.refOf(attributes(a).entity)?.role) -
+          roleRank(ix.refOf(attributes(b).entity)?.role),
       )
       .map((le) => ({
         engine: ix.ref(le),
-        entity: ix.refOf(le.data.entity),
-        entry: list(le.data, "entry"),
+        entity: ix.refOf(attributes(le).entity),
+        entry: list(attributes(le), "entry"),
         stages: LEARNING_STAGES.map((stage) => ({
           stage,
-          challenges: list(le.data, stage),
+          challenges: list(attributes(le), stage),
           services: ix
             .of("service")
             .filter(
-              (s) => s.data.stage === stage && list(s.data, "for").includes(String(le.data.entity)),
+              (s) =>
+                attributes(s).stage === stage &&
+                list(attributes(s), "for").includes(String(attributes(le).entity)),
             )
             .map((s) => ix.ref(s)),
         })),
-        evolvesTo: ix.refsOf(le.data["evolves-to"]),
+        evolvesTo: ix.refsOf(attributes(le)["evolves-to"]),
       })),
   };
 }
@@ -537,11 +546,11 @@ export interface ExperienceModel {
 
 function experience(ix: Index, of: string | undefined): ExperienceModel {
   const x = ix.get(of);
-  const d = x?.data ?? {};
+  const d = x ? attributes(x) : {};
   const bricks = list(d, "steps").flatMap((id) => ix.get(id) ?? []);
   const laneIds: (string | undefined)[] = [];
   for (const b of bricks) {
-    const ch = str(b.data, "channel");
+    const ch = str(attributes(b), "channel");
     if (!laneIds.includes(ch)) laneIds.push(ch);
   }
   // Lanes with a channel first, in order of appearance; steps without a channel last.
@@ -560,10 +569,10 @@ function experience(ix: Index, of: string | undefined): ExperienceModel {
     steps: bricks.map((b) => ({
       ref: ix.ref(b),
       brick: b.kind === "service" ? "service" : "transaction",
-      lane: laneIds.indexOf(str(b.data, "channel")),
-      from: ix.refOf(b.data.from),
-      to: ix.refOf(b.data.to),
-      for: ix.refsOf(b.data.for),
+      lane: laneIds.indexOf(str(attributes(b), "channel")),
+      from: ix.refOf(attributes(b).from),
+      to: ix.refOf(attributes(b).to),
+      for: ix.refsOf(attributes(b).for),
     })),
     activities: list(d, "activities"),
     resources: list(d, "resources"),
@@ -591,7 +600,7 @@ export interface MvpModel {
 
 function mvp(ix: Index, of: string | undefined): MvpModel {
   const m = ix.get(of);
-  const d = m?.data ?? {};
+  const d = m ? attributes(m) : {};
   return {
     canvas: "mvp",
     mvp: m && ix.ref(m),
@@ -601,15 +610,17 @@ function mvp(ix: Index, of: string | undefined): MvpModel {
     status: str(d, "status"),
     assumptions: ix
       .of("assumption")
-      .filter((a) => a.data.mvp === of)
-      .sort((a, b) => Number(b.data.riskiest === true) - Number(a.data.riskiest === true))
+      .filter((a) => attributes(a).mvp === of)
+      .sort(
+        (a, b) => Number(attributes(b).riskiest === true) - Number(attributes(a).riskiest === true),
+      )
       .map((a) => ({
         ref: ix.ref(a),
-        kind: str(a.data, "kind"),
-        riskiest: a.data.riskiest === true,
-        test: str(a.data, "test"),
-        criteria: str(a.data, "criteria"),
-        status: str(a.data, "status"),
+        kind: str(attributes(a), "category"),
+        riskiest: attributes(a).riskiest === true,
+        test: str(attributes(a), "test"),
+        criteria: str(attributes(a), "criteria"),
+        status: str(attributes(a), "status"),
       })),
   };
 }
@@ -636,12 +647,12 @@ function platformDesign(ix: Index): PlatformDesignModel {
   const byRole = (role: string) =>
     ix
       .of("entity")
-      .filter((e) => e.data.role === role)
+      .filter((e) => attributes(e).role === role)
       .map((e) => ix.ref(e));
   const services = (kind: string) =>
     ix
       .of("service")
-      .filter((s) => s.data.kind === kind)
+      .filter((s) => attributes(s).category === kind)
       .map((s) => ix.ref(s));
   return {
     canvas: "platform-design",
@@ -650,9 +661,9 @@ function platformDesign(ix: Index): PlatformDesignModel {
     enabling: services("enabling"),
     empowering: services("empowering"),
     other: services("other"),
-    coreValue: p && str(p.data, "core-value"),
-    ancillary: p ? list(p.data, "ancillary-values") : [],
-    infrastructure: p ? list(p.data, "infrastructure") : [],
+    coreValue: p && str(attributes(p), "core-value"),
+    ancillary: p ? list(attributes(p), "ancillary-values") : [],
+    infrastructure: p ? list(attributes(p), "infrastructure") : [],
     transactions: ix.of("transaction").map((t) => ix.ref(t)),
     channels: ix.of("channel").map((c) => ix.ref(c)),
     partners: byRole("partner"),
@@ -682,13 +693,13 @@ function strategyModel(ix: Index): StrategyModel {
   const vps = (kind: string) =>
     ix
       .of("value-proposition")
-      .filter((v) => v.data.kind === kind)
+      .filter((v) => attributes(v).category === kind)
       .map((v) => ({
         ref: ix.ref(v),
-        customer: ix.refOf(v.data.customer),
-        relationship: ix.refOf(v.data.relationship),
-        mechanism: str(v.data, "mechanism"),
-        bundle: list(v.data, "bundle"),
+        customer: ix.refOf(attributes(v).customer),
+        relationship: ix.refOf(attributes(v).relationship),
+        mechanism: str(attributes(v), "mechanism"),
+        bundle: list(attributes(v), "bundle"),
       }));
   return {
     canvas: "platform-strategy-model",
@@ -718,8 +729,8 @@ export interface NetworkModel {
 }
 
 function network(ix: Index, of: string | undefined): NetworkModel {
-  const n = ix.of("network").find((e) => e.data.relationship === of);
-  const d = n?.data ?? {};
+  const n = ix.of("network").find((e) => attributes(e).relationship === of);
+  const d = n ? attributes(n) : {};
   return {
     canvas: "network-properties",
     relationship: ix.refOf(of),
@@ -751,17 +762,17 @@ function flywheels(ix: Index): FlywheelModel {
     flywheels: ix
       .of("flywheel")
       .map((f) => {
-        const type = str(f.data, "type");
+        const type = str(attributes(f), "type");
         return {
           ref: ix.ref(f),
           type,
           typeLabel: FLYWHEEL_LABELS[type ?? ""] ?? type ?? "",
           core: type === "direct-network" || type === "indirect-network",
-          loop: list(f.data, "loop"),
-          bottleneck: str(f.data, "bottleneck"),
-          metric: str(f.data, "metric"),
-          relationship: ix.refOf(f.data.relationship),
-          reinforces: ix.refOf(f.data.reinforces),
+          loop: list(attributes(f), "loop"),
+          bottleneck: str(attributes(f), "bottleneck"),
+          metric: str(attributes(f), "metric"),
+          relationship: ix.refOf(attributes(f).relationship),
+          reinforces: ix.refOf(attributes(f).reinforces),
         };
       })
       .sort((a, b) => Number(b.core) - Number(a.core)),
@@ -781,8 +792,8 @@ export interface LiquidityModel {
 }
 
 function liquidity(ix: Index, of: string | undefined): LiquidityModel {
-  const l = ix.of("liquidity").find((e) => e.data.relationship === of);
-  const d = l?.data ?? {};
+  const l = ix.of("liquidity").find((e) => attributes(e).relationship === of);
+  const d = l ? attributes(l) : {};
   return {
     canvas: "liquidity",
     relationship: ix.refOf(of),
@@ -815,13 +826,13 @@ function growthModel(ix: Index): GrowthModel {
     canvas: "growth-model",
     loops: ix.of("growth-loop").map((g) => ({
       ref: ix.ref(g),
-      type: str(g.data, "type"),
-      equation: str(g.data, "equation"),
-      bottleneck: str(g.data, "bottleneck"),
-      cycleTime: str(g.data, "cycle-time"),
-      metric: str(g.data, "metric"),
-      acquires: ix.refOf(g.data.acquires),
-      feeds: ix.refOf(g.data.feeds),
+      type: str(attributes(g), "type"),
+      equation: str(attributes(g), "equation"),
+      bottleneck: str(attributes(g), "bottleneck"),
+      cycleTime: str(attributes(g), "cycle-time"),
+      metric: str(attributes(g), "metric"),
+      acquires: ix.refOf(attributes(g).acquires),
+      feeds: ix.refOf(attributes(g).feeds),
     })),
   };
 }

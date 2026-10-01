@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
-import { BLOCK_TYPES, incoming, nextStep, RULES, blockFields, type Diagnostic } from "@pdt42/core";
+import {
+  BLOCK_TYPES,
+  blockFields,
+  fieldValue,
+  incoming,
+  nextStep,
+  RULES,
+  type Diagnostic,
+} from "@pdt42/core";
 import { load } from "./discover.ts";
 import { build, serve } from "./serve.ts";
 import {
@@ -164,7 +172,7 @@ async function main(): Promise<number> {
       if (json) print(JSON.stringify(diagnostics, null, 2));
       else {
         for (const d of diagnostics)
-          print(`${paint(SEVERITY[d.severity], d.code)} ${d.loc.file}:${d.loc.line}  ${d.message}`);
+          print(`${paint(SEVERITY[d.severity], d.code)} ${d.file}:${d.line}  ${d.message}`);
         const n = (s: Diagnostic["severity"]) => diagnostics.filter((d) => d.severity === s).length;
         print(
           `\n${workspace.elements.length} elements in ${workspace.documents.length} files — ${n("error")} errors, ${n("warning")} warnings, ${n("hint")} hints`,
@@ -191,27 +199,14 @@ async function main(): Promise<number> {
           field: r.field,
         }));
         if (json) {
-          print(
-            JSON.stringify(
-              {
-                kind: element.kind,
-                id: element.id,
-                title: element.title,
-                data: element.data,
-                prose: element.prose,
-                loc: element.loc,
-                referencedBy: refs,
-              },
-              null,
-              2,
-            ),
-          );
+          print(JSON.stringify({ ...element, referencedBy: refs }, null, 2));
           return 0;
         }
         print(
           `${paint("1", element.title)}  ${paint("2", `${element.kind} · ${element.loc.file}:${element.loc.line}`)}`,
         );
-        for (const [key, value] of Object.entries(element.data as Record<string, unknown>)) {
+        for (const { name: key } of blockFields(element.kind)) {
+          const value = fieldValue(element, key);
           if (
             key === "id" ||
             key === "title" ||

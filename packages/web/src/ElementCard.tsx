@@ -2,6 +2,7 @@ import type { MouseEvent, ReactNode } from "react";
 import {
   blockFields,
   blockMeta,
+  fieldValue,
   type BlockType,
   type Diagnostic,
   type IgnoreNode,
@@ -36,11 +37,11 @@ export function RefChip({
       </span>
     );
   }
-  const role = e.kind === "entity" ? (e.data.role as string | undefined) : undefined;
+  const role = e.kind === "entity" ? (fieldValue(e, "role") as string | undefined) : undefined;
   return (
     <a
       className={cx("ref-chip", incoming && "ref-chip--incoming")}
-      href={elementHref(e.file, e.id)}
+      href={elementHref(e.loc.file, e.id)}
       title={`${e.kind} ${e.id}`}
       style={css({ "--c": colorOf(e.kind, role) })}
     >
@@ -63,7 +64,7 @@ export function FindingList({ findings }: { findings: Diagnostic[] }) {
             dangerouslySetInnerHTML={{ __html: inline(f.message) }}
           />
           <span className="finding__loc">
-            {f.loc.file}:{f.loc.line}
+            {f.file}:{f.line}
           </span>
         </li>
       ))}
@@ -118,15 +119,15 @@ export function ElementCard({
       </div>
     );
   }
-  const role = e.kind === "entity" ? (e.data.role as string | undefined) : undefined;
+  const role = e.kind === "entity" ? (fieldValue(e, "role") as string | undefined) : undefined;
   const color = colorOf(e.kind, role);
   const meta = blockMeta(e.kind as BlockType);
   const fields = blockFields(e.kind as BlockType).filter(
     (f) =>
       f.name !== "id" &&
       f.name !== "title" &&
-      e.data[f.name] !== undefined &&
-      !(Array.isArray(e.data[f.name]) && (e.data[f.name] as unknown[]).length === 0),
+      fieldValue(e, f.name) !== undefined &&
+      !(Array.isArray(fieldValue(e, f.name)) && (fieldValue(e, f.name) as unknown[]).length === 0),
   );
   const incoming = ctx.ix.incoming.get(e.id) ?? [];
   const canvases = ctx.ix.canvasesOf.get(e.id) ?? [];
@@ -158,7 +159,7 @@ export function ElementCard({
             {fields.map((f, idx) => (
               <div key={idx} className="field" title={f.description}>
                 <dt>{f.name}</dt>
-                <dd>{value(ctx, f.kind, e.data[f.name])}</dd>
+                <dd>{value(ctx, f.kind, fieldValue(e, f.name))}</dd>
               </div>
             ))}
           </dl>
@@ -207,7 +208,7 @@ export function ElementCard({
           <ul className="ignores">
             {ignores.map((i, idx) => (
               <li key={idx}>
-                <code>{i.code}</code> ignored — {i.reason}
+                <code>{i.ruleCode}</code> ignored — {i.reason}
               </li>
             ))}
           </ul>
