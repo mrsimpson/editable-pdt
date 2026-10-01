@@ -2,7 +2,7 @@ packages:
   - packages/*
 
 catalog:
-  "@cli42/lib": github:mrsimpson/cli42#714bf8729d7b81f0ee1a41f25b01491507861cfc
+  "@cli42/lib": ^0.6.0
   "@playwright/test": 1.56.1
   "@semantic-release/changelog": 7.0.0
   "@semantic-release/exec": 7.1.0
@@ -33,5 +33,3 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
     vitest: "*"
-onlyBuiltDependencies:
-  - "@cli42/lib"
