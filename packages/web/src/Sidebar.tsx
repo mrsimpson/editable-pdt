@@ -27,7 +27,15 @@ export interface SidebarProps {
   showMetaModel?: boolean;
 }
 
-export function Sidebar({ ctx, onTheme, view, changes, history, onMetaModel, showMetaModel }: SidebarProps) {
+export function Sidebar({
+  ctx,
+  onTheme,
+  view,
+  changes,
+  history,
+  onMetaModel,
+  showMetaModel,
+}: SidebarProps) {
   const { ix, state } = ctx;
   const claimed = new Set<string>();
   const counts = {
@@ -236,7 +244,10 @@ export function Sidebar({ ctx, onTheme, view, changes, history, onMetaModel, sho
       {onMetaModel && (
         <div className="sidebar__meta-model">
           <button
-            className={cx("sidebar__meta-model-btn", showMetaModel && "sidebar__meta-model-btn--active")}
+            className={cx(
+              "sidebar__meta-model-btn",
+              showMetaModel && "sidebar__meta-model-btn--active",
+            )}
             onClick={onMetaModel}
             aria-current={showMetaModel ? "page" : undefined}
           >

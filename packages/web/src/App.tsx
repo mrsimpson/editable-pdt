@@ -208,9 +208,7 @@ interface AppProps {
 /** The workspace in the browser: chapters, the changes and the history. */
 export function App({ initial, diff, diffError, history, refresh, version }: AppProps) {
   const ix = useMemo(() => new WorkspaceIndex(initial), [initial]);
-  const [route, setRoute] = useState<Route>(() =>
-    parseRoute(location.hash, { views: APP_VIEWS }),
-  );
+  const [route, setRoute] = useState<Route>(() => parseRoute(location.hash, { views: APP_VIEWS }));
   const [state, setState] = useState(() => initialState(ix));
   const { toggle: toggleTheme } = useTheme();
 
