@@ -29,14 +29,14 @@ jobs:
     # Pull requests from forks get a read-only token and cannot push to gh-pages.
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         if: github.event.action != 'closed'
         with:
           version: 10.34.5
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         if: github.event.action != 'closed'
         with:
           node-version: 24
@@ -51,7 +51,7 @@ jobs:
 
       # Deploys site/ to gh-pages under pr-preview/pr-<number>/, or removes it on close.
       - name: Deploy or remove preview
-        uses: rossjrw/pr-preview-action@v1
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1
         with:
           source-dir: site
           preview-branch: gh-pages
